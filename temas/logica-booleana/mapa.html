@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>De ∧, ∨, ¬ al cobre · Cómo un conectivo se vuelve un circuito</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,300;0,400;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bench:#0a0e14;
+  --panel:#111823;
+  --panel-2:#16202e;
+  --hair:rgba(190,205,225,.13);
+  --copper:#e08a4a;
+  --copper-dim:rgba(224,138,74,.28);
+  --dead:#394454;
+  --lamp:#ffd166;
+  --hi:#6fe3a8;
+  --lo:#78859a;
+  --txt:#dbe3ee;
+  --mute:#8b98ad;
+  --sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --serif:"IBM Plex Serif",Georgia,serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bench);color:var(--txt);
+  font-family:var(--serif);font-weight:300;font-size:17.5px;line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+h1,h2,h3,.sans{font-family:var(--sans)}
+
+/* ---------- hero ---------- */
+header{padding:64px 0 40px}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin:0 0 26px}
+h1{font-size:clamp(30px,5.4vw,52px);font-weight:700;line-height:1.05;letter-spacing:-.02em;margin:0 0 20px;color:#fff}
+h1 span{color:var(--copper)}
+.lede{max-width:66ch;color:#b6c1d1;margin:0}
+.lede strong{color:#fff;font-weight:500}
+
+.convention{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1px;
+  background:var(--hair);border:1px solid var(--hair);margin:34px 0 0;
+}
+.convention div{background:var(--panel);padding:18px 20px}
+.convention .v{font-family:var(--mono);font-size:22px;margin:0 0 4px}
+.convention .v.one{color:var(--hi)} .convention .v.zero{color:var(--lo)}
+.convention p{margin:0;font-size:14.5px;color:var(--mute)}
+
+/* ---------- consola ---------- */
+.console{
+  position:sticky;top:0;z-index:30;margin-top:44px;
+  background:rgba(10,14,20,.94);backdrop-filter:blur(10px);
+  border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);
+}
+.console-in{max-width:1080px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+.console .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute)}
+.sw{display:flex;align-items:center;gap:12px;background:transparent;border:0;cursor:pointer;padding:6px 4px}
+.sw:focus-visible{outline:2px solid var(--copper);outline-offset:3px}
+.sw .name{font-family:var(--mono);font-size:19px;color:var(--txt)}
+.rocker{width:52px;height:26px;border:1px solid var(--hair);background:#0d131c;position:relative;border-radius:2px}
+.rocker i{
+  position:absolute;top:2px;left:2px;width:22px;height:20px;background:var(--dead);
+  transition:left .16s ease,background .16s ease;display:block;
+}
+.sw[aria-pressed="true"] .rocker i{left:26px;background:var(--hi)}
+.sw .state{font-family:var(--mono);font-size:15px;color:var(--lo);width:14px}
+.sw[aria-pressed="true"] .state{color:var(--hi)}
+.console .hint{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--mute);margin:0}
+
+/* ---------- gates ---------- */
+section{padding:52px 0;border-top:1px solid var(--hair)}
+section:first-of-type{border-top:0}
+.gate-head{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;margin-bottom:8px}
+.gate-op{font-family:var(--mono);font-size:clamp(30px,5vw,44px);color:var(--copper);line-height:1}
+h2{font-size:clamp(22px,3.4vw,32px);font-weight:600;margin:0;color:#fff;letter-spacing:-.01em}
+.gate-out{
+  margin-left:auto;font-family:var(--mono);font-size:14px;
+  border:1px solid var(--hair);padding:7px 14px;color:var(--lo);white-space:nowrap;
+}
+.gate-out b{font-weight:600}
+.gate-out.on{color:var(--hi);border-color:rgba(111,227,168,.4)}
+.gate-sub{color:#a9b4c5;max-width:70ch;margin:10px 0 26px}
+
+.layers{display:grid;grid-template-columns:1.15fr 1.15fr .9fr;gap:1px;background:var(--hair);border:1px solid var(--hair)}
+.layer{background:var(--panel);padding:20px 20px 22px;min-width:0}
+.layer h3{
+  font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  font-weight:400;color:var(--mute);margin:0 0 6px;display:flex;gap:8px;align-items:center;
+}
+.layer h3 b{color:var(--copper);font-weight:500}
+.layer .cap{font-size:14px;color:#9daaba;margin:0 0 14px;min-height:42px}
+.layer svg{width:100%;height:auto;display:block}
+
+/* svg estados */
+.wire{stroke:var(--dead);stroke-width:2.5;stroke-linecap:round;fill:none;transition:stroke .18s}
+.wire.hot{stroke:var(--copper)}
+.wire.flow{stroke-dasharray:7 7;animation:flow .7s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-14}}
+.lever{stroke:var(--dead);stroke-width:3;stroke-linecap:round;transition:stroke .18s}
+.lever.hot{stroke:var(--copper)}
+.node{fill:var(--dead);transition:fill .18s}
+.node.hot{fill:var(--copper)}
+.bulb{fill:#0d131c;stroke:var(--dead);stroke-width:2;transition:fill .2s,stroke .2s}
+.bulb.on{fill:var(--lamp);stroke:var(--lamp)}
+.halo{fill:var(--lamp);opacity:0;transition:opacity .2s}
+.halo.on{opacity:.16}
+.slab{fill:#0e1622;stroke:var(--dead);stroke-width:1.6;transition:stroke .18s,fill .18s}
+.slab.conduct{stroke:var(--copper);fill:rgba(224,138,74,.14)}
+.glabel{font-family:"IBM Plex Mono",monospace;font-size:11px;fill:var(--mute)}
+.glabel.hot{fill:var(--copper)}
+.vlabel{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;fill:var(--lo);transition:fill .18s}
+.vlabel.one{fill:var(--hi)}
+.rail{stroke:#4d5b70;stroke-width:2;stroke-linecap:round}
+
+/* tabla */
+table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:13.5px;margin-top:4px}
+th{font-weight:400;font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--mute);padding:0 6px 9px;border-bottom:1px solid var(--hair)}
+td{padding:9px 6px;text-align:center;color:var(--lo);border-bottom:1px solid rgba(190,205,225,.06)}
+tr.live td{background:rgba(224,138,74,.13);color:#f4e2d2}
+tr.live td.res{color:var(--hi);font-weight:600}
+.count{font-family:var(--mono);font-size:12px;color:var(--mute);margin:16px 0 0;border-top:1px dashed var(--hair);padding-top:12px}
+.count b{color:var(--copper);font-weight:500}
+
+/* bloques de texto */
+.pair-note{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;
+  background:var(--hair);border:1px solid var(--hair);margin-top:34px;
+}
+.pair-note div{background:var(--panel);padding:20px}
+.pair-note h3{font-size:15px;font-weight:600;margin:0 0 8px;color:#fff;font-family:var(--sans)}
+.pair-note p{margin:0;font-size:14.5px;color:#a3aebe}
+.pair-note .tag{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--copper);display:block;margin-bottom:10px}
+.eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);margin:0 0 12px}
+.sub{color:#a9b4c5;max-width:70ch;margin:0 0 24px}
+.m{font-family:var(--mono);font-size:.88em;color:#eaeef5}
+
+.finale{font-family:var(--mono);font-size:clamp(13px,2.4vw,19px);color:#fff;
+  border:1px solid var(--hair);background:var(--panel);padding:24px;text-align:center;margin:0 0 20px}
+.finale .c{color:var(--copper)}
+footer{border-top:1px solid var(--hair);padding:32px 0 70px;color:var(--mute);font-size:15px}
+
+@media (max-width:900px){ .layers{grid-template-columns:1fr} .layer .cap{min-height:0} }
+@media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} html{scroll-behavior:auto} }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <p class="kicker">Del conectivo al cobre · lógica combinacional</p>
+  <h1>Un conectivo lógico es<br>una <span>manera de dejar pasar corriente</span></h1>
+  <p class="lede">No hay traducción ni analogía aquí: hay <strong>identidad estructural</strong>. Si acuerdas que un voltaje alto significa 1 y uno bajo significa 0, entonces un circuito con dos entradas ya está calculando una función booleana — lo quieras o no. Las tres operaciones del álgebra tienen cada una su gesto físico, y son gestos muy simples: poner en fila, poner en paralelo, invertir.</p>
+
+  <div class="convention">
+    <div><p class="v one">1 · ALTO</p><p>Típicamente 3.3 V o 5 V. Se le llama V<sub>DD</sub>. En el álgebra: <span class="m">[⊤]</span>, verdadero.</p></div>
+    <div><p class="v zero">0 · BAJO</p><p>0 V, tierra. En el álgebra: <span class="m">[⊥]</span>, falso.</p></div>
+    <div><p class="v" style="color:var(--copper)">Entre medio</p><p>Prohibido. El circuito se diseña para cruzar esa zona rápido y no quedarse: por eso el ruido no corrompe el valor.</p></div>
+  </div>
+</header>
+</div>
+
+<div class="console">
+  <div class="console-in">
+    <span class="lbl">Entradas</span>
+    <button class="sw" id="sw-p" type="button" aria-pressed="false">
+      <span class="name">p</span><span class="rocker"><i></i></span><span class="state">0</span>
+    </button>
+    <button class="sw" id="sw-q" type="button" aria-pressed="false">
+      <span class="name">q</span><span class="rocker"><i></i></span><span class="state">0</span>
+    </button>
+    <p class="hint">Un solo estado, tres profundidades: todo lo de abajo responde a estos dos interruptores.</p>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ================= AND ================= -->
+<section>
+  <div class="gate-head">
+    <span class="gate-op">∧</span>
+    <h2>Conjunción · dos obstáculos en fila</h2>
+    <span class="gate-out" id="out-and">salida <b>0</b></span>
+  </div>
+  <p class="gate-sub">Para que la corriente llegue a la lámpara debe atravesar los dos interruptores, uno después del otro. Basta que uno esté abierto para cortar el camino. Eso es exactamente lo que dice la tabla de <span class="m">p ∧ q</span>: un solo 0 arruina el resultado.</p>
+
+  <div class="layers">
+    <div class="layer">
+      <h3><b>Nivel 1</b> · interruptores en serie</h3>
+      <p class="cap">La versión que podrías armar con dos apagadores, una pila y un foco.</p>
+      <svg viewBox="0 0 360 150" role="img" aria-label="Dos interruptores en serie alimentando una lámpara">
+        <line class="rail" x1="24" y1="52" x2="24" y2="88"/>
+        <line class="rail" x1="16" y1="60" x2="32" y2="60"/><line class="rail" x1="19" y1="80" x2="29" y2="80"/>
+        <text class="glabel" x="10" y="108">V<tspan dy="2">DD</tspan></text>
+        <path class="wire" id="a-w1" d="M24 52 L24 34 L78 34"/>
+        <line class="lever" id="a-lev-p" x1="78" y1="34" x2="122" y2="34"/>
+        <circle class="node" id="a-n1" cx="78" cy="34" r="3.5"/>
+        <circle class="node" id="a-n2" cx="126" cy="34" r="3.5"/>
+        <text class="glabel" x="92" y="20">p</text>
+        <path class="wire" id="a-w2" d="M126 34 L182 34"/>
+        <line class="lever" id="a-lev-q" x1="182" y1="34" x2="226" y2="34"/>
+        <circle class="node" id="a-n3" cx="182" cy="34" r="3.5"/>
+        <circle class="node" id="a-n4" cx="230" cy="34" r="3.5"/>
+        <text class="glabel" x="196" y="20">q</text>
+        <path class="wire" id="a-w3" d="M230 34 L300 34 L300 54"/>
+        <circle class="halo" id="a-halo" cx="300" cy="72" r="30"/>
+        <circle class="bulb" id="a-bulb" cx="300" cy="72" r="17"/>
+        <path class="wire" d="M300 90 L300 116 L24 116 L24 88" stroke="#394454"/>
+      </svg>
+    </div>
+
+    <div class="layer">
+      <h3><b>Nivel 2</b> · CMOS real</h3>
+      <p class="cap">En silicio la puerta natural es la NAND: cuatro transistores. La AND cuesta dos más, porque hay que invertir el resultado.</p>
+      <svg viewBox="0 0 360 200" role="img" aria-label="Esquema CMOS de una NAND seguida de un inversor">
+        <line class="rail" x1="30" y1="26" x2="210" y2="26"/>
+        <text class="glabel" x="30" y="18">V<tspan dy="2">DD</tspan></text>
+        <line class="rail" x1="30" y1="182" x2="210" y2="182"/>
+        <text class="glabel" x="30" y="196">GND</text>
+        <!-- pull-up: dos PMOS en paralelo -->
+        <rect class="slab" id="c-p1" x="60" y="42" width="46" height="24" rx="2"/>
+        <text class="glabel" x="70" y="58">P·p</text>
+        <rect class="slab" id="c-p2" x="132" y="42" width="46" height="24" rx="2"/>
+        <text class="glabel" x="142" y="58">P·q</text>
+        <path class="wire" d="M83 26 L83 42" stroke="#4d5b70"/>
+        <path class="wire" d="M155 26 L155 42" stroke="#4d5b70"/>
+        <path class="wire" id="c-up1" d="M83 66 L83 90 L155 90 L155 66"/>
+        <path class="wire" id="c-mid" d="M119 90 L119 104"/>
+        <!-- pull-down: dos NMOS en serie -->
+        <rect class="slab" id="c-n1" x="96" y="104" width="46" height="24" rx="2"/>
+        <text class="glabel" x="106" y="120">N·p</text>
+        <rect class="slab" id="c-n2" x="96" y="140" width="46" height="24" rx="2"/>
+        <text class="glabel" x="106" y="156">N·q</text>
+        <path class="wire" id="c-dn1" d="M119 128 L119 140"/>
+        <path class="wire" d="M119 164 L119 182" stroke="#4d5b70"/>
+        <!-- nodo interno -->
+        <circle class="node" id="c-node" cx="119" cy="90" r="4"/>
+        <text class="glabel" x="196" y="86">nodo</text>
+        <text class="vlabel" id="c-nodeval" x="196" y="102">¬(p∧q) = 1</text>
+        <!-- inversor -->
+        <path class="wire" id="c-toinv" d="M180 90 L246 90"/>
+        <polygon class="slab" id="c-inv" points="252,72 252,108 288,90"/>
+        <circle class="slab" id="c-invb" cx="293" cy="90" r="5"/>
+        <text class="glabel" x="250" y="126">inversor · 2 tr.</text>
+        <path class="wire" id="c-out" d="M298 90 L336 90"/>
+        <text class="vlabel" id="c-outval" x="322" y="80">0</text>
+      </svg>
+      <p class="count">Transistores: <b id="c-count">6</b> — 4 de la NAND + 2 del inversor.</p>
+    </div>
+
+    <div class="layer">
+      <h3><b>Nivel 3</b> · símbolo y tabla</h3>
+      <p class="cap">Lo que dibuja un ingeniero, y lo que escribe un lógico. La misma cosa.</p>
+      <svg viewBox="0 0 200 92" role="img" aria-label="Símbolo de la compuerta AND">
+        <path class="wire" id="s-and-a" d="M14 32 L58 32"/>
+        <path class="wire" id="s-and-b" d="M14 60 L58 60"/>
+        <path class="slab" id="s-and-body" d="M58 18 L96 18 A28 28 0 0 1 96 74 L58 74 Z"/>
+        <path class="wire" id="s-and-o" d="M124 46 L176 46"/>
+        <text class="glabel" x="16" y="26">p</text>
+        <text class="glabel" x="16" y="54">q</text>
+        <text class="glabel" x="150" y="38">p ∧ q</text>
+      </svg>
+      <table>
+        <thead><tr><th>p</th><th>q</th><th>p ∧ q</th></tr></thead>
+        <tbody id="tb-and"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= OR ================= -->
+<section>
+  <div class="gate-head">
+    <span class="gate-op">∨</span>
+    <h2>Disyunción · dos caminos alternativos</h2>
+    <span class="gate-out" id="out-or">salida <b>0</b></span>
+  </div>
+  <p class="gate-sub">Ahora los interruptores no se estorban: cada uno tiene su propia ruta hacia la lámpara. Con que uno se cierre, hay paso. Cerrar los dos no ilumina más — la corriente ya llegaba, y por eso <span class="m">1 ∨ 1 = 1</span> y no 2. Ahí se ve por qué la disyunción se parece a una suma pero no lo es.</p>
+
+  <div class="layers">
+    <div class="layer">
+      <h3><b>Nivel 1</b> · interruptores en paralelo</h3>
+      <p class="cap">Dos apagadores para la misma luz, como los de una escalera con acceso arriba y abajo.</p>
+      <svg viewBox="0 0 360 150" role="img" aria-label="Dos interruptores en paralelo alimentando una lámpara">
+        <line class="rail" x1="24" y1="58" x2="24" y2="94"/>
+        <line class="rail" x1="16" y1="66" x2="32" y2="66"/><line class="rail" x1="19" y1="86" x2="29" y2="86"/>
+        <text class="glabel" x="10" y="114">V<tspan dy="2">DD</tspan></text>
+        <path class="wire" id="o-w0" d="M24 58 L24 40 L74 40 M74 40 L74 18 L104 18 M74 40 L74 62 L104 62"/>
+        <line class="lever" id="o-lev-p" x1="104" y1="18" x2="148" y2="18"/>
+        <circle class="node" id="o-n1" cx="104" cy="18" r="3.5"/>
+        <circle class="node" id="o-n2" cx="152" cy="18" r="3.5"/>
+        <text class="glabel" x="118" y="10">p</text>
+        <line class="lever" id="o-lev-q" x1="104" y1="62" x2="148" y2="62"/>
+        <circle class="node" id="o-n3" cx="104" cy="62" r="3.5"/>
+        <circle class="node" id="o-n4" cx="152" cy="62" r="3.5"/>
+        <text class="glabel" x="118" y="80">q</text>
+        <path class="wire" id="o-wp" d="M152 18 L214 18 L214 40"/>
+        <path class="wire" id="o-wq" d="M152 62 L214 62 L214 40"/>
+        <path class="wire" id="o-wo" d="M214 40 L300 40 L300 56"/>
+        <circle class="halo" id="o-halo" cx="300" cy="74" r="30"/>
+        <circle class="bulb" id="o-bulb" cx="300" cy="74" r="17"/>
+        <path class="wire" d="M300 92 L300 122 L24 122 L24 94" stroke="#394454"/>
+      </svg>
+    </div>
+
+    <div class="layer">
+      <h3><b>Nivel 2</b> · CMOS real</h3>
+      <p class="cap">La puerta natural aquí es la NOR: los PMOS van en serie y los NMOS en paralelo — el espejo exacto de la NAND. De Morgan, fundido en silicio.</p>
+      <svg viewBox="0 0 360 200" role="img" aria-label="Esquema CMOS de una NOR seguida de un inversor">
+        <line class="rail" x1="30" y1="20" x2="210" y2="20"/>
+        <text class="glabel" x="30" y="13">V<tspan dy="2">DD</tspan></text>
+        <line class="rail" x1="30" y1="186" x2="210" y2="186"/>
+        <text class="glabel" x="30" y="198">GND</text>
+        <!-- PMOS en serie -->
+        <rect class="slab" id="d-p1" x="96" y="32" width="46" height="24" rx="2"/>
+        <text class="glabel" x="106" y="48">P·p</text>
+        <rect class="slab" id="d-p2" x="96" y="66" width="46" height="24" rx="2"/>
+        <text class="glabel" x="106" y="82">P·q</text>
+        <path class="wire" d="M119 20 L119 32" stroke="#4d5b70"/>
+        <path class="wire" id="d-up1" d="M119 56 L119 66"/>
+        <path class="wire" id="d-up2" d="M119 90 L119 112"/>
+        <!-- NMOS en paralelo -->
+        <rect class="slab" id="d-n1" x="60" y="132" width="46" height="24" rx="2"/>
+        <text class="glabel" x="70" y="148">N·p</text>
+        <rect class="slab" id="d-n2" x="132" y="132" width="46" height="24" rx="2"/>
+        <text class="glabel" x="142" y="148">N·q</text>
+        <path class="wire" id="d-dn1" d="M83 132 L83 112 L155 112 L155 132"/>
+        <path class="wire" d="M83 156 L83 186 M155 156 L155 186" stroke="#4d5b70"/>
+        <circle class="node" id="d-node" cx="119" cy="112" r="4"/>
+        <text class="glabel" x="196" y="108">nodo</text>
+        <text class="vlabel" id="d-nodeval" x="196" y="124">¬(p∨q) = 1</text>
+        <path class="wire" id="d-toinv" d="M180 112 L246 112"/>
+        <polygon class="slab" id="d-inv" points="252,94 252,130 288,112"/>
+        <circle class="slab" id="d-invb" cx="293" cy="112" r="5"/>
+        <text class="glabel" x="250" y="148">inversor · 2 tr.</text>
+        <path class="wire" id="d-out" d="M298 112 L336 112"/>
+        <text class="vlabel" id="d-outval" x="322" y="102">0</text>
+      </svg>
+      <p class="count">Transistores: <b id="d-count">6</b> — 4 de la NOR + 2 del inversor.</p>
+    </div>
+
+    <div class="layer">
+      <h3><b>Nivel 3</b> · símbolo y tabla</h3>
+      <p class="cap">La punta curva del símbolo distingue la OR de la AND a simple vista.</p>
+      <svg viewBox="0 0 200 92" role="img" aria-label="Símbolo de la compuerta OR">
+        <path class="wire" id="s-or-a" d="M10 32 L56 32"/>
+        <path class="wire" id="s-or-b" d="M10 60 L56 60"/>
+        <path class="slab" id="s-or-body" d="M50 18 Q76 46 50 74 Q96 74 122 46 Q96 18 50 18 Z"/>
+        <path class="wire" id="s-or-o" d="M122 46 L176 46"/>
+        <text class="glabel" x="12" y="26">p</text>
+        <text class="glabel" x="12" y="54">q</text>
+        <text class="glabel" x="148" y="38">p ∨ q</text>
+      </svg>
+      <table>
+        <thead><tr><th>p</th><th>q</th><th>p ∨ q</th></tr></thead>
+        <tbody id="tb-or"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= NOT ================= -->
+<section>
+  <div class="gate-head">
+    <span class="gate-op">¬</span>
+    <h2>Negación · el contacto que se abre al activarse</h2>
+    <span class="gate-out" id="out-not">salida <b>1</b></span>
+  </div>
+  <p class="gate-sub">La negación es distinta de las otras dos: no combina, transforma. Y necesita algo que las anteriores no: un elemento que <em>reaccione</em> a una señal — un relevador, un transistor. Un cable no puede negar nada. Aquí la bobina de <span class="m">p</span>, al energizarse, tira del contacto y lo abre: la lámpara se apaga justo cuando la entrada sube.</p>
+
+  <div class="layers">
+    <div class="layer">
+      <h3><b>Nivel 1</b> · relevador normalmente cerrado</h3>
+      <p class="cap">En reposo el contacto está cerrado y la lámpara encendida. Activar p la apaga.</p>
+      <svg viewBox="0 0 360 160" role="img" aria-label="Relevador de contacto normalmente cerrado">
+        <line class="rail" x1="24" y1="52" x2="24" y2="88"/>
+        <line class="rail" x1="16" y1="60" x2="32" y2="60"/><line class="rail" x1="19" y1="80" x2="29" y2="80"/>
+        <text class="glabel" x="10" y="108">V<tspan dy="2">DD</tspan></text>
+        <path class="wire" id="n-w1" d="M24 52 L24 32 L112 32"/>
+        <line class="lever" id="n-lev" x1="112" y1="32" x2="164" y2="32"/>
+        <circle class="node" id="n-n1" cx="112" cy="32" r="3.5"/>
+        <circle class="node" id="n-n2" cx="168" cy="32" r="3.5"/>
+        <path class="wire" id="n-w2" d="M168 32 L300 32 L300 50"/>
+        <circle class="halo" id="n-halo" cx="300" cy="68" r="30"/>
+        <circle class="bulb" id="n-bulb" cx="300" cy="68" r="17"/>
+        <path class="wire" d="M300 86 L300 128 L24 128 L24 88" stroke="#394454"/>
+        <!-- bobina -->
+        <line x1="140" y1="36" x2="140" y2="76" stroke="#4d5b70" stroke-width="1.4" stroke-dasharray="3 3"/>
+        <rect class="slab" id="n-coil" x="112" y="76" width="56" height="26" rx="2"/>
+        <text class="glabel" x="126" y="93">bobina p</text>
+        <text class="glabel" x="112" y="120">activarla abre el contacto</text>
+      </svg>
+    </div>
+
+    <div class="layer">
+      <h3><b>Nivel 2</b> · CMOS real</h3>
+      <p class="cap">El inversor: dos transistores complementarios. Cuando uno conduce el otro corta, siempre. Nunca hay camino directo de V<sub>DD</sub> a tierra — por eso casi no consume energía en reposo.</p>
+      <svg viewBox="0 0 300 200" role="img" aria-label="Inversor CMOS de dos transistores">
+        <line class="rail" x1="70" y1="24" x2="230" y2="24"/>
+        <text class="glabel" x="70" y="16">V<tspan dy="2">DD</tspan></text>
+        <line class="rail" x1="70" y1="180" x2="230" y2="180"/>
+        <text class="glabel" x="70" y="194">GND</text>
+        <rect class="slab" id="i-p" x="127" y="46" width="52" height="28" rx="2"/>
+        <text class="glabel" x="137" y="64">PMOS</text>
+        <rect class="slab" id="i-n" x="127" y="128" width="52" height="28" rx="2"/>
+        <text class="glabel" x="137" y="146">NMOS</text>
+        <path class="wire" d="M153 24 L153 46" stroke="#4d5b70"/>
+        <path class="wire" d="M153 156 L153 180" stroke="#4d5b70"/>
+        <path class="wire" id="i-up" d="M153 74 L153 101"/>
+        <path class="wire" id="i-dn" d="M153 101 L153 128"/>
+        <circle class="node" id="i-node" cx="153" cy="101" r="4"/>
+        <path class="wire" id="i-in" d="M40 101 L127 101" stroke-dasharray="4 4"/>
+        <text class="glabel" x="42" y="94">p (compuertas)</text>
+        <path class="wire" id="i-out" d="M153 101 L268 101"/>
+        <text class="vlabel" id="i-outval" x="252" y="92">1</text>
+        <text class="glabel" x="228" y="118">¬p</text>
+      </svg>
+      <p class="count">Transistores: <b>2</b> — la puerta más barata que existe.</p>
+    </div>
+
+    <div class="layer">
+      <h3><b>Nivel 3</b> · símbolo y tabla</h3>
+      <p class="cap">El circulito en la punta es la negación. Aparece pegado a otras puertas para formar NAND y NOR.</p>
+      <svg viewBox="0 0 200 92" role="img" aria-label="Símbolo del inversor">
+        <path class="wire" id="s-not-a" d="M14 46 L58 46"/>
+        <polygon class="slab" id="s-not-body" points="58,22 58,70 106,46"/>
+        <circle class="slab" id="s-not-b" cx="112" cy="46" r="6"/>
+        <path class="wire" id="s-not-o" d="M118 46 L176 46"/>
+        <text class="glabel" x="16" y="40">p</text>
+        <text class="glabel" x="148" y="38">¬p</text>
+      </svg>
+      <table>
+        <thead><tr><th>p</th><th>¬p</th></tr></thead>
+        <tbody id="tb-not"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LECTURA ================= -->
+<section>
+  <p class="eyebrow">Lo que acabas de ver</p>
+  <h2>Tres hechos que el circuito enseña y la tabla esconde</h2>
+  <div class="pair-note">
+    <div>
+      <span class="tag">Serie y paralelo</span>
+      <h3>La dualidad ∧ / ∨ es una dualidad topológica</h3>
+      <p>En el primer documento, las diez reglas venían en pares duales. Aquí se ve de dónde sale esa simetría: intercambiar ∧ por ∨ es intercambiar “en fila” por “en paralelo”. Son las dos únicas formas de conectar dos cosas.</p>
+    </div>
+    <div>
+      <span class="tag">Costo asimétrico</span>
+      <h3>Negar es barato; afirmar, caro</h3>
+      <p>CMOS solo produce puertas invertidas de forma natural: NAND y NOR cuestan 4 transistores, y AND y OR cuestan 6 porque hay que deshacer la inversión. En el álgebra las cuatro son igual de simples; en el silicio no.</p>
+    </div>
+    <div>
+      <span class="tag">Completitud funcional</span>
+      <h3>Con la NAND sola alcanza</h3>
+      <p>De <span class="m">¬p = p NAND p</span> y <span class="m">p ∧ q = ¬(p NAND q)</span> se obtiene todo lo demás. Un chip entero puede fabricarse con una sola pieza repetida — y de hecho así se hace.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">El enunciado exacto</p>
+  <h2>Por qué esto no es una analogía</h2>
+  <p class="sub">Un circuito combinacional de k entradas define una función <span class="m">{0,1}ᵏ → {0,1}</span>. El conjunto de todas esas funciones, con las operaciones puerta a puerta, es un álgebra de Boole finita con <span class="m">2^(2ᵏ)</span> elementos: la misma ℘(Y) con la que trabajaron las dos páginas anteriores, tomando Y como las 2ᵏ combinaciones de entrada.</p>
+
+  <p class="finale">Φ/∼ &nbsp;<span class="c">≅</span>&nbsp; ℘(X) &nbsp;<span class="c">≅</span>&nbsp; circuitos combinacionales de n entradas</p>
+
+  <p class="sub">Con dos variables, eso son 16 circuitos esencialmente distintos — ni uno más. Cualquier maraña de compuertas con dos entradas que armes, por enredada que sea, es equivalente a una de esas 16. El isomorfismo no permite que exista una decimoséptima.</p>
+
+  <div class="pair-note">
+    <div>
+      <span class="tag">La letra chica</span>
+      <h3>Solo vale para la parte sin memoria</h3>
+      <p>Todo lo de esta página es combinacional: la salida depende únicamente de las entradas actuales. La ALU, los multiplexores y los decodificadores viven aquí. Registros, caché, RAM y contador de programa no: tienen estado, y una fórmula lógica no tiene forma de recordar nada.</p>
+    </div>
+    <div>
+      <span class="tag">El siguiente escalón</span>
+      <h3>Cerrar el lazo cambia de categoría</h3>
+      <p>Basta realimentar la salida de estas mismas puertas hacia su entrada para obtener un biestable, y con él una máquina de estados finita. Ese lazo es la frontera: del otro lado ya no hay álgebra de Boole, hay autómatas.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>El álgebra no describe el circuito: el circuito <em>es</em> una realización del álgebra. Cambiar de cobre a silicio, o a relevadores, o a chorros de agua en tubos, no cambia el objeto matemático — solo el material en el que se le pide que aparezca.</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var p = false, q = false;
+
+  var $  = function(id){ return document.getElementById(id); };
+  var set = function(id, on, cls){
+    var el = $(id); if(!el) return;
+    el.classList.toggle(cls || 'hot', !!on);
+  };
+
+  // --- tablas ---
+  function buildTable(tb, rows){
+    rows.forEach(function(r){
+      var tr = document.createElement('tr');
+      tr.dataset.key = r.key;
+      tr.innerHTML = r.cells.map(function(c,i){
+        return '<td'+(i === r.cells.length-1 ? ' class="res"' : '')+'>'+c+'</td>';
+      }).join('');
+      tb.appendChild(tr);
+    });
+  }
+  buildTable($('tb-and'), [
+    {key:'00', cells:[0,0,0]}, {key:'01', cells:[0,1,0]},
+    {key:'10', cells:[1,0,0]}, {key:'11', cells:[1,1,1]}
+  ]);
+  buildTable($('tb-or'), [
+    {key:'00', cells:[0,0,0]}, {key:'01', cells:[0,1,1]},
+    {key:'10', cells:[1,0,1]}, {key:'11', cells:[1,1,1]}
+  ]);
+  buildTable($('tb-not'), [
+    {key:'0', cells:[0,1]}, {key:'1', cells:[1,0]}
+  ]);
+
+  function liveRow(tb, key){
+    tb.querySelectorAll('tr').forEach(function(tr){
+      tr.classList.toggle('live', tr.dataset.key === key);
+    });
+  }
+
+  function flow(id, on){
+    var el = $(id); if(!el) return;
+    el.classList.toggle('hot', !!on);
+    el.classList.toggle('flow', !!on);
+  }
+
+  function update(){
+    var AND = p && q, OR = p || q, NOT = !p;
+
+    // consola
+    $('sw-p').setAttribute('aria-pressed', String(p));
+    $('sw-q').setAttribute('aria-pressed', String(q));
+    $('sw-p').querySelector('.state').textContent = p ? '1' : '0';
+    $('sw-q').querySelector('.state').textContent = q ? '1' : '0';
+
+    // cabeceras
+    [['out-and',AND],['out-or',OR],['out-not',NOT]].forEach(function(pair){
+      var el = $(pair[0]);
+      el.classList.toggle('on', pair[1]);
+      el.innerHTML = 'salida <b>' + (pair[1] ? 1 : 0) + '</b>';
+    });
+
+    // ---- AND, interruptores en serie ----
+    flow('a-w1', true);
+    set('a-n1', true); set('a-lev-p', p); set('a-n2', p);
+    flow('a-w2', p);
+    set('a-n3', p); set('a-lev-q', AND); set('a-n4', AND);
+    flow('a-w3', AND);
+    $('a-bulb').classList.toggle('on', AND);
+    $('a-halo').classList.toggle('on', AND);
+    // palancas: abiertas se levantan
+    $('a-lev-p').setAttribute('y2', p ? 34 : 16);
+    $('a-lev-q').setAttribute('y2', q ? 34 : 16);
+
+    // ---- AND, CMOS (NAND + inversor) ----
+    set('c-p1', !p, 'conduct'); set('c-p2', !q, 'conduct');
+    set('c-n1', p, 'conduct');  set('c-n2', q, 'conduct');
+    var nand = !(p && q);
+    flow('c-up1', nand); flow('c-mid', nand);
+    flow('c-dn1', p && q); set('c-node', true);
+    flow('c-toinv', nand); flow('c-out', AND);
+    set('c-inv', true, 'conduct'); set('c-invb', true, 'conduct');
+    $('c-nodeval').textContent = '¬(p∧q) = ' + (nand ? 1 : 0);
+    $('c-nodeval').classList.toggle('one', nand);
+    $('c-outval').textContent = AND ? '1' : '0';
+    $('c-outval').classList.toggle('one', AND);
+    set('s-and-a', p); set('s-and-b', q); set('s-and-o', AND);
+    set('s-and-body', AND, 'conduct');
+    liveRow($('tb-and'), (p?1:0) + '' + (q?1:0));
+
+    // ---- OR, interruptores en paralelo ----
+    flow('o-w0', true);
+    set('o-n1', true); set('o-n3', true);
+    set('o-lev-p', p); set('o-n2', p);
+    set('o-lev-q', q); set('o-n4', q);
+    flow('o-wp', p); flow('o-wq', q); flow('o-wo', OR);
+    $('o-bulb').classList.toggle('on', OR);
+    $('o-halo').classList.toggle('on', OR);
+    $('o-lev-p').setAttribute('y2', p ? 18 : 2);
+    $('o-lev-q').setAttribute('y2', q ? 62 : 46);
+
+    // ---- OR, CMOS (NOR + inversor) ----
+    var nor = !(p || q);
+    set('d-p1', !p, 'conduct'); set('d-p2', !q, 'conduct');
+    set('d-n1', p, 'conduct');  set('d-n2', q, 'conduct');
+    flow('d-up1', !p); flow('d-up2', nor);
+    flow('d-dn1', p || q); set('d-node', true);
+    flow('d-toinv', nor); flow('d-out', OR);
+    set('d-inv', true, 'conduct'); set('d-invb', true, 'conduct');
+    $('d-nodeval').textContent = '¬(p∨q) = ' + (nor ? 1 : 0);
+    $('d-nodeval').classList.toggle('one', nor);
+    $('d-outval').textContent = OR ? '1' : '0';
+    $('d-outval').classList.toggle('one', OR);
+    set('s-or-a', p); set('s-or-b', q); set('s-or-o', OR);
+    set('s-or-body', OR, 'conduct');
+    liveRow($('tb-or'), (p?1:0) + '' + (q?1:0));
+
+    // ---- NOT, relevador ----
+    flow('n-w1', true);
+    set('n-n1', true); set('n-lev', NOT); set('n-n2', NOT);
+    flow('n-w2', NOT);
+    $('n-bulb').classList.toggle('on', NOT);
+    $('n-halo').classList.toggle('on', NOT);
+    $('n-lev').setAttribute('y2', p ? 14 : 32);
+    set('n-coil', p, 'conduct');
+
+    // ---- NOT, inversor CMOS ----
+    set('i-p', !p, 'conduct'); set('i-n', p, 'conduct');
+    flow('i-up', !p); flow('i-dn', p);
+    set('i-node', true); flow('i-out', NOT); set('i-in', p);
+    $('i-outval').textContent = NOT ? '1' : '0';
+    $('i-outval').classList.toggle('one', NOT);
+    set('s-not-a', p); set('s-not-o', NOT);
+    set('s-not-body', true, 'conduct'); set('s-not-b', true, 'conduct');
+    liveRow($('tb-not'), p ? '1' : '0');
+  }
+
+  $('sw-p').addEventListener('click', function(){ p = !p; update(); });
+  $('sw-q').addEventListener('click', function(){ q = !q; update(); });
+  update();
+})();
+</script>
+
+</body>
+</html>

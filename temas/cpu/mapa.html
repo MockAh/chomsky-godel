@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radiografía de una computadora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --plate:      #0A1E31;
+    --plate-deep: #071827;
+    --panel:      #0F2B42;
+    --rule:       #1C3D5A;
+    --rule-soft:  #16334C;
+    --comb:       #7BE6DC;
+    --comb-dim:   #2C6E70;
+    --comb-fill:  rgba(123,230,220,.10);
+    --state:      #F2B441;
+    --state-dim:  #7A5A21;
+    --state-fill: rgba(242,180,65,.10);
+    --ink:        #DDEAF4;
+    --ink-soft:   #90AFC7;
+    --ink-faint:  #5F809A;
+  }
+
+  *{box-sizing:border-box}
+
+  html{ -webkit-text-size-adjust:100%; }
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(1100px 700px at 50% -10%, #123A55 0%, transparent 60%),
+      var(--plate);
+    color:var(--ink);
+    font-family:"IBM Plex Serif",Georgia,serif;
+    font-size:16px;
+    line-height:1.65;
+    padding:0 0 96px;
+  }
+
+  /* hairline grid: the light-box the plate sits on */
+  .plate-grid{
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      linear-gradient(to right, var(--rule-soft) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--rule-soft) 1px, transparent 1px);
+    background-size:64px 64px;
+    opacity:.30;
+    mask-image:radial-gradient(1000px 800px at 50% 20%, #000 0%, transparent 78%);
+    -webkit-mask-image:radial-gradient(1000px 800px at 50% 20%, #000 0%, transparent 78%);
+  }
+
+  .wrap{position:relative; z-index:1; max-width:1120px; margin:0 auto; padding:0 24px}
+
+  /* ---------- header ---------- */
+  header{padding:76px 0 40px; border-bottom:1px solid var(--rule)}
+
+  .eyebrow{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11.5px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--ink-faint); margin:0 0 20px;
+    display:flex; gap:14px; align-items:center; flex-wrap:wrap;
+  }
+  .eyebrow span:not(:last-child)::after{content:" ／"; color:var(--rule)}
+
+  h1{
+    font-family:"IBM Plex Sans Condensed",sans-serif;
+    font-weight:700; font-size:clamp(2.6rem,7.2vw,4.6rem);
+    line-height:.96; letter-spacing:-.02em; margin:0 0 22px;
+  }
+  h1 em{font-style:normal; color:var(--comb)}
+
+  .standfirst{
+    font-size:clamp(1rem,2.2vw,1.16rem); color:var(--ink-soft);
+    max-width:62ch; margin:0 0 34px;
+  }
+  .standfirst b{color:var(--ink); font-weight:500}
+
+  /* ---------- legend: the colour code IS the argument ---------- */
+  .legend{display:grid; grid-template-columns:1fr 1fr; gap:18px; max-width:760px}
+  .legend-item{
+    border-left:2px solid var(--rule); padding:2px 0 2px 16px;
+  }
+  .legend-item.is-comb{border-left-color:var(--comb)}
+  .legend-item.is-state{border-left-color:var(--state)}
+  .legend-key{
+    font-family:"IBM Plex Mono",monospace; font-size:11.5px;
+    letter-spacing:.16em; text-transform:uppercase; margin-bottom:5px;
+  }
+  .is-comb .legend-key{color:var(--comb)}
+  .is-state .legend-key{color:var(--state)}
+  .legend-item p{margin:0; font-size:14.5px; color:var(--ink-soft); line-height:1.5}
+
+  /* ---------- controls ---------- */
+  .controls{
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    padding:26px 0 20px;
+  }
+  button.ctl{
+    font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--ink-soft);
+    background:transparent; border:1px solid var(--rule);
+    padding:9px 15px; border-radius:2px; cursor:pointer;
+    transition:color .18s, border-color .18s, background .18s;
+  }
+  button.ctl:hover{color:var(--ink); border-color:var(--ink-faint)}
+  button.ctl:focus-visible{outline:2px solid var(--comb); outline-offset:2px}
+  button.ctl[aria-pressed="true"]{
+    color:var(--plate-deep); background:var(--comb); border-color:var(--comb); font-weight:600;
+  }
+  .ctl-hint{
+    font-family:"IBM Plex Mono",monospace; font-size:11.5px;
+    color:var(--ink-faint); margin-left:auto;
+  }
+
+  /* ---------- the plate ---------- */
+  .scroller{overflow-x:auto; overflow-y:hidden; padding-bottom:6px}
+  .plate{
+    min-width:880px;
+    background:linear-gradient(180deg,#0C2436 0%,#0A1E31 100%);
+    border:1px solid var(--rule);
+    border-radius:3px;
+    position:relative;
+  }
+  svg.diagram{display:block; width:100%; height:auto}
+
+  /* revealing sweep on load */
+  .sweep{
+    position:absolute; inset:0; pointer-events:none; border-radius:3px; overflow:hidden;
+  }
+  .sweep::after{
+    content:""; position:absolute; top:0; bottom:0; width:38%;
+    background:linear-gradient(90deg,transparent,rgba(123,230,220,.14),transparent);
+    transform:translateX(-120%);
+    animation:sweep 1.5s cubic-bezier(.4,0,.2,1) .25s 1 forwards;
+  }
+  @keyframes sweep{to{transform:translateX(360%)}}
+
+  /* svg block styling */
+  .blk{cursor:pointer}
+  .blk rect, .blk polygon, .blk path.body{
+    transition:fill .2s, stroke .2s, filter .2s;
+  }
+  .blk .body{stroke-width:1.4}
+  .blk.comb .body{fill:var(--comb-fill); stroke:var(--comb)}
+  .blk.state .body{fill:var(--state-fill); stroke:var(--state)}
+  .blk .lbl{
+    font-family:"IBM Plex Sans Condensed",sans-serif; font-weight:600;
+    font-size:13.5px; fill:var(--ink); pointer-events:none;
+  }
+  .blk .sub{
+    font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.1em;
+    pointer-events:none;
+  }
+  .blk.comb .sub{fill:var(--comb-dim)}
+  .blk.state .sub{fill:var(--state-dim)}
+  .blk:hover .body, .blk:focus-visible .body{filter:brightness(1.55)}
+  .blk:focus-visible{outline:none}
+  .blk:focus-visible .body{stroke-width:2.6}
+  .blk.selected .body{stroke-width:2.8; filter:brightness(1.6)}
+
+  /* the four the brief asks to foreground */
+  .halo{fill:none; stroke:var(--comb); stroke-width:1; opacity:0; stroke-dasharray:3 4;
+        transition:opacity .3s}
+  .blk.starred .halo{opacity:.5}
+  .blk.starred:hover .halo, .blk.starred.selected .halo{opacity:1}
+
+  .wire{stroke:var(--ink-faint); stroke-width:1.2; fill:none; opacity:.62}
+  .wire.ctrl-wire{stroke:var(--comb); stroke-dasharray:2 5; opacity:.45}
+  .tick{font-family:"IBM Plex Mono",monospace; font-size:9px; fill:var(--ink-faint);
+        letter-spacing:.08em}
+
+  /* dim mode: keep only the fragment isomorphic to L-T */
+  .diagram.only-comb .blk.state{opacity:.14}
+  .diagram.only-comb .wire{opacity:.16}
+  .diagram.only-comb .blk.state{transition:opacity .4s}
+
+  /* travelling signal */
+  #pulse{opacity:0}
+  #pulse.run{opacity:1}
+
+  /* ---------- detail panel ---------- */
+  .detail{
+    margin-top:-1px;
+    border:1px solid var(--rule); border-radius:0 0 3px 3px;
+    background:var(--panel);
+    padding:24px 26px 26px;
+    min-height:186px;
+  }
+  .detail-head{display:flex; gap:14px; align-items:baseline; flex-wrap:wrap; margin-bottom:4px}
+  .detail-name{
+    font-family:"IBM Plex Sans Condensed",sans-serif; font-weight:700;
+    font-size:1.5rem; letter-spacing:-.01em; margin:0;
+  }
+  .chip{
+    font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.16em;
+    text-transform:uppercase; padding:3px 9px; border-radius:2px; border:1px solid;
+  }
+  .chip.comb{color:var(--comb); border-color:var(--comb-dim); background:var(--comb-fill)}
+  .chip.state{color:var(--state); border-color:var(--state-dim); background:var(--state-fill)}
+  .detail p{margin:12px 0 0; max-width:70ch}
+  .detail .why{
+    margin-top:16px; padding-top:14px; border-top:1px solid var(--rule);
+    font-family:"IBM Plex Mono",monospace; font-size:13px; line-height:1.6;
+    color:var(--ink-soft);
+  }
+  .detail .why b{color:var(--ink); font-weight:500}
+
+  /* ---------- closing note ---------- */
+  .closer{margin-top:64px; padding-top:40px; border-top:1px solid var(--rule)}
+  .closer h2{
+    font-family:"IBM Plex Sans Condensed",sans-serif; font-weight:700;
+    font-size:clamp(1.5rem,3.4vw,2.1rem); letter-spacing:-.01em; margin:0 0 18px;
+  }
+  .closer p{color:var(--ink-soft); max-width:68ch}
+  .closer p b{color:var(--ink); font-weight:500}
+  .formula{
+    font-family:"IBM Plex Mono",monospace; font-size:14px; color:var(--comb);
+    background:var(--comb-fill); border:1px solid var(--comb-dim);
+    padding:16px 18px; border-radius:2px; margin:24px 0; display:block;
+    overflow-x:auto; white-space:nowrap;
+  }
+  .caveat{
+    font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--state);
+    border-left:2px solid var(--state); padding-left:16px; margin-top:26px; max-width:66ch;
+    line-height:1.65;
+  }
+
+  @media (max-width:720px){
+    header{padding:48px 0 30px}
+    .legend{grid-template-columns:1fr; gap:14px}
+    .ctl-hint{margin-left:0; width:100%}
+    .wrap{padding:0 16px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important; transition:none !important}
+    .sweep{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="plate-grid" aria-hidden="true"></div>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow"><span>Placa 01</span><span>Camino de datos</span><span>Un ciclo de reloj</span></p>
+  <h1>Radiografía de<br>una <em>computadora</em></h1>
+  <p class="standfirst">
+    Vista por dentro, una computadora se separa en dos tejidos distintos. Uno <b>calcula</b> y
+    no recuerda nada: su salida depende sólo de lo que entra ahora. El otro <b>recuerda</b>
+    y no calcula: sostiene el resultado hasta el siguiente pulso del reloj. Toda la máquina
+    es el ir y venir entre ambos. Este color code es la radiografía.
+  </p>
+
+  <div class="legend">
+    <div class="legend-item is-comb">
+      <div class="legend-key">Tejido combinacional</div>
+      <p>Sin memoria. Mismas entradas, misma salida, siempre. Es un álgebra de Boole,
+         y por tanto una fórmula de la lógica proposicional.</p>
+    </div>
+    <div class="legend-item is-state">
+      <div class="legend-key">Tejido con estado</div>
+      <p>Recuerda. La salida depende de la historia, no de las entradas actuales.
+         Queda fuera del álgebra: ninguna fórmula lo describe.</p>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <button class="ctl" id="btn-pulse" type="button">▷ Lanzar un ciclo de reloj</button>
+  <button class="ctl" id="btn-only" type="button" aria-pressed="false">Aislar lo combinacional</button>
+  <span class="ctl-hint">Toca cualquier bloque para abrirlo</span>
+</div>
+
+<div class="scroller">
+  <div class="plate">
+    <div class="sweep" aria-hidden="true"></div>
+    <svg class="diagram" id="diagram" viewBox="0 0 1000 560" role="img"
+         aria-label="Diagrama del camino de datos de un procesador, con bloques combinacionales y bloques con estado">
+
+      <!-- ============ wires ============ -->
+      <g id="wires">
+        <!-- PC -> instruction memory -->
+        <path class="wire" d="M104 270 H150"/>
+        <!-- PC -> adder -->
+        <path class="wire" d="M78 240 V150 H92"/>
+        <!-- adder -> back to PC (feedback, drawn around the left) -->
+        <path class="wire" d="M162 150 H186 V96 H24 V270 H50"/>
+        <!-- imem -> decoder -->
+        <path class="wire" d="M270 260 H300"/>
+        <!-- decoder -> control unit -->
+        <path class="wire ctrl-wire" d="M350 210 V150 H392"/>
+        <!-- decoder -> register file -->
+        <path class="wire" d="M400 260 H436"/>
+        <!-- control unit fan-out -->
+        <path class="wire ctrl-wire" d="M540 150 H600 V236"/>
+        <path class="wire ctrl-wire" d="M540 162 H676 V216"/>
+        <path class="wire ctrl-wire" d="M540 174 H944 V236"/>
+        <!-- regfile -> mux A -->
+        <path class="wire" d="M556 244 H592"/>
+        <!-- regfile -> alu direct (second operand path) -->
+        <path class="wire" d="M556 290 H610 V286 H648"/>
+        <!-- mux A -> alu -->
+        <path class="wire" d="M622 262 H648"/>
+        <!-- alu -> data memory -->
+        <path class="wire" d="M760 268 H802"/>
+        <!-- alu -> mux writeback (bypass) -->
+        <path class="wire" d="M776 268 V352 H944 V286"/>
+        <!-- dmem -> mux writeback -->
+        <path class="wire" d="M906 262 H942"/>
+        <!-- mux writeback -> back to register file -->
+        <path class="wire" d="M958 300 V418 H496 V326"/>
+        <text class="tick" x="700" y="410">escritura de vuelta al banco de registros</text>
+
+        <!-- clock rail -->
+        <path class="wire" d="M24 486 H976" style="opacity:.3"/>
+      </g>
+
+      <!-- ============ blocks ============ -->
+
+      <!-- PC -->
+      <g class="blk state" data-id="pc" tabindex="0" role="button" aria-label="Contador de programa">
+        <rect class="body" x="50" y="240" width="54" height="60" rx="2"/>
+        <text class="lbl" x="77" y="266" text-anchor="middle">PC</text>
+        <text class="sub" x="77" y="282" text-anchor="middle">ESTADO</text>
+      </g>
+
+      <!-- adder +4 -->
+      <g class="blk comb" data-id="add4" tabindex="0" role="button" aria-label="Sumador más cuatro">
+        <rect class="body" x="92" y="126" width="70" height="48" rx="2"/>
+        <text class="lbl" x="127" y="150" text-anchor="middle">+4</text>
+        <text class="sub" x="127" y="165" text-anchor="middle">SUMADOR</text>
+      </g>
+
+      <!-- instruction memory -->
+      <g class="blk state" data-id="imem" tabindex="0" role="button" aria-label="Memoria de instrucciones">
+        <rect class="body" x="150" y="216" width="120" height="96" rx="2"/>
+        <text class="lbl" x="210" y="256" text-anchor="middle">Memoria de</text>
+        <text class="lbl" x="210" y="273" text-anchor="middle">instrucciones</text>
+        <text class="sub" x="210" y="292" text-anchor="middle">ESTADO</text>
+      </g>
+
+      <!-- decoder -->
+      <g class="blk comb starred" data-id="dec" tabindex="0" role="button" aria-label="Decodificador de instrucciones">
+        <rect class="halo" x="294" y="210" width="112" height="108" rx="4"/>
+        <rect class="body" x="300" y="216" width="100" height="96" rx="2"/>
+        <text class="lbl" x="350" y="258" text-anchor="middle">Decodifi-</text>
+        <text class="lbl" x="350" y="275" text-anchor="middle">cador</text>
+        <text class="sub" x="350" y="294" text-anchor="middle">COMBINACIONAL</text>
+      </g>
+
+      <!-- control unit -->
+      <g class="blk comb starred" data-id="ctrl" tabindex="0" role="button" aria-label="Lógica de control">
+        <rect class="halo" x="386" y="112" width="160" height="76" rx="4"/>
+        <rect class="body" x="392" y="118" width="148" height="64" rx="2"/>
+        <text class="lbl" x="466" y="146" text-anchor="middle">Lógica de control</text>
+        <text class="sub" x="466" y="164" text-anchor="middle">COMBINACIONAL</text>
+      </g>
+
+      <!-- register file -->
+      <g class="blk state" data-id="regs" tabindex="0" role="button" aria-label="Banco de registros">
+        <rect class="body" x="436" y="206" width="120" height="120" rx="2"/>
+        <text class="lbl" x="496" y="256" text-anchor="middle">Banco de</text>
+        <text class="lbl" x="496" y="273" text-anchor="middle">registros</text>
+        <text class="sub" x="496" y="292" text-anchor="middle">ESTADO</text>
+      </g>
+
+      <!-- mux A -->
+      <g class="blk comb starred" data-id="muxA" tabindex="0" role="button" aria-label="Multiplexor de operando">
+        <path class="halo" d="M586 208 L626 226 L626 300 L586 318 Z"/>
+        <path class="body" d="M592 214 L620 230 L620 296 L592 312 Z"/>
+        <text class="lbl" x="606" y="268" text-anchor="middle" style="font-size:11px">MUX</text>
+      </g>
+
+      <!-- ALU -->
+      <g class="blk comb starred" data-id="alu" tabindex="0" role="button" aria-label="Unidad aritmético lógica">
+        <path class="halo" d="M642 200 L754 234 L754 266 L754 302 L642 336 L642 284 L662 268 L642 252 Z"/>
+        <path class="body" d="M648 206 L748 238 L748 268 L748 298 L648 330 L648 282 L666 268 L648 254 Z"/>
+        <text class="lbl" x="704" y="264" text-anchor="middle">ALU</text>
+        <text class="sub" x="704" y="280" text-anchor="middle">COMBINACIONAL</text>
+      </g>
+
+      <!-- data memory -->
+      <g class="blk state" data-id="dmem" tabindex="0" role="button" aria-label="Memoria de datos">
+        <rect class="body" x="802" y="216" width="104" height="96" rx="2"/>
+        <text class="lbl" x="854" y="256" text-anchor="middle">Memoria</text>
+        <text class="lbl" x="854" y="273" text-anchor="middle">de datos</text>
+        <text class="sub" x="854" y="292" text-anchor="middle">ESTADO</text>
+      </g>
+
+      <!-- mux writeback -->
+      <g class="blk comb starred" data-id="muxWB" tabindex="0" role="button" aria-label="Multiplexor de escritura">
+        <path class="halo" d="M936 230 L976 248 L976 302 L936 320 Z"/>
+        <path class="body" d="M942 236 L970 252 L970 298 L942 314 Z"/>
+        <text class="lbl" x="956" y="280" text-anchor="middle" style="font-size:11px">MUX</text>
+      </g>
+
+      <!-- clock -->
+      <g class="blk state" data-id="clk" tabindex="0" role="button" aria-label="Reloj">
+        <rect class="body" x="24" y="462" width="120" height="48" rx="2"/>
+        <text class="lbl" x="84" y="486" text-anchor="middle">Reloj</text>
+        <text class="sub" x="84" y="501" text-anchor="middle">SINCRONÍA</text>
+      </g>
+
+      <!-- clock waveform along the rail -->
+      <path d="M160 498 h22 v-24 h22 v24 h22 v-24 h22 v24 h22 v-24 h22 v24 h22 v-24 h22 v24 h22"
+            fill="none" stroke="var(--state)" stroke-width="1.3" opacity=".55"/>
+      <text class="tick" x="418" y="502">cada flanco, los registros capturan lo que la nube acaba de calcular</text>
+
+      <!-- travelling pulse -->
+      <circle id="pulse" r="5" fill="var(--comb)">
+        <animateMotion id="pulseMotion" dur="2.6s" begin="indefinite"
+          path="M77 270 H210 H350 H496 H606 H704 H854 H956 V352 H496 V300"/>
+      </circle>
+      <circle id="pulseGlow" r="11" fill="var(--comb)" opacity="0">
+        <animateMotion dur="2.6s" begin="indefinite"
+          path="M77 270 H210 H350 H496 H606 H704 H854 H956 V352 H496 V300"/>
+      </circle>
+    </svg>
+  </div>
+</div>
+
+<div class="detail" id="detail" aria-live="polite">
+  <div class="detail-head">
+    <h2 class="detail-name" id="d-name">Nueve piezas, dos tejidos</h2>
+    <span class="chip comb" id="d-chip" style="display:none"></span>
+  </div>
+  <p id="d-body">
+    Lo que llamamos «procesador» es este circuito recorrido de izquierda a derecha una vez
+    por ciclo. Los bloques ámbar sostienen valores entre un ciclo y el siguiente; los bloques
+    cian los transforman. Cuatro de ellos —la ALU, los multiplexores, el decodificador y la
+    lógica de control— llevan un contorno punteado: son el corazón calculante de la máquina.
+  </p>
+  <div class="why" id="d-why">
+    <b>Empieza por donde quieras.</b> Cada pieza dice qué hace, de qué tejido es, y por qué
+    esa distinción importa.
+  </div>
+</div>
+
+<section class="closer">
+  <h2>Dónde vive el isomorfismo</h2>
+  <p>
+    Si aíslas el tejido cian, lo que queda no es una simplificación de la computadora: es un
+    objeto matemático cerrado. Los circuitos combinacionales de <b>n</b> entradas forman un
+    álgebra de Boole finita, la misma que forman las fórmulas proposicionales de <b>n</b>
+    variables una vez identificadas las que se demuestran equivalentes.
+  </p>
+  <code class="formula">Φ/~  ≅  ℘(X)  ≅  {funciones booleanas de n entradas}   con |X| = 2ⁿ</code>
+  <p>
+    Leído de izquierda a derecha: fórmulas módulo equivalencia demostrable, conjuntos de
+    valuaciones —las filas verdaderas de una tabla de verdad— y circuitos sin memoria. Tres
+    presentaciones de una sola cosa. Por eso la ALU no <i>imita</i> el razonamiento
+    proposicional: lo <b>realiza</b>.
+  </p>
+  <p class="caveat">
+    El ámbar es el límite. Un registro no es una función booleana de sus entradas, así que no
+    es un elemento de esa álgebra —no es que le falte preimagen: está fuera del planteo. El mapa
+    desde el álgebra hacia la computadora entera es inyectivo como función de conjuntos; sólo al
+    restringir el codominio al tejido combinacional se vuelve isomorfismo.
+  </p>
+</section>
+
+</div>
+
+<script>
+const DATA = {
+  pc: {
+    name:"Contador de programa",
+    kind:"state",
+    body:"Un registro angosto que guarda la dirección de la instrucción que se está ejecutando. En cada flanco del reloj adopta un valor nuevo y lo sostiene hasta el siguiente.",
+    why:"<b>Por qué es estado:</b> si le preguntas «¿qué vale?», la respuesta no depende de ninguna entrada actual, sino de cuántos ciclos han pasado. Es el ejemplo más pequeño de memoria en la máquina."
+  },
+  add4: {
+    name:"Sumador +4",
+    kind:"comb",
+    body:"Toma la dirección actual y le suma el tamaño de una instrucción, para que el contador de programa sepa a dónde ir después. Es un sumador ordinario, construido con compuertas.",
+    why:"<b>Por qué es combinacional:</b> dale la misma dirección mil veces y devolverá mil veces el mismo resultado. No sabe cuántas veces lo llamaste."
+  },
+  imem: {
+    name:"Memoria de instrucciones",
+    kind:"state",
+    body:"Contiene el programa. Recibe una dirección y entrega la instrucción almacenada ahí.",
+    why:"<b>Por qué es estado:</b> su contenido fue escrito antes y persiste. La misma dirección puede dar instrucciones distintas si en el intervalo se cargó otro programa."
+  },
+  dec: {
+    name:"Decodificador",
+    kind:"comb",
+    body:"Recibe el opcode —los bits que dicen qué clase de instrucción es— y lo despliega en las señales que activan cada bloque: qué registros leer, qué operación pedirle a la ALU, si hay que tocar la memoria.",
+    why:"<b>Por qué es combinacional:</b> es una tabla de verdad grande y nada más. El mismo opcode produce siempre el mismo patrón de señales, sin importar qué instrucción vino antes."
+  },
+  ctrl: {
+    name:"Lógica de control",
+    kind:"comb",
+    body:"Decide qué debe hacer el procesador dados el opcode y los indicadores del resultado anterior —si dio cero, si hubo acarreo—. Es la que gobierna los multiplexores y le dice a la ALU qué operación aplicar.",
+    why:"<b>Por qué es combinacional:</b> aunque suene a que «decide», no delibera ni recuerda. Es una función de sus entradas actuales. Lo que parece secuencialidad viene de los registros que la rodean, no de ella."
+  },
+  regs: {
+    name:"Banco de registros",
+    kind:"state",
+    body:"Un puñado de posiciones muy rápidas donde el procesador guarda los valores con los que está trabajando ahora mismo. Se leen al principio del ciclo y se escriben al final.",
+    why:"<b>Por qué es estado:</b> es exactamente el punto donde un ciclo le pasa información al siguiente. La flecha larga que vuelve desde la derecha termina aquí: eso es la máquina recordando."
+  },
+  muxA: {
+    name:"Multiplexor de operando",
+    kind:"comb",
+    body:"Un selector. Tiene varias entradas y unos bits de control que eligen cuál de ellas pasa a la salida. Aquí decide si el segundo operando de la ALU viene de un registro o del valor incrustado en la instrucción.",
+    why:"<b>Por qué es combinacional:</b> es un condicional congelado en cobre. Todo el «si… entonces…» del hardware se construye con estas piezas, y ninguna de ellas recuerda qué eligió la vez anterior."
+  },
+  alu: {
+    name:"ALU · unidad aritmético-lógica",
+    kind:"comb",
+    body:"El bloque que efectivamente calcula: suma, resta, AND, OR, desplazamientos, comparaciones. Recibe dos operandos y un código de operación, y entrega un resultado más algunos indicadores.",
+    why:"<b>Por qué importa:</b> aquí es donde el isomorfismo se vuelve tangible. Cada salida de la ALU es una función booleana de sus entradas, es decir, la clase de equivalencia de alguna fórmula proposicional. La ALU no simula lógica: es lógica, en cobre y silicio."
+  },
+  dmem: {
+    name:"Memoria de datos",
+    kind:"state",
+    body:"La RAM vista desde el procesador. Recibe una dirección y, según la instrucción, devuelve lo guardado ahí o escribe un valor nuevo.",
+    why:"<b>Por qué es estado:</b> leer la misma dirección en dos momentos distintos puede dar cosas distintas. Esa dependencia de la historia es justo lo que ningún álgebra de Boole captura."
+  },
+  muxWB: {
+    name:"Multiplexor de escritura",
+    kind:"comb",
+    body:"El último selector del recorrido: decide si lo que se guarda en el banco de registros es el resultado de la ALU o algo traído de la memoria.",
+    why:"<b>Por qué es combinacional:</b> mismo criterio que el otro multiplexor. Elige, no recuerda. La memoria del sistema está en lo que hay a ambos lados de él, nunca en él."
+  },
+  clk: {
+    name:"Reloj",
+    kind:"state",
+    body:"No calcula ni guarda datos: marca el compás. En cada flanco, todos los registros capturan a la vez lo que la nube combinacional acabó de calcular.",
+    why:"<b>Por qué está en ámbar:</b> es lo que convierte un montón de funciones booleanas en un proceso con antes y después. Sin reloj, la radiografía entera sería una sola fórmula gigante."
+  }
+};
+
+const KIND_LABEL = { comb:"Combinacional · sin memoria", state:"Con estado · recuerda" };
+
+const svg     = document.getElementById('diagram');
+const dName   = document.getElementById('d-name');
+const dBody   = document.getElementById('d-body');
+const dWhy    = document.getElementById('d-why');
+const dChip   = document.getElementById('d-chip');
+let   current = null;
+
+function select(el){
+  const id = el.dataset.id, d = DATA[id];
+  if(!d) return;
+  if(current) current.classList.remove('selected');
+  el.classList.add('selected');
+  current = el;
+
+  dName.textContent = d.name;
+  dBody.textContent = d.body;
+  dWhy.innerHTML    = d.why;
+  dChip.style.display = 'inline-block';
+  dChip.className   = 'chip ' + d.kind;
+  dChip.textContent = KIND_LABEL[d.kind];
+}
+
+svg.querySelectorAll('.blk').forEach(el=>{
+  el.addEventListener('click', ()=>select(el));
+  el.addEventListener('keydown', e=>{
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); select(el); }
+  });
+});
+
+// isolate the combinational tissue
+const btnOnly = document.getElementById('btn-only');
+btnOnly.addEventListener('click', ()=>{
+  const on = btnOnly.getAttribute('aria-pressed') === 'true';
+  btnOnly.setAttribute('aria-pressed', String(!on));
+  svg.classList.toggle('only-comb', !on);
+  btnOnly.textContent = !on ? 'Ver la máquina completa' : 'Aislar lo combinacional';
+});
+
+// one clock cycle
+const btnPulse = document.getElementById('btn-pulse');
+const pulse    = document.getElementById('pulse');
+const glow     = document.getElementById('pulseGlow');
+btnPulse.addEventListener('click', ()=>{
+  pulse.classList.add('run');
+  glow.setAttribute('opacity','.22');
+  svg.querySelectorAll('animateMotion').forEach(m=>m.beginElement());
+  setTimeout(()=>{
+    pulse.classList.remove('run');
+    glow.setAttribute('opacity','0');
+  }, 2600);
+});
+</script>
+</body>
+</html>

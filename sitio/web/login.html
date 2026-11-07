@@ -1,4 +1,53 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>chomsky-godel</title><link rel="icon" href="/estaticos/favicon.svg"></head>
-<body><!-- Página provisional (login): el front real llega en F2. --><p>chomsky-godel · login</p></body></html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>chomsky-godel · Entrar</title>
+<link rel="icon" href="/estaticos/favicon.svg">
+<link rel="stylesheet" href="/estaticos/base.css">
+<link rel="stylesheet" href="/estaticos/login.css">
+<script type="module" src="/estaticos/login.js"></script>
+</head>
+<body>
+<div id="escena" aria-hidden="true"></div>
+
+<div id="hud" class="hud">
+  CLIC EN LA ESFERA PARA ENTRAR<br>
+  <span class="hud-sec">ARRASTRAR: MIRAR · SCROLL: AVANZAR</span>
+</div>
+<div id="coords" class="hud-esquina" aria-hidden="true">
+  <div id="pos">POS: 0.0, 0.0, 9.0</div>
+  <div id="ang">ANG: 0°, 0°</div>
+</div>
+<div id="titulo" class="hud-esquina">CHOMSKY-GODEL</div>
+
+<div id="flechas" aria-hidden="true">
+  <button type="button" id="btn-up" tabindex="-1">↑</button>
+  <button type="button" id="btn-left" tabindex="-1">←</button>
+  <button type="button" id="btn-centro" tabindex="-1" title="Volver al centro">◎</button>
+  <button type="button" id="btn-right" tabindex="-1">→</button>
+  <button type="button" id="btn-down" tabindex="-1">↓</button>
+</div>
+
+<!-- Para teclado y lectores de pantalla: abre el mismo diálogo que la esfera. -->
+<button type="button" id="abrir" class="boton boton-principal salto">Iniciar sesión</button>
+
+<dialog id="credenciales" class="tarjeta" aria-labelledby="titulo-dialogo">
+  <form id="form-login" method="dialog" novalidate>
+    <h1 id="titulo-dialogo">chomsky-godel</h1>
+    <label class="campo"><span>Usuario</span>
+      <input id="correo" name="correo" type="email" autocomplete="username" required maxlength="254" placeholder="correo@ejemplo.org">
+    </label>
+    <label class="campo"><span>Contraseña</span>
+      <input id="contrasena" name="contrasena" type="password" autocomplete="current-password" required maxlength="256">
+    </label>
+    <p id="mensaje" class="mensaje" role="alert"></p>
+    <div class="acciones">
+      <button type="button" id="cancelar" class="boton boton-texto">Volver</button>
+      <button type="submit" id="entrar" class="boton boton-principal">Iniciar sesión</button>
+    </div>
+  </form>
+</dialog>
+</body>
+</html>

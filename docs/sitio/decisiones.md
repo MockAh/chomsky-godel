@@ -15,6 +15,11 @@ Registro de decisiones tomadas al construir el sitio desde las specs v0.2
 | P-8 | No se versionan `docs/bitacoras-estudio/` (perfil y datos personales) ni `docs/notas-altas/` (material en bruto, imágenes de hasta 16 MB). Viven solo en el equipo local; lo que se publique se adapta a `temas/`. | Tomada | 2026-11-07 |
 | P-9 | Secciones de cada tema (las casillas de anotaciones) derivadas de los reportes de cierre de las Fases 0 y 1; ver `sitio/temas.json`. | Tomada | 2026-11-07 |
 | P-10 | `mecanismo-fc-metafora.html` (presupuesto UNAM) queda fuera: no es material de este sitio. | Tomada | 2026-11-07 |
+| P-11 | Estética del sitio: «espacio» oscuro, monoespaciado, cian/magenta/menta, a partir de `docs/notas-diseño/espacio_3d*.html`. No el estilo «Mac 2000s». | Tomada | 2026-11-07 |
+| P-12 | Login = espacio 3D navegable con la esfera al centro; clic en la esfera abre el diálogo de credenciales. Hay botón para teclado, Enter abre el diálogo y sin WebGL el diálogo aparece directo. | Tomada | 2026-11-07 |
+| P-13 | Three.js 0.160.0 se sirve desde el propio sitio (`sitio/web/estaticos/vendor/three-0.160.0/`, licencia MIT incluida), verificado contra la integridad sha512 del registro npm. La CSP del sitio no cambia. | Tomada | 2026-11-07 |
+| P-14 | Contenido inicial: `logica-booleana` (práctica = `15_circuito_A_noB_o_CD`, mapa = `14_compuertas_fisicas`) y `cpu/mapa` = `16_radiografia_computadora`, copiados sin cambios de `notas-altas`. El resto son páginas provisionales. | Tomada | 2026-11-07 |
+| P-15 | `local.py` acepta `--puerto` (el 8080 lo puede usar otro proyecto local). | Tomada | 2026-11-07 |
 
 ## Pendientes conocidos
 

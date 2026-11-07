@@ -1,4 +1,25 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>chomsky-godel</title><link rel="icon" href="/estaticos/favicon.svg"></head>
-<body><!-- Página provisional (tema): el front real llega en F2. --><p>chomsky-godel · tema</p></body></html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>chomsky-godel · Tema</title>
+<link rel="icon" href="/estaticos/favicon.svg">
+<link rel="stylesheet" href="/estaticos/base.css">
+<link rel="stylesheet" href="/estaticos/sitio.css">
+<script type="module" src="/estaticos/tema.js"></script>
+</head>
+<body class="tema">
+<header class="barra">
+  <a class="volver" href="/">‹ Temas</a>
+  <span id="tema-nombre"></span>
+  <div id="pestanas" class="pestanas" role="tablist" aria-label="Contenido del tema"></div>
+  <div class="cuenta">
+    <span id="cuenta-correo"></span>
+    <button type="button" id="cuenta-contrasena" class="boton boton-texto">Cambiar contraseña</button>
+    <button type="button" id="cuenta-salir" class="boton">Salir</button>
+  </div>
+</header>
+<main id="paneles" class="paneles"></main>
+</body>
+</html>

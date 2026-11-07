@@ -40,3 +40,17 @@ def test_sin_documentacion_automatica(cliente):
 
 def test_salud(cliente):
     assert cliente.get("/salud").status_code == 204
+
+
+def test_paginas_solo_cargan_recursos_propios(cliente):
+    """La CSP del sitio no permite scripts ni estilos en línea ni de otros dominios."""
+    import re
+    from servidor.app import DIR_WEB
+    for pagina in DIR_WEB.glob("*.html"):
+        html = pagina.read_text("utf-8")
+        assert not re.search(r"<script(?![^>]*\bsrc=)[^>]*>", html), pagina.name
+        assert "<style" not in html and " style=" not in html, pagina.name
+        for url in re.findall(r'(?:src|href)="([^"]+)"', html):
+            assert url.startswith("/"), (pagina.name, url)
+            if url.startswith("/estaticos/"):
+                assert cliente.get(url).status_code == 200, url
