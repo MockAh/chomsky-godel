@@ -14,12 +14,38 @@
   <a class="volver" href="/">‹ Temas</a>
   <span id="tema-nombre"></span>
   <div id="pestanas" class="pestanas" role="tablist" aria-label="Contenido del tema"></div>
+  <button type="button" id="btn-anotaciones" class="boton" aria-controls="cajon-notas" aria-expanded="false" hidden>Anotaciones</button>
   <div class="cuenta">
     <span id="cuenta-correo"></span>
     <button type="button" id="cuenta-contrasena" class="boton boton-texto">Cambiar contraseña</button>
     <button type="button" id="cuenta-salir" class="boton">Salir</button>
   </div>
 </header>
-<main id="paneles" class="paneles"></main>
+<div class="cuerpo-tema">
+  <main id="paneles" class="paneles"></main>
+  <aside id="cajon-notas" class="cajon" aria-labelledby="cajon-titulo" hidden>
+    <header class="cajon-cabeza">
+      <div>
+        <h2 id="cajon-titulo">Todas las anotaciones</h2>
+        <span id="cajon-pestana" class="nota-meta"></span>
+      </div>
+      <a id="cajon-exportar" class="boton boton-texto" href="/api/anotaciones/exportar" download hidden>Bajar todas</a>
+      <button type="button" id="cajon-cerrar" class="boton boton-texto" aria-label="Cerrar anotaciones">✕</button>
+    </header>
+    <div id="cajon-cuerpo" class="cajon-cuerpo"></div>
+  </aside>
+</div>
+
+<button type="button" id="btn-anotar-elemento" class="boton boton-principal flotante" hidden></button>
+<p id="aviso-sesion" class="aviso-sesion" role="alert" hidden></p>
+
+<dialog id="dlg-elemento" class="tarjeta tarjeta-ancha" aria-labelledby="dlg-elemento-titulo">
+  <h2 id="dlg-elemento-titulo"></h2>
+  <p id="dlg-elemento-meta" class="nota-meta"></p>
+  <div id="dlg-elemento-campo" class="dlg-campo"></div>
+  <div class="acciones">
+    <button type="button" id="dlg-elemento-cerrar" class="boton">Listo</button>
+  </div>
+</dialog>
 </body>
 </html>

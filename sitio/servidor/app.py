@@ -9,7 +9,7 @@ import json
 import re
 import time
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Literal
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI, Request
@@ -17,7 +17,7 @@ from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Resp
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import seguridad
+from . import anotaciones, seguridad
 
 DIR_WEB = Path(__file__).resolve().parent.parent / "web"
 
@@ -65,6 +65,16 @@ class DatosActivar(BaseModel):
 class DatosCambio(BaseModel):
     actual: str = Field(min_length=1, max_length=256)
     nueva: str = Field(min_length=1, max_length=256)
+
+
+class DatosNota(BaseModel):
+    texto: str = Field(max_length=20_000)
+
+
+class DatosNotaElemento(DatosNota):
+    titulo: str = Field(min_length=1, max_length=200)
+    tipo: Literal["ejercicio", "circuito", "pregunta", "lectura"]
+    estado: str = Field(default="", max_length=40)
 
 
 # ---------- utilidades ----------
@@ -276,7 +286,63 @@ def crear_app(almacen, dir_contenido, reloj: Callable[[], float] = time.time) ->
         return {"correo": sesion["correo"], "rol": sesion["rol"],
                 "temas": manifiesto["temas"]}
 
-    # Las anotaciones (/api/anotaciones/...) llegan en F3.
+    # --- anotaciones ---
+
+    hashes_vigentes = anotaciones.vigentes(manifiesto["temas"])
+
+    def pestana_anotable(tema: str, pestana: str, seccion: str) -> dict | None:
+        t = temas.get(tema)
+        if not t or seccion not in {s["id"] for s in t["secciones"]}:
+            return None
+        p = next((p for p in t["pestanas"] if p["id"] == pestana), None)
+        return p if p and p["anotable"] else None
+
+    @app.get("/api/anotaciones/exportar")
+    def exportar(request: Request):
+        sesion = sesion_actual(request)
+        if not sesion:
+            return _error(401, MSG_SIN_SESION)
+        if sesion["rol"] != "admin":
+            return _error(403, "Solo el admin puede exportar.")
+        ahora = reloj()
+        texto = anotaciones.a_markdown(almacen.listar_anotaciones(), manifiesto, ahora)
+        nombre = time.strftime("anotaciones-chomsky-godel-%Y%m%d.md", time.gmtime(ahora))
+        return Response(texto, media_type="text/markdown; charset=utf-8",
+                        headers={"Content-Disposition": f'attachment; filename="{nombre}"'})
+
+    @app.get("/api/anotaciones/{tema}")
+    def ver_anotaciones(tema: str, request: Request):
+        sesion = sesion_actual(request)
+        if not sesion:
+            return _error(401, MSG_SIN_SESION)
+        if tema not in temas:
+            return _error(404, "Ese tema no existe.")
+        return anotaciones.visibles(almacen.listar_anotaciones(tema), sesion["correo"],
+                                    sesion["rol"] == "admin", hashes_vigentes)
+
+    def guardar_nota(request: Request, tema: str, pestana: str, seccion: str,
+                     texto: str, elemento: dict | None):
+        sesion = sesion_actual(request)
+        if not sesion:
+            return _error(401, MSG_SIN_SESION)
+        p = pestana_anotable(tema, pestana, seccion)
+        if not p:
+            return _error(404, "Esa sección no admite anotaciones.")
+        ahora = reloj()
+        almacen.guardar_anotacion(tema, pestana, seccion, sesion["correo"], sesion["rol"],
+                                  p["sha256"], p["version"], texto, ahora, elemento=elemento)
+        return {"ok": True, "actualizada": ahora}
+
+    @app.put("/api/anotaciones/{tema}/{pestana}/{seccion}")
+    def guardar_seccion(tema: str, pestana: str, seccion: str, datos: DatosNota, request: Request):
+        return guardar_nota(request, tema, pestana, seccion, datos.texto, None)
+
+    @app.put("/api/anotaciones/{tema}/{pestana}/{seccion}/elemento")
+    def guardar_elemento(tema: str, pestana: str, seccion: str, datos: DatosNotaElemento,
+                         request: Request):
+        elemento = {"clave": anotaciones.clave_elemento(seccion, datos.titulo),
+                    "titulo": datos.titulo, "tipo": datos.tipo, "estado": datos.estado}
+        return guardar_nota(request, tema, pestana, seccion, datos.texto, elemento)
 
     app.mount("/estaticos", StaticFiles(directory=DIR_WEB / "estaticos"), name="estaticos")
     return app

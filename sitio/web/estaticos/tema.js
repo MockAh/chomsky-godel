@@ -2,6 +2,7 @@
 // Los iframes se quedan montados al cambiar de pestaña para no perder el avance;
 // las que no son la inicial se cargan la primera vez que se abren.
 import { cargarSesion, iniciarCuenta, el } from '/estaticos/comun.js';
+import { iniciarAnotaciones } from '/estaticos/anotaciones.js';
 
 iniciarCuenta();
 const sesion = await cargarSesion();
@@ -15,7 +16,7 @@ if (!tema) {
 } else {
   document.title = `chomsky-godel · ${tema.corto}`;
   document.getElementById('tema-nombre').textContent = tema.nombre;
-  montar(tema);
+  await montar(tema);
 }
 
 function ponerAviso(iframe, aviso) {
@@ -31,13 +32,14 @@ function ponerAviso(iframe, aviso) {
   doc.body.prepend(etiqueta);
 }
 
-function montar(tema) {
+async function montar(tema) {
   if (!tema.pestanas.length) {
     paneles.append(el('p', { clase: 'vacio', texto: 'Este tema todavía no tiene contenido.' }));
     return;
   }
   const botones = [];
   const panelPor = new Map();
+  const notas = await iniciarAnotaciones({ tema, sesion, iframeDe: (pid) => panelPor.get(pid)?.iframe });
 
   tema.pestanas.forEach((p) => {
     const boton = el('button', {
@@ -75,6 +77,7 @@ function montar(tema) {
       }
     }
     history.replaceState(null, '', `#${id}`);
+    notas.cambioPestana(id);
   }
 
   barra.addEventListener('keydown', (e) => {

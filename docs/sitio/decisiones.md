@@ -20,6 +20,9 @@ Registro de decisiones tomadas al construir el sitio desde las specs v0.2
 | P-13 | Three.js 0.160.0 se sirve desde el propio sitio (`sitio/web/estaticos/vendor/three-0.160.0/`, licencia MIT incluida), verificado contra la integridad sha512 del registro npm. La CSP del sitio no cambia. | Tomada | 2026-11-07 |
 | P-14 | Contenido inicial: `logica-booleana` (práctica = `15_circuito_A_noB_o_CD`, mapa = `14_compuertas_fisicas`) y `cpu/mapa` = `16_radiografia_computadora`, copiados sin cambios de `notas-altas`. El resto son páginas provisionales. | Tomada | 2026-11-07 |
 | P-15 | `local.py` acepta `--puerto` (el 8080 lo puede usar otro proyecto local). | Tomada | 2026-11-07 |
+| P-16 | Anotaciones en un panel lateral «Todas las anotaciones» (pantalla completa en móvil). Las notas por elemento se editan en un diálogo propio; el panel muestra su texto y un botón «Editar». | Tomada | 2026-11-07 |
+| P-17 | Mensaje `seccion` de una lección: abre el panel en esa sección solo si su pestaña es la activa; no roba el foco del estudiante. | Tomada | 2026-11-07 |
+| P-18 | Las páginas provisionales no envían `postMessage`: solo lo hacen las lecciones reales al entrar a una sección o terminar un elemento. | Tomada | 2026-11-07 |
 
 ## Pendientes conocidos
 
