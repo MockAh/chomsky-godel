@@ -111,25 +111,12 @@ function iniciarEscena(renderer) {
   luz2.position.set(-10, -5, 5);
   scene.add(luz2);
 
-  // La esfera, al centro, con un halo de alambre que gira
+  // La esfera, sola, al centro
   const esferaMat = new THREE.MeshStandardMaterial({
     color: 0xdd44ff, metalness: 0.5, roughness: 0.15, emissive: 0x441144, emissiveIntensity: 0.4,
   });
   const esfera = new THREE.Mesh(new THREE.SphereGeometry(1.7, 64, 64), esferaMat);
   scene.add(esfera);
-
-  const haloMat = new THREE.MeshBasicMaterial({
-    color: 0x78c8ff, wireframe: true, transparent: true, opacity: 0.12,
-  });
-  const halo = new THREE.Mesh(new THREE.IcosahedronGeometry(2.35, 2), haloMat);
-  scene.add(halo);
-
-  const anillo = new THREE.Mesh(
-    new THREE.TorusGeometry(2.9, 0.015, 8, 160),
-    new THREE.MeshBasicMaterial({ color: 0x00ffaa, transparent: true, opacity: 0.35 }),
-  );
-  anillo.rotation.x = Math.PI / 2.4;
-  scene.add(anillo);
 
   // Rejillas de referencia y marcadores
   const piso = new THREE.GridHelper(80, 40, 0x223355, 0x112233);
@@ -287,13 +274,8 @@ function iniciarEscena(renderer) {
     // La esfera flota y «respira»; más brillo si el puntero está encima o el diálogo abierto
     const activa = lienzo.classList.contains('sobre-esfera') || dialogo.open;
     esfera.position.y = reducirMovimiento ? 0 : Math.sin(t * 0.6) * 0.5;
-    halo.position.y = anillo.position.y = esfera.position.y;
     const objetivo = activa ? 0.95 : 0.4 + Math.sin(t * 1.4) * 0.12;
     esferaMat.emissiveIntensity += (objetivo - esferaMat.emissiveIntensity) * 0.08;
-    haloMat.opacity += ((activa ? 0.3 : 0.12) - haloMat.opacity) * 0.08;
-    halo.rotation.y = t * 0.15;
-    halo.rotation.x = t * 0.07;
-    anillo.rotation.z = t * 0.2;
 
     estrellas.rotation.y = t * 0.01;
     luz1.position.x = Math.cos(t * 0.3) * 8;
