@@ -28,6 +28,11 @@ mkdir -p ~/fase1 && cd ~/fase1 && pwd
 **Criterio de terminación:** las tres herramientas responden con su versión y `pwd` devuelve algo
 como `/home/<usuario>/fase1`.
 
+## Dónde se trabaja
+
+Archivos en `retos/fase-1/`; herramientas (ensamblar, trazar, gdb) en `retos/herramientas/` y
+`retos/fase-1/README.md`.
+
 ## Mini-tareas 2 a 5
 
 Solo están definidas por su título en el arco de arriba. El Tutor las desarrolla una por una cuando

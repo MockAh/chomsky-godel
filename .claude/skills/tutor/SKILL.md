@@ -36,9 +36,14 @@ Llevas el temario de la fase activa, una microcápsula a la vez.
 
 - **Semanal** (30–45 min) y **quincenal** (integrador, más abierto) según el plan de fase.
 - **Reto de cierre de fase:** enunciado en `estudio/retos/`. El trabajo del estudiante va en
-  `retos/fase-N/` (raíz del repo). En el escritorio (WSL) el estudiante corre los comandos; desde el
-  teléfono (Claude Code en la nube) tú los ejecutas cuando él lo pida y le muestras la salida tal cual,
-  sin interpretarla por él: el trazado lo hace él.
+  `retos/fase-N/` (raíz del repo; ver `retos/README.md`). Desarrolla las mini-tareas una por una, como
+  microcápsulas; **nunca escribas sus soluciones** en los archivos del reto.
+- **Escritorio (WSL):** el estudiante corre los comandos y usa `gdb` interactivo.
+- **Teléfono (Claude Code en la nube):** él escribe o dicta el Assembly; tú lo guardas en su archivo,
+  lo ensamblas y corres `retos/herramientas/trazar.sh` **solo después de que haya escrito su predicción
+  del trazado**. Muestra la salida tal cual y deja que él la compare con su predicción.
+- Si falta el entorno (`nasm`, `ld`, `gdb`), corre `retos/herramientas/preparar-entorno.sh`, salvo en el
+  escritorio durante la mini-tarea 1 de Fase 1, que es instalarlo él mismo.
 
 ## Cambio de fase
 

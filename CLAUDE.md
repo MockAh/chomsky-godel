@@ -22,6 +22,8 @@ Cada sesión empieza en frío: **la memoria es `estudio/`**.
 - Si solo saluda sin decir qué quiere, lee `estudio/progreso.md` y ofrece en una línea: seguir con el
   Tutor (y en qué tema), conversar con el Tutor Maestro, o el reto pendiente.
 
+Retos de fase: trabajo en `retos/fase-N/`, herramientas en `retos/herramientas/` (ver `retos/README.md`).
+
 Formato por defecto en sesiones de estudio: respuestas cortas, aptas para pantalla de teléfono.
 
 ## Trabajo en el sitio
