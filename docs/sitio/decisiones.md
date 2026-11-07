@@ -23,6 +23,9 @@ Registro de decisiones tomadas al construir el sitio desde las specs v0.2
 | P-16 | Anotaciones en un panel lateral «Todas las anotaciones» (pantalla completa en móvil). Las notas por elemento se editan en un diálogo propio; el panel muestra su texto y un botón «Editar». | Tomada | 2026-11-07 |
 | P-17 | Mensaje `seccion` de una lección: abre el panel en esa sección solo si su pestaña es la activa; no roba el foco del estudiante. | Tomada | 2026-11-07 |
 | P-18 | Las páginas provisionales no envían `postMessage`: solo lo hacen las lecciones reales al entrar a una sección o terminar un elemento. | Tomada | 2026-11-07 |
+| P-19 | **El estudio es lo central del repo.** `estudio/` (perfil, plan, progreso, sesiones, reportes y notas convertidos a Markdown, sin nombre completo) se versiona; los tutores son skills del repo (`.claude/skills/tutor`, `tutor-maestro`, `escriba`) y `CLAUDE.md` define el arranque y cierre de cada sesión. Revisa P-8: el material en bruto sigue fuera de git. | Tomada | 2026-11-07 |
+| P-20 | El repo se sube a **GitHub como privado** para usar Claude Code en la nube desde el teléfono. Cambia la spec `04` («sin GitHub»). | Tomada (pendiente de hacer) | 2026-11-07 |
+| P-21 | Forma de publicar: A) PR + merge desde el teléfono con despliegue automático (Cloud Build), o B) a mano desde el escritorio. Recomendado A; mientras el sitio no esté en línea, B. | **Abierta** | 2026-11-07 |
 
 ## Pendientes conocidos
 
