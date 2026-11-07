@@ -1,0 +1,60 @@
+{
+  "_nota": "Lista cerrada de lo que sube al sitio. Publicar es desplegar.",
+  "temas": [
+    {
+      "id": "logica-booleana",
+      "corto": "Lógica booleana",
+      "nombre": "Lógica booleana y circuitos lógicos",
+      "secciones": [
+        {"id": "s1", "nombre": "Álgebra de Boole"},
+        {"id": "s2", "nombre": "Completitud funcional: Post y NAND"},
+        {"id": "s3", "nombre": "Sintaxis y semántica (⊢ = ⊨)"},
+        {"id": "s4", "nombre": "Del transistor a la compuerta"},
+        {"id": "s5", "nombre": "Circuitos combinacionales"}
+      ],
+      "pestanas": [
+        {"id": "practica", "etiqueta": "Práctica", "anotable": true,
+         "archivo": "temas/logica-booleana/practica.html", "version": "v0.1"},
+        {"id": "mapa", "etiqueta": "Mapa", "anotable": false,
+         "archivo": "temas/logica-booleana/mapa.html", "version": "v0.1", "aviso": "En revisión"}
+      ]
+    },
+    {
+      "id": "alu",
+      "corto": "ALU",
+      "nombre": "Unidad aritmético-lógica",
+      "secciones": [
+        {"id": "s1", "nombre": "Representación posicional: binario y hexadecimal"},
+        {"id": "s2", "nombre": "Suma binaria: half adder y full adder"},
+        {"id": "s3", "nombre": "Complemento a dos"},
+        {"id": "s4", "nombre": "Palabra, bytes y atomicidad"},
+        {"id": "s5", "nombre": "La ALU como circuito"}
+      ],
+      "pestanas": [
+        {"id": "practica", "etiqueta": "Práctica", "anotable": true,
+         "archivo": "temas/alu/practica.html", "version": "v0.1"},
+        {"id": "mapa", "etiqueta": "Mapa", "anotable": false,
+         "archivo": "temas/alu/mapa.html", "version": "v0.1", "aviso": "En revisión"}
+      ]
+    },
+    {
+      "id": "cpu",
+      "corto": "CPU",
+      "nombre": "La CPU a alto nivel",
+      "secciones": [
+        {"id": "s1", "nombre": "Anatomía: Unidad de Control, ALU y registros"},
+        {"id": "s2", "nombre": "Jerarquía de memoria y caché"},
+        {"id": "s3", "nombre": "Fetch-decode-execute y la Máquina de Turing"},
+        {"id": "s4", "nombre": "Saltos y banderas"},
+        {"id": "s5", "nombre": "Pila, direcciones e indirección"},
+        {"id": "s6", "nombre": "Assembly x86 básico"}
+      ],
+      "pestanas": [
+        {"id": "practica", "etiqueta": "Práctica", "anotable": true,
+         "archivo": "temas/cpu/practica.html", "version": "v0.1"},
+        {"id": "mapa", "etiqueta": "Mapa", "anotable": false,
+         "archivo": "temas/cpu/mapa.html", "version": "v0.1", "aviso": "En revisión"}
+      ]
+    }
+  ]
+}

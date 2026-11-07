@@ -1,0 +1,22 @@
+# Secretos y entorno local (02 §5)
+sitio/.env
+sitio/.invitaciones.txt
+sitio/.venv/
+build/
+
+# Contenido armado (se genera desde temas.json)
+sitio/contenido/
+
+# Material de estudio en bruto: datos personales e imágenes pesadas (P-8).
+# El contenido adaptado se versiona en temas/.
+docs/bitacoras-estudio/
+docs/notas-altas/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Basura de Windows
+*:Zone.Identifier
+*Zone.Identifier

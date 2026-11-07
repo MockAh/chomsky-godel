@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Espacio 3D</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { overflow: hidden; background: #050510; font-family: 'Courier New', monospace; }
+  canvas { display: block; cursor: grab; }
+  canvas:active { cursor: grabbing; }
+  #hud {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    color: rgba(120,200,255,0.6);
+    font-size: 11px; letter-spacing: 3px;
+    text-transform: uppercase; pointer-events: none;
+    text-align: center; line-height: 2;
+    background: rgba(0,0,0,0.4);
+    padding: 10px 20px;
+    border: 1px solid rgba(120,200,255,0.2);
+    border-radius: 4px;
+  }
+  #coords {
+    position: fixed; top: 20px; left: 20px;
+    color: rgba(120,200,255,0.5);
+    font-size: 11px; letter-spacing: 2px;
+    pointer-events: none; line-height: 1.8;
+  }
+  #title {
+    position: fixed; top: 20px; right: 20px;
+    color: rgba(120,200,255,0.4);
+    font-size: 11px; letter-spacing: 4px;
+    pointer-events: none; text-align: right;
+  }
+
+  /* ── Arrow buttons ── */
+  #arrows {
+    position: fixed;
+    bottom: 90px;
+    right: 32px;
+    display: grid;
+    grid-template-columns: 48px 48px 48px;
+    grid-template-rows: 48px 48px 48px;
+    gap: 6px;
+    z-index: 100;
+    user-select: none;
+  }
+  #arrows button {
+    width: 48px; height: 48px;
+    background: rgba(0, 10, 30, 0.75);
+    border: 1px solid rgba(120,200,255,0.35);
+    border-radius: 8px;
+    color: rgba(120,200,255,0.85);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.1s, border-color 0.1s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+  }
+  #arrows button:active,
+  #arrows button.pressed {
+    background: rgba(0,180,255,0.25);
+    border-color: rgba(120,200,255,0.9);
+  }
+  /* grid positions */
+  #btn-up    { grid-column: 2; grid-row: 1; }
+  #btn-left  { grid-column: 1; grid-row: 2; }
+  #btn-down  { grid-column: 2; grid-row: 3; }
+  #btn-right { grid-column: 3; grid-row: 2; }
+</style>
+</head>
+<body>
+<div id="hud">
+  SCROLL: AVANZAR / RETROCEDER &nbsp;&middot;&nbsp; CLIC + ARRASTRAR: MIRAR
+</div>
+<div id="coords">
+  <div id="pos">POS: 0.0, 0.0, 0.0</div>
+  <div id="ang">ANG: 0.0&deg;</div>
+</div>
+<div id="title">ESPACIO 3D</div>
+
+<div id="arrows">
+  <button id="btn-up">↑</button>
+  <button id="btn-left">←</button>
+  <button id="btn-down">↓</button>
+  <button id="btn-right">→</button>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.module.min.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+// ═══════════════════════════════════════════════════════════════════════
+// SETUP
+// ═══════════════════════════════════════════════════════════════════════
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050510);
+scene.fog = new THREE.Fog(0x050510, 30, 120);
+
+const camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.1, 500);
+camera.position.set(0, 0, 15);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// LIGHTS
+// ═══════════════════════════════════════════════════════════════════════
+scene.add(new THREE.AmbientLight(0x404060, 0.6));
+
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+dirLight.position.set(10, 20, 10);
+scene.add(dirLight);
+
+const pointLight1 = new THREE.PointLight(0x00ffcc, 1.5, 50);
+pointLight1.position.set(0, 10, 0);
+scene.add(pointLight1);
+
+const pointLight2 = new THREE.PointLight(0xff44aa, 1.0, 40);
+pointLight2.position.set(-10, -5, 5);
+scene.add(pointLight2);
+
+// ═══════════════════════════════════════════════════════════════════════
+// CUBO Y ESFERA
+// ═══════════════════════════════════════════════════════════════════════
+const cubeMat = new THREE.MeshStandardMaterial({
+  color: 0x00ffaa,
+  metalness: 0.3,
+  roughness: 0.2,
+  emissive: 0x004433,
+  emissiveIntensity: 0.4
+});
+const cube = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 3), cubeMat);
+cube.position.set(4, 0, 0);
+scene.add(cube);
+
+const sphMat = new THREE.MeshStandardMaterial({
+  color: 0xdd44ff,
+  metalness: 0.5,
+  roughness: 0.15,
+  emissive: 0x441144,
+  emissiveIntensity: 0.4
+});
+const sphere = new THREE.Mesh(new THREE.SphereGeometry(1.7, 48, 48), sphMat);
+sphere.position.set(-4, 0, 0);
+scene.add(sphere);
+
+// ═══════════════════════════════════════════════════════════════════════
+// REFERENCE GRID (so you can SEE you're moving)
+// ═══════════════════════════════════════════════════════════════════════
+// Floor grid
+const gridFloor = new THREE.GridHelper(80, 40, 0x223355, 0x112233);
+gridFloor.position.y = -8;
+scene.add(gridFloor);
+
+// Ceiling grid
+const gridCeiling = new THREE.GridHelper(80, 40, 0x223355, 0x112233);
+gridCeiling.position.y = 8;
+scene.add(gridCeiling);
+
+// Some reference markers (small glowing cubes scattered around)
+const markerMat = new THREE.MeshBasicMaterial({ color: 0x00aaff });
+for (let i = 0; i < 30; i++) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.2), markerMat);
+  const angle = (i / 30) * Math.PI * 2;
+  const radius = 18 + Math.random() * 12;
+  m.position.set(
+    Math.cos(angle) * radius,
+    (Math.random() - 0.5) * 12,
+    Math.sin(angle) * radius
+  );
+  scene.add(m);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// STARS
+// ═══════════════════════════════════════════════════════════════════════
+const starGeo = new THREE.BufferGeometry();
+const starPos = [];
+for (let i = 0; i < 1500; i++) {
+  starPos.push(
+    (Math.random() - 0.5) * 300,
+    (Math.random() - 0.5) * 300,
+    (Math.random() - 0.5) * 300
+  );
+}
+starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+const starMat = new THREE.PointsMaterial({
+  color: 0x88ccff,
+  size: 0.4,
+  transparent: true,
+  opacity: 0.7,
+  sizeAttenuation: true
+});
+const stars = new THREE.Points(starGeo, starMat);
+scene.add(stars);
+
+// ═══════════════════════════════════════════════════════════════════════
+// CONTROLS — SCROLL MOVES, DRAG LOOKS
+// ═══════════════════════════════════════════════════════════════════════
+let yaw = 0, pitch = 0;
+let vYaw = 0, vPitch = 0;
+let moveSpeed = 0;
+
+const LOOK_SENS  = 0.003;
+const LOOK_DAMP  = 0.85;
+const SCROLL_KICK = 0.4;
+const MOVE_DAMP   = 0.94;
+const MOVE_MAX    = 1.5;
+
+let dragging = false, lmx = 0, lmy = 0;
+
+renderer.domElement.addEventListener('contextmenu', e=>e.preventDefault());
+
+addEventListener('mousedown', e=>{
+  dragging = true;
+  lmx = e.clientX; lmy = e.clientY;
+});
+addEventListener('mouseup', ()=> dragging = false);
+addEventListener('mousemove', e=>{
+  if(!dragging) return;
+  vYaw   -= (e.clientX - lmx) * LOOK_SENS;
+  vPitch -= (e.clientY - lmy) * LOOK_SENS;
+  lmx = e.clientX; lmy = e.clientY;
+});
+
+addEventListener('wheel', e=>{
+  // scroll down = forward, scroll up = backward
+  moveSpeed += -Math.sign(e.deltaY) * SCROLL_KICK;
+  moveSpeed = Math.max(-MOVE_MAX, Math.min(MOVE_MAX, moveSpeed));
+}, { passive: true });
+
+// Touch support
+addEventListener('touchstart', e=>{
+  if(!e.touches.length) return;
+  dragging = true; lmx = e.touches[0].clientX; lmy = e.touches[0].clientY;
+});
+addEventListener('touchend', ()=> dragging = false);
+addEventListener('touchmove', e=>{
+  if(!dragging || !e.touches.length) return;
+  vYaw   -= (e.touches[0].clientX - lmx) * LOOK_SENS * 0.7;
+  vPitch -= (e.touches[0].clientY - lmy) * LOOK_SENS * 0.7;
+  lmx = e.touches[0].clientX; lmy = e.touches[0].clientY;
+  moveSpeed = Math.min(moveSpeed + 0.04, MOVE_MAX);
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// BOUNDS — soft euclidean box (you can't escape but it's huge)
+// ═══════════════════════════════════════════════════════════════════════
+const BOUND = 60;
+
+// ═══════════════════════════════════════════════════════════════════════
+// ARROW BUTTONS
+// ═══════════════════════════════════════════════════════════════════════
+const btnState = { up: false, down: false, left: false, right: false };
+const STRAFE_SPEED = 0.12;
+
+function bindBtn(id, key) {
+  const el = document.getElementById(id);
+  const press   = () => { btnState[key] = true;  el.classList.add('pressed'); };
+  const release = () => { btnState[key] = false; el.classList.remove('pressed'); };
+  el.addEventListener('mousedown',  press);
+  el.addEventListener('touchstart', press,   { passive: true });
+  el.addEventListener('mouseup',    release);
+  el.addEventListener('mouseleave', release);
+  el.addEventListener('touchend',   release);
+  el.addEventListener('touchcancel',release);
+}
+bindBtn('btn-up',    'up');
+bindBtn('btn-down',  'down');
+bindBtn('btn-left',  'left');
+bindBtn('btn-right', 'right');
+
+// ═══════════════════════════════════════════════════════════════════════
+// RENDER LOOP
+// ═══════════════════════════════════════════════════════════════════════
+const posEl = document.getElementById('pos');
+const angEl = document.getElementById('ang');
+
+const clock = new THREE.Clock();
+
+function animate(){
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+
+  // ── Apply look rotation (smoothed) ─────────────────────────────
+  yaw   += vYaw;
+  pitch += vPitch;
+  vYaw   *= LOOK_DAMP;
+  vPitch *= LOOK_DAMP;
+  pitch = Math.max(-Math.PI/2 + 0.05, Math.min(Math.PI/2 - 0.05, pitch));
+
+  // Apply rotation to camera (Y first, then X)
+  camera.rotation.order = 'YXZ';
+  camera.rotation.y = yaw;
+  camera.rotation.x = pitch;
+
+  // ── Move along forward direction ─────────────────────────────
+  const forward = new THREE.Vector3(0, 0, -1);
+  forward.applyEuler(camera.rotation);
+
+  camera.position.addScaledVector(forward, moveSpeed);
+  moveSpeed *= MOVE_DAMP;
+  if(Math.abs(moveSpeed) < 0.001) moveSpeed = 0;
+
+  // ── Arrow button movement (world-space, ignores look direction) ─
+  if(btnState.up)    camera.position.y += STRAFE_SPEED;
+  if(btnState.down)  camera.position.y -= STRAFE_SPEED;
+  if(btnState.left)  camera.position.x -= STRAFE_SPEED;
+  if(btnState.right) camera.position.x += STRAFE_SPEED;
+
+  // Soft bounds
+  camera.position.x = Math.max(-BOUND, Math.min(BOUND, camera.position.x));
+  camera.position.y = Math.max(-BOUND, Math.min(BOUND, camera.position.y));
+  camera.position.z = Math.max(-BOUND, Math.min(BOUND, camera.position.z));
+
+  // ── Animate objects ──────────────────────────────────────────
+  cube.rotation.x = t * 0.4;
+  cube.rotation.y = t * 0.3;
+  sphere.position.y = Math.sin(t * 0.6) * 0.5;
+
+  // Slow star drift
+  stars.rotation.y = t * 0.01;
+
+  // Lights orbit slightly
+  pointLight1.position.x = Math.cos(t * 0.3) * 8;
+  pointLight1.position.z = Math.sin(t * 0.3) * 8;
+
+  // ── HUD ──────────────────────────────────────────────────────
+  posEl.textContent = `POS: ${camera.position.x.toFixed(1)}, ${camera.position.y.toFixed(1)}, ${camera.position.z.toFixed(1)}`;
+  angEl.textContent = `ANG: ${(yaw * 180/Math.PI).toFixed(0)}\u00B0, ${(pitch * 180/Math.PI).toFixed(0)}\u00B0`;
+
+  renderer.render(scene, camera);
+}
+animate();
+</script>
+</body>
+</html>
