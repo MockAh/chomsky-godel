@@ -26,6 +26,8 @@ Registro de decisiones tomadas al construir el sitio desde las specs v0.2
 | P-19 | **El estudio es lo central del repo.** `estudio/` (perfil, plan, progreso, sesiones, reportes y notas convertidos a Markdown, sin nombre completo) se versiona; los tutores son skills del repo (`.claude/skills/tutor`, `tutor-maestro`, `escriba`) y `CLAUDE.md` define el arranque y cierre de cada sesión. Revisa P-8: el material en bruto sigue fuera de git. | Tomada | 2026-11-07 |
 | P-20 | El repo se sube a **GitHub como privado** para usar Claude Code en la nube desde el teléfono. Cambia la spec `04` («sin GitHub»). | Tomada (pendiente de hacer) | 2026-11-07 |
 | P-21 | Forma de publicar: A) PR + merge desde el teléfono con despliegue automático (Cloud Build), o B) a mano desde el escritorio. Recomendado A; mientras el sitio no esté en línea, B. | **Abierta** | 2026-11-07 |
+| P-22 | Acceso a GitHub **acotado**: no se usa `gh auth login` (su permiso `repo` alcanza todos los repos). El estudiante crea a mano el repo privado vacío `chomsky-godel` y un **fine-grained token** solo para ese repo (*Contents: Read and write*, con vencimiento); se usa únicamente para `push`. El inicio de sesión de `gh` se canceló sin autorizar (el token viejo de `gh` sigue inválido). | Tomada | 2026-11-07 |
+| P-23 | Antes del primer `push`, el autor de todos los commits pasa a nombre «Guillermo» y al correo noreply de GitHub (lo copia el estudiante de *Settings → Emails*), configurado **solo en este repo**; se verifica que no quede el correo institucional en el historial. | Tomada (pendiente de hacer) | 2026-11-07 |
 
 ## Pendientes conocidos
 
