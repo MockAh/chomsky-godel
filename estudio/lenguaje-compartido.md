@@ -27,6 +27,12 @@
 | La campana del taller | Reloj |
 | El ayudante que elige el segundo tablón (¿de la mesa o escrito en la hoja?) | MUX de operando (registro / inmediato) |
 | El ayudante que elige qué se deja en la mesa | MUX de escritura (writeback) |
+| El **dueño del taller**: decide qué hoja entra, asigna estantes, pone el dedo en el primer renglón y cierra el taller (2026-11-20) | Sistema operativo |
+| **Tocar la puerta del dueño** (2026-11-20) | `syscall` |
+| El **número de trámite** / el **dato del trámite** (2026-11-20) | `rax` (60 = terminar) / `rdi` (código de salida) |
+| La **nota al margen** de un renglón (2026-11-20) | Etiqueta (`_start:`, `iguales:`); nasm la cambia por un número |
+| El **número de estante** de un renglón (2026-11-20) | Dirección en memoria (p. ej. `0x401000`) |
+| Más marcas en la libreta (2026-11-20) | SF, CF, OF además de ZF |
 
 ## Verbos
 
@@ -36,6 +42,8 @@
 | `cmp` | medir dos piezas y anotar el resultado en la libreta, sin cortar nada |
 | `jmp` | mover el dedo a otro renglón, siempre |
 | `je` | mirar la libreta; mover el dedo solo si dice que coincidieron |
+| `syscall` | tocar la puerta del dueño; él lee la mesa (`rax`, `rdi`) y hace el trámite (2026-11-20) |
+| derramarse | un bloque sin salto ni `syscall` cae en el renglón siguiente (2026-11-20) |
 
 ## Lo que la metáfora vuelve evidente
 
