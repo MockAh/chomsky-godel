@@ -43,15 +43,15 @@ Formato por defecto en sesiones de estudio: respuestas cortas, aptas para pantal
 - `docs/bitacoras-estudio/` y `docs/notas-altas/` son material en bruto, **fuera de git** (P-8).
 - En archivos versionados, el estudiante es «Guillermo»: nunca su nombre completo ni sus correos.
 
-## Estado y próximos pasos (al 2026-11-07)
+## Estado y próximos pasos (al 2026-11-23)
 
-Hecho: sitio F0–F3 (servidor, front con login 3D, anotaciones), capa de estudio (`estudio/`, skills) y
-herramientas de retos (paso 2). Plan acordado con el estudiante, en orden:
+Hecho: sitio F0–F3 (servidor, front con login 3D, anotaciones), capa de estudio (`estudio/`, skills),
+herramientas de retos (paso 2) y Fase 1 del estudio cerrada (2026-11-23; sigue Fase 2, C). Plan acordado con el estudiante, en orden:
 
-1. **Paso 3 · GitHub privado (P-20, P-22, P-23).** Pendiente del estudiante: crear el repo privado vacío
-   `chomsky-godel`, un fine-grained token solo para ese repo y copiar su correo noreply. Luego: reescribir
-   el autor de los commits («Guillermo» + noreply, config local), verificar el historial, mostrar qué se
-   sube y hacer `push`. No usar `gh auth login`.
+1. **Paso 3 · GitHub privado (P-20, P-22, P-23): hecho el 2026-11-23.** Repo privado
+   `MockAh/chomsky-godel`, autor «Guillermo» + noreply (config local). Pendiente (P-22): el `push` usó un
+   token clásico guardado en `~/.git-credentials`; cambiarlo por el fine-grained y revocar el clásico.
+   No usar `gh auth login`.
 2. **Paso 3b · Claude Code en la nube:** entorno con script de preparación
    (`retos/herramientas/preparar-entorno.sh`, Python del sitio). Verificar antes en la documentación qué
    permite el entorno (paquetes, red).
@@ -60,4 +60,3 @@ herramientas de retos (paso 2). Plan acordado con el estudiante, en orden:
 4. **Paso 5 · Agente de contenido:** atender `estudio/pendientes-contenido.md` (Mapa CPU, ALU 3D) en ramas
    con aprobación. Resolver P-7 (propuesta nueva: `script-src 'self'` en la CSP de contenido).
 
-En el WSL del estudiante faltan `nasm` y `gdb`: es su mini-tarea 1 del reto de Fase 1.
