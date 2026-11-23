@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fase 0 · Lecciones — Lecciones de Claude</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,800&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f3ece0;
+    --paper-deep: #ebe2d2;
+    --ink: #1c1610;
+    --ink-soft: #3d342a;
+    --ink-faint: #7a6f5e;
+    --rule: #c9bda7;
+    --accent: #8b1e1e;
+    --accent-soft: #b14a3a;
+    --gold: #a8862a;
+    --grid: rgba(139, 30, 30, 0.06);
+    --ok: #2f6b3a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    background-color: var(--paper);
+    background-image:
+      radial-gradient(at 20% 10%, rgba(139, 30, 30, 0.04) 0%, transparent 50%),
+      radial-gradient(at 80% 90%, rgba(168, 134, 42, 0.05) 0%, transparent 50%),
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: auto, auto, 28px 28px, 28px 28px;
+    color: var(--ink);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.65;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.05 0 0 0 0.15 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.4;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    z-index: 1;
+  }
+
+  .wrap { position: relative; z-index: 2; max-width: 780px; margin: 0 auto; padding: 28px 22px 80px; }
+
+  /* HEADER */
+  header { border-bottom: 1px solid var(--rule); padding-bottom: 22px; margin-bottom: 28px; }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  }
+  .eyebrow::after { content: ""; height: 1px; background: var(--accent); flex: 1; opacity: 0.5; }
+  h1.title {
+    font-family: 'Fraunces', serif; font-weight: 300; font-size: clamp(34px, 9vw, 54px);
+    line-height: 1.02; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 8px; font-variation-settings: "opsz" 144;
+  }
+  h1.title em { font-style: italic; font-weight: 600; color: var(--accent); }
+  .subtitle { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 15px; color: var(--ink-faint); margin-top: 6px; }
+  .colophon { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 0.18em; color: var(--ink-faint); margin-top: 14px; text-transform: uppercase; }
+
+  /* TABS */
+  .tabs { display: flex; flex-direction: column; gap: 0; margin-bottom: 32px; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); }
+  .tab-btn {
+    background: transparent; border: none; border-bottom: 1px solid var(--rule); text-align: left;
+    padding: 15px 4px 13px; font-family: 'Fraunces', serif; font-size: 17px; font-weight: 400; color: var(--ink);
+    cursor: pointer; display: flex; align-items: baseline; gap: 12px; transition: all 0.2s ease; position: relative;
+  }
+  .tab-btn:last-child { border-bottom: none; }
+  .tab-btn .num { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: var(--accent); font-weight: 500; min-width: 30px; }
+  .tab-btn .name { flex: 1; font-style: italic; }
+  .tab-btn .marker { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); opacity: 0; transition: opacity 0.2s; }
+  .tab-btn:hover { background: var(--paper-deep); padding-left: 12px; }
+  .tab-btn:hover .marker { opacity: 1; }
+  .tab-btn.active { background: var(--ink); color: var(--paper); padding-left: 12px; }
+  .tab-btn.active .num { color: var(--gold); }
+  .tab-btn.active .marker { opacity: 1; color: var(--gold); }
+
+  /* PANELS */
+  .panel { display: none; animation: fadeIn 0.5s ease-out; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* CONTENT */
+  h2 {
+    font-family: 'Fraunces', serif; font-weight: 400; font-size: clamp(25px, 6vw, 31px); line-height: 1.15;
+    letter-spacing: -0.01em; margin: 38px 0 10px; color: var(--ink); font-variation-settings: "opsz" 100;
+  }
+  h2:first-child { margin-top: 0; }
+  h2 .marker { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); display: block; letter-spacing: 0.2em; margin-bottom: 6px; font-weight: 500; }
+  h3 { font-family: 'Fraunces', serif; font-weight: 600; font-style: italic; font-size: 19px; margin: 26px 0 8px; color: var(--ink-soft); letter-spacing: -0.005em; }
+  p { margin: 0 0 14px; }
+  p + p { text-indent: 1.4em; }
+  strong { font-weight: 600; color: var(--accent); }
+  em { font-style: italic; color: var(--ink-soft); }
+
+  .math, code {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.88em; background: var(--paper-deep);
+    padding: 1px 6px; border-radius: 2px; color: var(--ink); white-space: nowrap;
+  }
+  .display-math {
+    display: block; font-family: 'JetBrains Mono', monospace; font-size: 15px; text-align: center; margin: 18px 0;
+    padding: 16px 12px; background: var(--paper-deep); border-left: 2px solid var(--accent); overflow-x: auto; line-height: 1.5; color: var(--ink); white-space: pre;
+  }
+
+  .aside { border-left: 2px solid var(--accent); padding: 4px 0 4px 16px; margin: 22px 0; font-style: italic; color: var(--ink-soft); font-size: 16px; line-height: 1.55; }
+  .aside .label { display: block; font-family: 'JetBrains Mono', monospace; font-style: normal; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+
+  ul.props { list-style: none; margin: 14px 0; padding: 0; }
+  ul.props li { padding: 8px 0 8px 22px; position: relative; border-bottom: 1px dashed var(--rule); font-size: 16px; }
+  ul.props li:last-child { border-bottom: none; }
+  ul.props li::before { content: "§"; position: absolute; left: 0; top: 8px; color: var(--accent); font-family: 'Fraunces', serif; font-weight: 600; }
+  ul.props li strong { display: inline-block; min-width: 120px; }
+
+  .derivation {
+    margin: 18px 0; padding: 14px 16px; background: linear-gradient(to bottom, var(--paper-deep), var(--paper));
+    border: 1px solid var(--rule); border-left: 3px solid var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.85; overflow-x: auto;
+  }
+  .derivation .step { display: block; color: var(--ink); }
+  .derivation .comment { color: var(--ink-faint); font-style: italic; font-size: 12px; }
+  .derivation .key { color: var(--accent); font-weight: 700; }
+
+  /* TABLES */
+  .truth-table { width: 100%; max-width: 420px; margin: 18px auto; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 14px; }
+  .truth-table caption { font-family: 'Fraunces', serif; font-style: italic; font-size: 14px; color: var(--ink-faint); margin-bottom: 8px; caption-side: top; text-align: center; }
+  .truth-table th, .truth-table td { padding: 7px 10px; text-align: center; border-bottom: 1px solid var(--rule); }
+  .truth-table th { font-weight: 700; color: var(--accent); border-bottom: 2px solid var(--ink); font-size: 13px; }
+  .truth-table tr:last-child td { border-bottom: none; }
+  .truth-table td:not(:last-child), .truth-table th:not(:last-child) { border-right: 1px solid var(--rule); }
+
+  /* DIAGRAM FIGURE */
+  .diagram-fig { margin: 26px 0; padding: 20px 14px 14px; background: var(--paper-deep); border: 1px solid var(--rule); }
+  .diagram-fig svg { width: 100%; height: auto; display: block; }
+  .diagram-fig figcaption { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 14px; color: var(--ink-faint); text-align: center; margin-top: 12px; line-height: 1.4; }
+  .diagram-fig .fig-num { font-family: 'JetBrains Mono', monospace; font-style: normal; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 4px; }
+
+  /* NIBBLE REFERENCE GRID */
+  .nibble-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 18px 0; }
+  .nibble-grid .cell { background: var(--paper-deep); border: 1px solid var(--rule); padding: 7px 4px; text-align: center; font-family: 'JetBrains Mono', monospace; }
+  .nibble-grid .cell .hx { font-size: 16px; font-weight: 700; color: var(--accent); }
+  .nibble-grid .cell .bn { font-size: 11px; color: var(--ink-faint); display: block; margin-top: 2px; }
+
+  /* THEOREM */
+  .theorem { margin: 26px 0; padding: 18px 18px 16px; background: var(--ink); color: var(--paper); position: relative; overflow: hidden; }
+  .theorem::before { content: ""; position: absolute; inset: 4px; border: 1px solid rgba(243, 236, 224, 0.18); pointer-events: none; }
+  .theorem .th-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  .theorem .th-title { font-family: 'Fraunces', serif; font-style: italic; font-size: 22px; margin-bottom: 8px; color: var(--paper); }
+  .theorem p { color: var(--paper); margin-bottom: 0; font-size: 15.5px; }
+  .theorem p + p { margin-top: 10px; text-indent: 0; }
+  .theorem strong { color: var(--gold); }
+  .theorem .math { background: rgba(243,236,224,0.12); color: var(--paper); }
+
+  .divider { text-align: center; margin: 34px 0; color: var(--rule); font-family: 'Fraunces', serif; font-size: 22px; letter-spacing: 1em; line-height: 1; }
+  .footnote { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--rule); font-size: 13.5px; font-style: italic; color: var(--ink-faint); text-align: center; }
+
+  /* DESKTOP TABS */
+  @media (min-width: 640px) {
+    .wrap { padding: 44px 36px 100px; }
+    body { font-size: 18px; }
+    .tabs { flex-direction: row; }
+    .tab-btn { flex: 1; flex-direction: column; align-items: flex-start; gap: 6px; padding: 14px 14px; border-bottom: none; border-right: 1px solid var(--rule); }
+    .tab-btn:last-child { border-right: none; }
+    .tab-btn:hover { padding-left: 14px; }
+    .tab-btn.active { padding-left: 14px; }
+    .tab-btn .name { font-size: 17px; }
+  }
+
+  ::selection { background: var(--accent); color: var(--paper); }
+
+  /* ===== LECCIONES DE CLAUDE ===== */
+  .estado { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; padding: 3px 8px; border: 1px solid var(--accent); color: var(--accent); margin: 0 6px 16px 0; }
+  .estado.ok { border-color: var(--ok); color: var(--ok); }
+  .estado.curso { border-color: var(--gold); color: var(--gold); }
+  pre.code { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; background: var(--ink); color: var(--paper); padding: 14px 16px; margin: 16px 0; border-left: 3px solid var(--gold); overflow-x: auto; white-space: pre; }
+  pre.code .c { color: #b9ab8f; font-style: italic; }
+  pre.code .k { color: #f0c96a; font-weight: 700; }
+  .ejercicio { margin: 24px 0; border: 1px solid var(--rule); background: var(--paper-deep); }
+  .ejercicio .ej-cabeza { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); padding: 12px 14px 0; }
+  .ejercicio .ej-titulo { font-family: 'Fraunces', serif; font-style: italic; font-size: 19px; padding: 2px 14px 6px; color: var(--ink); }
+  .ejercicio .ej-cuerpo { padding: 0 14px 6px; }
+  .ejercicio .ej-cuerpo p + p { text-indent: 0; }
+  details.solucion { border-top: 1px dashed var(--rule); padding: 10px 14px; }
+  details.solucion summary { cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); }
+  details.solucion[open] summary { margin-bottom: 10px; }
+  .respuesta, .correccion { padding: 10px 14px; margin: 16px 0; font-size: 16px; }
+  .respuesta { border-left: 3px solid var(--ok); background: rgba(47, 107, 58, 0.07); }
+  .correccion { border-left: 3px solid var(--accent-soft); background: rgba(139, 30, 30, 0.05); }
+  .respuesta .label, .correccion .label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 4px; }
+  .respuesta .label { color: var(--ok); }
+  .correccion .label { color: var(--accent); }
+  .respuesta p + p, .correccion p + p { text-indent: 0; }
+  dl.qa { margin: 14px 0; }
+  dl.qa dt { font-weight: 600; margin-top: 14px; }
+  dl.qa dd { margin: 4px 0 0; padding-left: 14px; border-left: 1px solid var(--rule); color: var(--ink-soft); }
+  .tabla { overflow-x: auto; margin: 16px 0; }
+  table.datos { width: 100%; border-collapse: collapse; font-size: 15px; }
+  table.datos th, table.datos td { padding: 6px 8px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+  table.datos th { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); border-bottom: 2px solid var(--ink); }
+  table.datos td code, table.datos td .math { white-space: nowrap; }
+  ol.pasos { margin: 10px 0 14px 22px; }
+  ol.pasos li, ul.lista li { margin: 4px 0; }
+  ul.lista { margin: 10px 0 14px 22px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Lecciones de Claude · Fase 0</div>
+  <h1 class="title">El <em>puente</em></h1>
+  <div class="subtitle">Álgebra de Boole · completitud · transistores · bases · complemento a dos · texto · palabra y memoria</div>
+  <div class="colophon">Guillermo · Fase cerrada</div>
+</header>
+
+<div class="aside">
+  <span class="label">La cadena de la fase</span>
+  Del álgebra abstracta sobre <span class="math">{0,1}</span> a las compuertas que la materializan; de una sola operación —NAND— a toda la aritmética y toda la representación de información; y de ahí a registros del ancho de palabra y memoria direccionada por bytes. Todo sostenido por miles de millones de interruptores.
+</div>
+
+<nav class="tabs" role="tablist">
+  <button class="tab-btn active" role="tab" data-target="t1" data-seccion="l1" data-titulo="Fase 0 · Álgebra de Boole"><span class="num">I.</span><span class="name">Boole</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t2" data-seccion="l2" data-titulo="Fase 0 · Completitud funcional"><span class="num">II.</span><span class="name">Completitud</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t3" data-seccion="l3" data-titulo="Fase 0 · Del transistor a la compuerta"><span class="num">III.</span><span class="name">Transistores</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t4" data-seccion="l4" data-titulo="Fase 0 · Representación posicional"><span class="num">IV.</span><span class="name">Bases</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t5" data-seccion="l5" data-titulo="Fase 0 · Aritmética y complemento a dos"><span class="num">V.</span><span class="name">Aritmética</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t6" data-seccion="l6" data-titulo="Fase 0 · Texto: ASCII y Unicode"><span class="num">VI.</span><span class="name">Texto</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t7" data-seccion="l7" data-titulo="Fase 0 · Palabra, memoria y atomicidad"><span class="num">VII.</span><span class="name">Palabra</span><span class="marker">→</span></button>
+</nav>
+
+<!-- ===== I. BOOLE ===== -->
+<section class="panel active" id="t1" role="tabpanel">
+  <h2><span class="marker">§ 1.1</span>Tres operaciones sobre {0,1}</h2>
+  <ul class="props">
+    <li><strong>AND (·)</strong> 1 únicamente cuando ambos operandos son 1.</li>
+    <li><strong>OR (+)</strong> 1 cuando al menos uno es 1.</li>
+    <li><strong>NOT (¬)</strong> invierte su único operando.</li>
+  </ul>
+  <p>Todo cómputo —una suma, una página web— es, en última instancia, composición de estas tres.</p>
+
+  <div class="theorem">
+    <div class="th-label">No es analogía</div>
+    <div class="th-title">El caso mínimo de 𝒫(X)</div>
+    <p>{0,1} con AND, OR, NOT es literalmente un <strong>retículo distributivo complementado</strong> (Birkhoff). El ejemplo prototípico de álgebra de Boole es <span class="math">𝒫(X)</span> con ∩, ∪ y complemento; {0,1} es el caso mínimo del mismo objeto.</p>
+  </div>
+
+  <h2><span class="marker">§ 1.2</span>Los axiomas</h2>
+  <ul class="props">
+    <li><strong>Idempotencia</strong> <span class="math">x · x = x</span>;  <span class="math">x + x = x</span></li>
+    <li><strong>Conmutatividad</strong> y asociatividad de ambas.</li>
+    <li><strong>Distributividad mutua</strong> <span class="math">x·(y+z) = x·y + x·z</span> y también <span class="math">x + y·z = (x+y)·(x+z)</span>. Que ambas distribuyan entre sí no tiene análogo en ℝ.</li>
+    <li><strong>Complemento</strong> <span class="math">x · ¬x = 0</span>;  <span class="math">x + ¬x = 1</span></li>
+    <li><strong>De Morgan</strong> <span class="math">¬(x·y) = ¬x + ¬y</span>;  <span class="math">¬(x+y) = ¬x · ¬y</span></li>
+  </ul>
+
+  <h2><span class="marker">§ 1.3</span>Operaciones derivadas</h2>
+  <p>XOR y la implicación no son primitivas: se construyen.</p>
+  <div class="display-math">XOR(x, y) = (x · ¬y) + (¬x · y)
+x → y = ¬(x · ¬y) = ¬x + y</div>
+  <p>La segunda igualdad se prueba de dos maneras: por tabla de verdad (cuatro casos) o <em>sin tablas</em>, solo con De Morgan y <span class="math">1 + A = 1</span>. Las dos están en los ejercicios 2 y 3 de la pestaña «Ejercicios».</p>
+</section>
+
+<!-- ===== II. COMPLETITUD ===== -->
+<section class="panel" id="t2" role="tabpanel">
+  <h2><span class="marker">§ 2.1</span>El espacio de funciones</h2>
+  <p>Una función booleana de n variables es <span class="math">f : {0,1}ⁿ → {0,1}</span>. El dominio tiene <span class="math">2ⁿ</span> elementos y a cada uno se le asigna 0 o 1:</p>
+  <div class="display-math">#funciones de n variables = 2^(2ⁿ)</div>
+  <p>n = 1: 4 funciones · n = 2: 16 · n = 3: 256 · n = 4: 65 536.</p>
+  <div class="correccion">
+    <span class="label">Corrección de notación</span>
+    Escribiste <span class="math">n^(2²)</span>; es <span class="math">2^(2ⁿ)</span>. Verificación: n = 2 → <span class="math">2^(2²) = 2⁴ = 16</span>.
+  </div>
+  <p>La unión sobre todo n es infinita numerable: unión numerable de conjuntos finitos (lo que pide una forma débil de Elección, la Numerable).</p>
+
+  <h3>Muchas expresiones, una función</h3>
+  <dl class="qa">
+    <dt>«Lo que harías es partir las combinaciones de NANDs en clases de equivalencia; ese conjunto de clases es el que tiene 2^(2ⁿ) elementos. ¿Correcto?»</dt>
+    <dd>Sí. El conteo <span class="math">2^(2ⁿ)</span> es pura combinatoria del dominio y el codominio. NAND genera cada una de esas funciones, y la relación expresión → función es muchos-a-uno. Las expresiones son el <em>lenguaje</em>; las funciones, la <em>semántica</em>: es la distinción sintaxis / semántica de la lógica formal.</dd>
+  </dl>
+
+  <h2><span class="marker">§ 2.2</span>Conjuntos completos</h2>
+  <p>Un conjunto de operadores es <strong>funcionalmente completo</strong> si toda función booleana de aridad finita se expresa componiéndolos.</p>
+  <ul class="props">
+    <li><strong>{AND, OR, NOT}</strong> la base clásica.</li>
+    <li><strong>{NAND} · {NOR}</strong> bases mínimas: un solo operador.</li>
+    <li><strong>{AND, NOT} · {OR, NOT}</strong> el que falta sale por De Morgan.</li>
+    <li><strong>{XOR, AND}</strong> menos obvio, pero completo.</li>
+  </ul>
+
+  <h2><span class="marker">§ 2.3</span>El obstáculo: la monotonía</h2>
+  <p>Una función es <em>monótona</em> si su salida nunca baja cuando una entrada sube de 0 a 1: si <span class="math">x ≤ x'</span> componente a componente, <span class="math">f(x) ≤ f(x')</span>. AND y OR lo son. NOT no; NAND tampoco: <span class="math">NAND(0,1) = 1</span> pero <span class="math">NAND(1,1) = 0</span>.</p>
+  <div class="theorem">
+    <div class="th-label">Por qué {AND, OR} no basta</div>
+    <div class="th-title">Las monótonas son cerradas bajo composición</div>
+    <p>Así que ningún conjunto puramente monótono genera NOT. Una base completa necesita al menos un operador <strong>no monótono y no constante</strong>. NAND y NOR lo son; por eso cada una sola basta.</p>
+  </div>
+  <div class="derivation">
+    <span class="step">NOT(x)    = NAND(x, x)</span>
+    <span class="step">AND(x, y) = NAND(NAND(x, y), NAND(x, y))</span>
+    <span class="step">OR(x, y)  = NAND(NAND(x, x), NAND(y, y))</span>
+    <span class="step comment">NAND genera {NOT, AND, OR}, que es completa: NAND hereda la completitud</span>
+  </div>
+
+  <h2><span class="marker">§ 2.4</span>¿Lo probó Turing?</h2>
+  <div class="correccion">
+    <span class="label">Tu pregunta: «Turing probó todo esto, ¿cierto?»</span>
+    No. La caracterización de qué conjuntos de operadores son completos es el <strong>Teorema de Post</strong> (Emil Post, 1941). Turing probó otra cosa, en otra capa: que existe una máquina universal capaz de simular cualquier procedimiento computable. Post dice qué operaciones bastan a nivel lógico; Turing, qué procedimientos son computables. Complementarios, pero independientes.
+  </div>
+  <p>Lo que significa en la máquina: todo dato es una cadena finita de bits, todo cómputo es una función <span class="math">{0,1}ⁿ → {0,1}ᵐ</span> descomponible en funciones booleanas, y NAND las genera todas.</p>
+</section>
+
+<!-- ===== III. TRANSISTORES ===== -->
+<section class="panel" id="t3" role="tabpanel">
+  <h2><span class="marker">§ 3.1</span>Voltajes como bits</h2>
+  <p>El álgebra deja de ser abstracta cuando un voltaje alto (~3.3 V o ~5 V) es 1 y uno bajo (~0 V) es 0. Una <strong>compuerta</strong> es la realización física de una operación: su comportamiento eléctrico reproduce la tabla de verdad.</p>
+
+  <h2><span class="marker">§ 3.2</span>La metáfora del grifo</h2>
+  <p>Un transistor es un grifo cuya manija no se mueve con la mano, sino con <em>otro flujo</em>: si llega agua a su control, el grifo principal se abre; si no, queda cerrado. Tres terminales: uno de mando y dos por donde pasa la corriente.</p>
+  <ul class="props">
+    <li><strong>En serie</strong> dos grifos en la misma tubería: el agua llega solo si ambos están abiertos. <em>AND.</em></li>
+    <li><strong>En paralelo</strong> dos tuberías que desembocan en una: basta uno abierto. <em>OR.</em></li>
+    <li><strong>Invertido</strong> un grifo que conduce cuando <em>no</em> recibe señal. <em>NOT.</em></li>
+  </ul>
+  <div class="aside">
+    <span class="label">De Morgan, cableado</span>
+    Serie ↔ paralelo es la versión física de AND ↔ OR. Las leyes algebraicas se ven en la topología del circuito.
+  </div>
+
+  <h2><span class="marker">§ 3.3</span>NAND, la favorita del silicio</h2>
+  <div class="correccion">
+    <span class="label">Tu primera construcción de NAND</span>
+    El número fue correcto, 3 transistores, pero pusiste el NOT al principio. Eso invierte una sola entrada y da <span class="math">¬A · B</span>. NAND es «el AND completo, negado»: primero la cadena calcula <span class="math">A · B</span> y después se invierte lo que sale.
+  </div>
+  <p>En CMOS real, NAND se construye directo con 4 transistores, sin hacer un AND y negarlo; de hecho AND se implementa como NAND seguido de NOT. NAND no solo es completa: es la compuerta más barata de fabricar.</p>
+  <div class="respuesta">
+    <span class="label">Tu NOR, por las dos rutas</span>
+    <p>Tres transistores: dos en paralelo y un NOT al final. Es el espejo de NAND.</p>
+    <p>Cuatro por De Morgan: <span class="math">¬(x+y) = ¬x · ¬y</span>, dos NOT y un AND en serie. También correcta, con un transistor de más.</p>
+  </div>
+  <p>Lo que descubriste ahí: expresiones algebraicamente equivalentes cuestan distinto en silicio. De eso trata la <em>minimización lógica</em>.</p>
+
+  <h2><span class="marker">§ 3.4</span>Escala</h2>
+  <p>Decenas de miles de millones de transistores en un chip del tamaño de una uña, cada uno abriéndose y cerrándose miles de millones de veces por segundo. Una computadora no piensa: tiene billones de grifos diminutos en patrones tan complejos que parecen pensamiento.</p>
+</section>
+
+<!-- ===== IV. BASES ===== -->
+<section class="panel" id="t4" role="tabpanel">
+  <h2><span class="marker">§ 4.1</span>Un polinomio, muchos alfabetos</h2>
+  <div class="display-math">N = dₖ·bᵏ + ⋯ + d₁·b¹ + d₀·b⁰</div>
+  <p>La estructura es la misma en toda base; cambian el alfabeto y la base: {0,1}, {0..7}, {0..9}, {0..9, A..F}. Estructuralmente, la representación posicional es un homomorfismo entre cadenas de símbolos y naturales.</p>
+
+  <h2><span class="marker">§ 4.2</span>Convertir sin aritmética</h2>
+  <div class="theorem">
+    <div class="th-label">El hecho clave</div>
+    <div class="th-title">Si b₁ = b₂ᵏ, convertir es concatenar</div>
+    <p>Hex ↔ binario porque <span class="math">16 = 2⁴</span>: 4 bits por dígito. Octal ↔ binario porque <span class="math">8 = 2³</span>: 3 bits por dígito.</p>
+  </div>
+  <p>La razón: los pesos se alinean. Al multiplicar un dígito hex por <span class="math">16ᵏ = 2^(4k)</span>, sus 4 bits ocupan solo la franja de <span class="math">2^(4k)</span> a <span class="math">2^(4k+3)</span>, sin traslapar la del dígito siguiente; la suma es entonces, bit a bit, una concatenación.</p>
+
+  <h3>El diccionario de nibbles</h3>
+  <div class="nibble-grid">
+    <div class="cell"><span class="hx">0</span><span class="bn">0000</span></div><div class="cell"><span class="hx">1</span><span class="bn">0001</span></div><div class="cell"><span class="hx">2</span><span class="bn">0010</span></div><div class="cell"><span class="hx">3</span><span class="bn">0011</span></div>
+    <div class="cell"><span class="hx">4</span><span class="bn">0100</span></div><div class="cell"><span class="hx">5</span><span class="bn">0101</span></div><div class="cell"><span class="hx">6</span><span class="bn">0110</span></div><div class="cell"><span class="hx">7</span><span class="bn">0111</span></div>
+    <div class="cell"><span class="hx">8</span><span class="bn">1000</span></div><div class="cell"><span class="hx">9</span><span class="bn">1001</span></div><div class="cell"><span class="hx">A</span><span class="bn">1010</span></div><div class="cell"><span class="hx">B</span><span class="bn">1011</span></div>
+    <div class="cell"><span class="hx">C</span><span class="bn">1100</span></div><div class="cell"><span class="hx">D</span><span class="bn">1101</span></div><div class="cell"><span class="hx">E</span><span class="bn">1110</span></div><div class="cell"><span class="hx">F</span><span class="bn">1111</span></div>
+  </div>
+  <div class="aside">
+    <span class="label">Por qué hex es el idioma del bit</span>
+    No es «otra base más»: es binario reagrupado en bloques de 4, legible para humanos. Un byte son exactamente dos dígitos hex; por eso direcciones y volcados de memoria se escriben en hex (lo usaste en todo el reto de la Fase 1).
+  </div>
+</section>
+
+<!-- ===== V. ARITMÉTICA ===== -->
+<section class="panel" id="t5" role="tabpanel">
+  <h2><span class="marker">§ 5.1</span>Suma binaria y el half adder</h2>
+  <div class="derivation">
+    <span class="step">0 + 0 = 0     0 + 1 = 1</span>
+    <span class="step">1 + 1 = 10    <span class="comment">cero, y llevo 1</span></span>
+    <span class="step">1 + 1 + 1 = 11   <span class="comment">uno, y llevo 1</span></span>
+  </div>
+  <p>El circuito mínimo que suma dos bits, el <strong>half adder</strong>, usa dos compuertas: una XOR da el bit de suma y una AND da el acarreo. Encadenando <strong>full adders</strong> (que además aceptan un acarreo de entrada) se suma una palabra entera: es el corazón de la ALU.</p>
+
+  <h2><span class="marker">§ 5.2</span>Restar es sumar</h2>
+  <p>Las computadoras no tienen circuitos de resta: <span class="math">A − B ≡ A + (−B)</span>, y <span class="math">−B</span> se obtiene por <strong>complemento a dos</strong>: invertir todos los bits y sumar 1. Es un homomorfismo entre la negación en ℤ y una operación bit a bit.</p>
+
+  <h2><span class="marker">§ 5.3</span>Rango y bit de signo</h2>
+  <div class="display-math">−2ⁿ⁻¹ ≤ x ≤ 2ⁿ⁻¹ − 1</div>
+  <p>8 bits: −128 a 127. 64 bits: <span class="math">−2⁶³</span> a <span class="math">2⁶³ − 1</span>.</p>
+  <dl class="qa">
+    <dt>Tu pregunta: «¿No debería ser −2³¹ a 2³¹ − 1 en 64 bits?»</dt>
+    <dd>No: se gasta <em>un</em> bit en el signo, no la mitad de los bits. Los otros <span class="math">n − 1</span> son magnitud íntegra.</dd>
+  </dl>
+  <div class="respuesta">
+    <span class="label">Tu reconstrucción</span>
+    «Únicamente requieres el último bit, de los 8, para girar las cosas. 1000 0000 es tal que su complemento a dos es 0111 1111 + 1 = 1000 0000. Ese último slot funciona como la bisagra que te da todo el espectro entre −2⁷ y 2⁷ − 1: 1 bit de signo + 7 de magnitud. Por eso no divides el 8 en dos, sino es el 7 íntegro.»
+  </div>
+  <div class="correccion">
+    <span class="label">Un detalle de esa misma nota</span>
+    Ahí escribiste «si empieza con 1 es positivo y si empieza con 0 es negativo». Es al revés: bit de signo <strong>0 → positivo</strong>, <strong>1 → negativo</strong> (por eso 1000 0000 es −128).
+  </div>
+
+  <h2><span class="marker">§ 5.4</span>La asimetría y su punto fijo</h2>
+  <p>Hay un negativo más que positivos: el cero ocupa lugar en el lado positivo y no existe «−0». Consecuencia: el mínimo es su propio complemento a dos.</p>
+  <div class="derivation">
+    <span class="step">1000 0000  →  invertir  0111 1111  →  +1  →  <span class="key">1000 0000</span></span>
+  </div>
+  <div class="theorem">
+    <div class="th-label">En tu idioma</div>
+    <div class="th-title">La negación no es involutiva aquí</div>
+    <p>«Negar» tiene un punto fijo no trivial sobre el conjunto representable: rompe la involución y la estructura de grupo. No existe +128 en 8 bits. (La misma finitud que reapareció en la Fase 1 con 300 → 44.)</p>
+  </div>
+</section>
+
+<!-- ===== VI. TEXTO ===== -->
+<section class="panel" id="t6" role="tabpanel">
+  <h2><span class="marker">§ 6.1</span>Texto es número, por convención</h2>
+  <p>Los caracteres se codifican como naturales. La letra 'A' no <em>es</em> 65: se codifica como 65. Es una tabla de búsqueda fijada por estándares, no una ley matemática.</p>
+  <ul class="props">
+    <li><strong>ASCII</strong> 7 bits, 128 caracteres: inglés, dígitos, puntuación y controles (nueva línea, fin de transmisión). Sin ñ, sin 漢字, sin emoji.</li>
+    <li><strong>Unicode</strong> un natural único para cada símbolo de toda escritura humana: más de 150 000. Cada uno es un <em>code point</em>, <code>U+XXXX</code> en hex. A = U+0041, ñ = U+00F1, π = U+03C0, 漢 = U+6F22, 🔥 = U+1F525.</li>
+  </ul>
+
+  <h2><span class="marker">§ 6.2</span>Code point contra codificación</h2>
+  <div class="theorem">
+    <div class="th-label">Dos funciones compuestas</div>
+    <div class="th-title">símbolo → code point → bytes</div>
+    <p>La primera es inyectiva de los símbolos a ℕ (el <em>qué</em>, abstracto). La segunda decide cómo se guarda ese número en memoria (el <em>cómo</em>, concreto). Hay varias segundas funciones posibles.</p>
+  </div>
+  <div class="tabla"><table class="datos">
+    <tr><th>Codificación</th><th>Bytes por carácter</th><th>Nota</th></tr>
+    <tr><td>UTF-32</td><td>4, fijo</td><td>Acceso directo por índice; derrochador</td></tr>
+    <tr><td>UTF-16</td><td>2 o 4</td><td>2 hasta U+FFFF</td></tr>
+    <tr><td>UTF-8</td><td>1 a 4</td><td>ASCII ocupa 1 byte: compatible con texto antiguo</td></tr>
+  </table></div>
+  <div class="respuesta">
+    <span class="label">Tu síntesis</span>
+    «Mapeas el símbolo en un natural específico (el code point), y luego cada natural en una secuencia de bytes.»
+  </div>
+  <p>UTF-8 dominó la web porque el texto típico (HTML, código, JSON) es mayormente ASCII, donde es 4 veces más compacto que UTF-32.</p>
+</section>
+
+<!-- ===== VII. PALABRA ===== -->
+<section class="panel" id="t7" role="tabpanel">
+  <h2><span class="marker">§ 7.1</span>Bit, byte, palabra</h2>
+  <ul class="props">
+    <li><strong>Bit</strong> un elemento de {0,1}.</li>
+    <li><strong>Byte</strong> 8 bits, por convención histórica: <span class="math">2⁸ = 256</span> estados.</li>
+    <li><strong>Palabra</strong> el ancho natural del procesador: 64 bits = 8 bytes.</li>
+  </ul>
+  <p>La jerarquía no es algebraica: es una convención de empaquetamiento, con consecuencias reales.</p>
+
+  <h2><span class="marker">§ 7.2</span>La palabra define dos cosas</h2>
+  <ul class="props">
+    <li><strong>Operandos</strong> el tamaño máximo que la CPU procesa en una instrucción (el ancho de sus registros).</li>
+    <li><strong>Direcciones</strong> el tamaño de los punteros: <span class="math">2⁶⁴ ≈ 1.6 × 10¹⁹</span> direcciones, unos 16 exabytes.</li>
+  </ul>
+  <p>El salto de 32 a 64 bits llegó cuando los 4 GB direccionables con 32 bits se quedaron cortos.</p>
+  <dl class="qa">
+    <dt>Tu pregunta: «¿La palabra varía de 1 a 8 bytes?»</dt>
+    <dd>No: la palabra arquitectónica es fija, 8 bytes en 64 bits. Lo que existe son instrucciones que manipulan una porción (1, 2 o 4 bytes) y otras SIMD que operan 128, 256 o 512 bits a la vez. La palabra es el ancho de referencia, no el único.</dd>
+  </dl>
+
+  <h2><span class="marker">§ 7.3</span>Direccionamiento por byte</h2>
+  <p>Cada dirección apunta a una celda de <strong>1 byte</strong>, aunque la dirección misma mida 8 bytes. La asimetría (puntero grande, celda chica) es intencional: los datos miden 1, 2, 4 u 8 bytes, y direccionar al byte permite tocar cualquiera sin enmascarar ni desplazar. El «desperdicio» de 16 exabytes es nominal.</p>
+
+  <h2><span class="marker">§ 7.4</span>Atomicidad</h2>
+  <p>Una operación es <strong>atómica</strong> si la CPU la ejecuta en una sola instrucción. Exige dos condiciones independientes:</p>
+  <ol class="pasos">
+    <li><strong>Tamaño:</strong> cada operando cabe en una palabra. Sumar dos enteros de 128 bits en una CPU de 64 requiere varias instrucciones, propagando el acarreo a mano.</li>
+    <li><strong>Aridad:</strong> las operaciones aritméticas son binarias. Sumar tres números no es atómico aunque cada uno quepa: son dos <code>ADD</code> encadenados.</li>
+  </ol>
+  <div class="aside">
+    <span class="label">Por qué la ALU es binaria</span>
+    Su sumador físico tiene dos entradas del ancho de palabra y una salida (más el acarreo). Para sumar tres hay que pasar dos veces por él. Esa ALU es la caja que la Fase 1 abrió.
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Microtarea de la sesión</div>
+    <div class="ej-titulo">¿Cuánto es 2³⁴ en base 10, aproximadamente?</div>
+    <details class="solucion"><summary>Ver tu respuesta</summary>
+      <div class="respuesta"><span class="label">Tu respuesta</span><span class="math">2³⁴ ≈ 10¹⁰</span>. Correcta.</div>
+      <p>Más preciso: <span class="math">2³⁴ = 2³⁰ · 2⁴ ≈ 10⁹ · 16 ≈ 1.6 × 10¹⁰</span>. Son los GB de <span class="math">2⁶⁴</span> bytes: unos 16 exabytes, absurdos para cualquier RAM real, que es justo el punto.</p>
+    </details>
+  </div>
+</section>
+
+<div class="footnote">Fuente: reporte de cierre de la Fase 0 (§ 1–8) y notas de sesión de la fase. Los 21 ejercicios resueltos están en la pestaña «Ejercicios»; las lecciones interactivas, en los temas Lógica booleana y ALU.</div>
+
+</div>
+
+<script>
+  // Pestañas, y aviso al sitio de qué parte se está viendo (contrato postMessage, spec 03 §3).
+  const buttons = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.panel');
+  function avisar(btn) {
+    if (window.parent === window) return;
+    parent.postMessage({ tipo: 'elemento', seccion: btn.dataset.seccion, titulo: btn.dataset.titulo,
+                         clase: 'lectura' }, location.origin);
+  }
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+      panels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      document.getElementById(btn.dataset.target).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      avisar(btn);
+    });
+  });
+  const inicial = document.querySelector('.tab-btn.active');
+  if (inicial) { inicial.setAttribute('aria-selected', 'true'); avisar(inicial); }
+</script>
+
+</body>
+</html>

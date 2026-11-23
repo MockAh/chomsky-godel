@@ -62,15 +62,24 @@
       "nombre": "El puente: de la matemática a la lógica de la máquina",
       "grupo": "claude",
       "secciones": [
-        {"id": "s1", "nombre": "Álgebra y completitud"},
-        {"id": "s2", "nombre": "Representación posicional"},
-        {"id": "s3", "nombre": "Aritmética y complemento a dos"},
-        {"id": "s4", "nombre": "Texto y memoria"},
-        {"id": "s5", "nombre": "Transistores"}
+        {"id": "l1", "nombre": "Lección I · Álgebra de Boole"},
+        {"id": "l2", "nombre": "Lección II · Completitud funcional"},
+        {"id": "l3", "nombre": "Lección III · Del transistor a la compuerta"},
+        {"id": "l4", "nombre": "Lección IV · Representación posicional"},
+        {"id": "l5", "nombre": "Lección V · Aritmética y complemento a dos"},
+        {"id": "l6", "nombre": "Lección VI · Texto: ASCII y Unicode"},
+        {"id": "l7", "nombre": "Lección VII · Palabra, memoria y atomicidad"},
+        {"id": "s1", "nombre": "Ejercicios · Lógica y completitud"},
+        {"id": "s2", "nombre": "Ejercicios · Bases"},
+        {"id": "s3", "nombre": "Ejercicios · Aritmética"},
+        {"id": "s4", "nombre": "Ejercicios · Texto y memoria"},
+        {"id": "s5", "nombre": "Ejercicios · Transistores"}
       ],
       "pestanas": [
-        {"id": "leccion", "etiqueta": "Lección", "anotable": true,
-         "archivo": "temas/fase-0/leccion.html", "version": "v0.1"}
+        {"id": "lecciones", "etiqueta": "Lecciones", "anotable": true,
+         "archivo": "temas/fase-0/lecciones.html", "version": "v0.1"},
+        {"id": "ejercicios", "etiqueta": "Ejercicios", "anotable": true,
+         "archivo": "temas/fase-0/ejercicios.html", "version": "v0.1"}
       ]
     },
     {
