@@ -35,6 +35,8 @@
 | Más marcas en la libreta (2026-11-20) | SF, CF, OF además de ZF |
 | La **lista de marcas encendidas** de la libreta (2026-11-22) | Los corchetes de `$eflags` en gdb, p. ej. `[ PF ZF IF ]`; lo que no aparece vale 0 |
 | La **marca del dueño** (2026-11-22) | IF: la pone el SO («el taller acepta interrupciones»), no una cuenta |
+| Los **estantes de piezas** (2026-11-23) | `section .data`; la nota `piezas:` es el número del primer estante |
+| El **dedo de lectura** sobre los estantes (2026-11-23) | Un registro con una dirección (`rsi`); `inc`/`add` lo mueven sin tocar piezas, solo `[rsi]` llega a la pieza |
 
 ## Verbos
 
@@ -54,6 +56,8 @@
 - El carpintero nunca lee la hoja completa: lee un renglón, lo ejecuta y mira el siguiente. No sabe que
   existe un bucle; solo sabe que a veces el dedo va hacia atrás.
 - Lo caro es ir al almacén, no cargar: por eso cada viaje trae 64 bytes (línea de caché).
+- **El estante vecino no es tuyo** (2026-11-23): la máquina no sabe dónde termina un arreglo; leer o escribir
+  un estante de más no da error (semilla de los buffer overflows).
 - **La máquina no tiene «?»** (2026-11-22): cada hueco de la mesa y cada marca de la libreta siempre valen
   algo; al abrir el taller, el dueño los deja en 0.
 

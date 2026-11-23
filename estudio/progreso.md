@@ -6,47 +6,54 @@
 
 ## Estado actual
 
-- **Fase actual:** 1 — La máquina desnuda.
-- **Criterio de salida de la fase:** cumplido en lo teórico (2026-10-04, trazados A.1 y A.2 del reporte de cierre).
-- **Pendiente para cerrar la fase:** el **reto de cierre de escritorio** (`retos/fase-1-reto-cierre.md`):
-  escribir, ensamblar y ejecutar Assembly x86-64 en WSL con nasm, ld y gdb.
-  - Mini-tarea 1 (preparar el taller): **cumplida 2026-11-20** (nasm 2.16.01, ld 2.42, gdb 15.1, x86_64).
-  - Mini-tarea 2 (primer programa verificable): **cumplida 2026-11-20** (`retos/fase-1/mt2.asm`; 42,
-    300→44, 256→0, 511→255).
-  - Mini-tarea 3 (traducir A.1): **cumplida 2026-11-22.** A.1 lo resolvió el Tutor con ayuda
-    (2026-11-20); el ejercicio equivalente lo resolvió él solo en `retos/fase-1/mt3.asm` (predijo y
-    verificó código 0; con `cmp rax, 14`, código 1).
-  - Mini-tarea 4 (paso a paso en gdb): **cumplida 2026-11-22** (`starti`, `si`, `display`; trazado
-    predicho y verificado sobre `mt3`).
-  - Mini-tarea 5 (bucle con indirección, `retos/fase-1/mt5.asm`): sin empezar. Es la última del reto.
-- **Siguiente sesión (pedido del estudiante, 2026-11-23):** mini-tarea 5. Al cumplirla, el Tutor propone
-  el cierre de la Fase 1 (reporte de cierre + plan de Fase 2) para que el estudiante lo apruebe.
-- **Siguiente fase:** 2 — El lenguaje del sistema: C. Su plan de fase (`fases/fase-2.md`) aún no existe;
-  el Tutor lo redacta a partir de `plan-general.md` al abrir la fase, y el estudiante lo aprueba.
-- **Nivel de dificultad actual:** alto dentro de Fase 1 (traza Assembly con indirección).
+- **Fase actual:** 2 — El lenguaje del sistema: C. Plan aprobado el 2026-11-23 (`fases/fase-2.md`).
+- **Último tema:** ninguno de Fase 2 todavía.
+- **Siguiente sesión:** Fase 2, tema 1 (de C a Assembly: `gcc -S -O0`, `objdump`). Escritorio (WSL) para
+  compilar; requiere `gcc` (verificar que esté instalado).
+- **Nivel de dificultad actual:** alto al cierre de Fase 1 (escribe solo un bucle con indirección).
 
 ## Fases cerradas
 
 | Fase | Cierre | Reporte |
 |---|---|---|
 | 0 — El puente | Criterio cumplido (fecha sin registro) | `reportes/fase-0-cierre.md` |
+| 1 — La máquina desnuda | Teoría 2026-10-04; reto de escritorio 2026-11-23; cierre aprobado 2026-11-23 | `reportes/fase-1-cierre.md` (Apéndice B: las 5 mini-tareas) |
+
+### Registro de Fase 1: reto de cierre de escritorio (`retos/fase-1-reto-cierre.md`)
+
+- Mini-tarea 1 (preparar el taller): cumplida 2026-11-20 (nasm 2.16.01, ld 2.42, gdb 15.1, x86_64).
+- Mini-tarea 2 (primer programa verificable): cumplida 2026-11-20 (`retos/fase-1/mt2.asm`).
+- Mini-tarea 3 (traducir A.1): cumplida 2026-11-22 (`retos/fase-1/mt3.asm`, ejercicio equivalente solo).
+- Mini-tarea 4 (paso a paso en gdb): cumplida 2026-11-22.
+- Mini-tarea 5 (bucle con indirección): cumplida 2026-11-23 (`retos/fase-1/mt5.asm`, solo; código 18).
 
 ## Dudas abiertas y gaps detectados
+
+### Para vigilar en Fase 2
+
+- **Estante vs. pieza (dirección vs. contenido)** (2026-11-23): en la mini-tarea 5 ignoró los `inc` y luego
+  sumó a la pieza en vez de al estante. Lo resolvió con direcciones concretas en hexadecimal. Clave para
+  punteros (Fase 2, tema 3).
+- **Lectura de ZF** (2026-11-23): la lee como «son iguales» aun tras `dec`; matizado: «la última cuenta dio 0».
+- Siguen abiertos de Fase 1: finitud, «el hardware se recupera solo», SF y CF sin ejercicio propio.
+
+### Registro de Fase 1
 
 - **La finitud** (gap central como matemático): registros contados, memoria finita, costo por ciclo.
   Seguir reforzándolo en Fase 2 (tamaños de tipos, overflow, memoria manual).
 - **Intuición de «el hardware se recupera solo»:** ante `rip` desalineado respondió que el procesador
   detectaría el desfase (Fase 1, ejercicio conceptual 4). Corregido; vigilarlo en buffer overflows.
 - **Escribir ramas desde cero** (2026-11-20): aún no lo lograba solo; pidió la solución de A.1 en código.
-  Avance 2026-11-22: con el ejemplo resuelto delante, escribió solo un programa con dos ramas. Falta verlo
-  sin modelo (mini-tarea 5).
+  Avance 2026-11-22: con el ejemplo resuelto delante, escribió solo un programa con dos ramas.
+  **Resuelto 2026-11-23:** escribió solo el bucle con indirección a partir de un ejemplo sin indirección.
 - **Qué instrucciones escriben en la libreta** (2026-11-22): creía que solo `cmp` deja marcas; corregido
-  (`sub` también; `mov` y `je` no). Verificarlo en el bucle de la mini-tarea 5.
+  (`sub` también; `mov` y `je` no). **Resuelto 2026-11-23:** vio en la traza que `dec` enciende ZF.
 - **«?» en registros sin asignar** (2026-11-22): misma raíz que la finitud: en la máquina todo bit tiene
   valor (al arrancar, Linux deja los registros en 0).
 - **SF y CF** (2026-11-22): no supo qué marca enciende un resultado negativo; explicado (SF = 1, CF = 1 en
   14 − 15), sin ejercicio propio todavía.
-- **Disciplina de predicción** (2026-11-22): en un extra corrió antes de predecir; señalado.
+- **Disciplina de predicción** (2026-11-22): en un extra corrió antes de predecir; señalado. En la
+  mini-tarea 5 (2026-11-23) predijo antes de correr.
 - **Finitud, avance** (2026-11-20): predijo 300→300; tras la explicación razonó solo en ℤ/256ℤ
   (256→0, 511→255).
 - **Resueltos 2026-11-20:** separación hoja / mesa / libreta; etiqueta = dirección (número de estante).
@@ -64,6 +71,10 @@
 - Ese formato funcionó (2026-11-22): resolvió solo el ejercicio equivalente. Ver la salida real de gdb
   contra su predicción, en tabla, le resultó claro; la lectura como conjunto (f⁻¹(1)) le resolvió los
   corchetes de `eflags`.
+
+- Fase 1, mini-tarea 5 (2026-11-23): un ejemplo que **no** contiene la parte nueva (bucle sin indirección)
+  lo obligó a integrar solo; funcionó. Las direcciones concretas en hex (`0x402000` → 5) le aclararon
+  estante vs. pieza mejor que `piezas + k`.
 
 ## Registro de sesiones
 

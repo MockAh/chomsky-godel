@@ -6,13 +6,13 @@ Estudiante: Guillermo
 
 Programa: Ingeniería en Sistemas y Ciberseguridad
 
-Fecha de cierre: 4 de octubre de 2026
+Fecha de cierre: 4 de octubre de 2026 (teoría) · 23 de noviembre de 2026 (reto de escritorio)
 
 ## Propósito de este documento
 
 Este reporte cierra la Fase 1 del programa. Recoge los conceptos vistos, las correspondencias establecidas y los trazados resueltos durante las sesiones. Está pensado como referencia consultable: si en una fase posterior surge una duda sobre registros, el ciclo de ejecución, la jerarquía de memoria o el direccionamiento, este documento debe bastar para refrescar la base.
 
-La estructura sigue el orden temático en que se desarrollaron las cápsulas, no el cronológico. La Sección 10 reúne la metáfora del taller construida durante la fase, que funcionó como lenguaje compartido y debe conservarse para fases posteriores. El Apéndice A recoge los trazados y ejercicios resueltos en sesión.
+La estructura sigue el orden temático en que se desarrollaron las cápsulas, no el cronológico. La Sección 10 reúne la metáfora del taller construida durante la fase, que funcionó como lenguaje compartido y debe conservarse para fases posteriores. El Apéndice A recoge los trazados y ejercicios resueltos en sesión. El Apéndice B recoge el reto de cierre de escritorio: los ejemplos del Tutor y las respuestas finales del estudiante.
 
 ## 1. Arquitectura de la CPU
 
@@ -439,10 +439,217 @@ El anidamiento. Siempre que un proceso se suspende para ejecutar otro y debe ret
 
 Que cabe la referencia aunque no quepa el objeto: una dirección ocupa exactamente una palabra, sea cual sea el tamaño de lo que apunta. Además permite compartir un mismo dato sin copiarlo y encadenar estructuras donde cada elemento guarda la dirección del siguiente.
 
+## Apéndice B — Reto de cierre de escritorio: «Del trazado a la ejecución»
+
+Enunciado: `estudio/retos/fase-1-reto-cierre.md`. Trabajo del estudiante: `retos/fase-1/`. Se hizo en WSL
+(x86-64 nativo) entre el 2026-11-20 y el 2026-11-23. Cada mini-tarea registra el ejemplo que dio el Tutor
+y la respuesta final del estudiante. El detalle de cada sesión, con todas las preguntas, está en
+`estudio/sesiones/`.
+
+### B.1 Mini-tarea 1 — Preparar el taller (2026-11-20)
+
+**Objetivo:** tener `nasm`, `ld` y `gdb` funcionando en x86-64.
+
+**Respuesta final del estudiante:** instaló todo él mismo (`sudo apt install -y nasm gdb`) y verificó:
+
+```
+x86_64
+NASM version 2.16.01
+GNU ld (GNU Binutils for Ubuntu) 2.42
+GNU gdb (Ubuntu 15.1-1ubuntu1~24.04.1) 15.1
+```
+
+Lección práctica: en bash, `!` delante de un comando niega su código de salida. Ese `!` solo sirve en el
+prompt de Claude Code, y el error fue del Tutor al darle el comando así.
+
+### B.2 Mini-tarea 2 — Primer programa verificable (2026-11-20)
+
+**Concepto:** una máquina real no tiene «fin de hoja». Para terminar, el programa toca la puerta del
+dueño (`syscall`) con `rax = 60` (trámite: terminar) y `rdi` = código de salida.
+
+**Ejemplo del Tutor:**
+
+```nasm
+global _start
+section .text
+_start:
+    mov rax, 60     ; trámite: terminar
+    mov rdi, 68     ; código de salida
+    syscall
+```
+
+**Respuesta final del estudiante** (`retos/fase-1/mt2.asm`): el mismo esqueleto con `rdi = 42`, correcto
+a la primera. Salida verificada: `42`.
+
+**Ejercicio de finitud:** con `rdi = 300` predijo 300 y salió **44**. Tras la explicación (el código de
+salida cabe en un byte: 300 mod 256 = 44) predijo él solo, y verificó, **256 → 0** y **511 → 255**.
+
+**Ejercicio de control (etiqueta = dirección):** en el desensamblado de un programa de juguete con
+`jmp fin`, identificó correctamente el renglón que el dedo nunca toca (`401007`).
+
+### B.3 Mini-tarea 3 — Traducir el trazado A.1 (2026-11-20 y 2026-11-22)
+
+**Concepto:** cada camino debe terminar con su propio `syscall`; si no, se derrama en el siguiente. El
+código de salida es el testigo del camino que tomó la CPU.
+
+**Ejemplo del Tutor** (A.1 en código real; sale con 1):
+
+```nasm
+global _start
+section .text
+_start:
+    mov  rax, 10
+    mov  rbx, 3
+    sub  rax, rbx       ; rax = 7
+    cmp  rax, 7         ; 7 − 7 = 0 → ZF = 1
+    je   iguales        ; salta
+
+    mov  rax, 60        ; camino «no saltó»
+    mov  rdi, 0
+    syscall
+
+iguales:                ; camino «saltó»
+    mov  rax, 60
+    mov  rdi, 1
+    syscall
+```
+
+**Respuesta final del estudiante** (ejercicio equivalente, solo, `retos/fase-1/mt3.asm`):
+
+```nasm
+global _start
+section .text
+_start:
+    mov  rax, 20
+    mov  rbx, 6
+    sub  rax, rbx
+    cmp  rax, 14
+    je   iguales
+
+    mov rax, 60
+    mov rdi, 0
+    syscall
+
+iguales:
+    mov rax, 60
+    mov rdi, 1
+    syscall
+```
+
+- Predicción con `cmp rax, 15`: «rax = 14; ¿son iguales 15 y rax? No. Ergo, ZF = 0, ergo, no hay salto;
+  el programa termina con código 0». Verificado: `0`.
+- Con `cmp rax, 14` (versión final del archivo): verificado `1`. Lo corrió antes de predecir; se le
+  señaló.
+- Pregunta de cierre: ¿qué otras marcas enciende 14 − 15 = −1? No lo supo. Respuesta: **SF = 1**
+  (negativo) y **CF = 1** (sin signo, la resta pide prestado).
+
+### B.4 Mini-tarea 4 — Ejecutar paso a paso en gdb (2026-11-22)
+
+**Ejemplo del Tutor** (los comandos):
+
+```
+gdb -q retos/fase-1/build/mt3
+set disassembly-flavor intel
+starti
+display/i $rip
+display $rax
+display $rbx
+display $eflags
+si
+```
+
+**Respuesta final del estudiante** (su predicción, sobre `mt3` con `cmp rax, 14`, ya corregida):
+
+| Tras | rax | rbx | ZF | Sigue |
+|---|---|---|---|---|
+| (arranque) | 0 | 0 | 0 | `mov rax, 20` |
+| `mov rax, 20` | 20 | 0 | 0 | `mov rbx, 6` |
+| `mov rbx, 6` | 20 | 6 | 0 | `sub rax, rbx` |
+| `sub rax, rbx` | 14 | 6 | 0 | `cmp rax, 14` |
+| `cmp rax, 14` | 14 | 6 | 1 | `je iguales` |
+| `je iguales` | 14 | 6 | 1 | `mov rax, 60` bajo `iguales:` |
+
+Los valores, la ZF tras `cmp` y el salto fueron correctos desde el principio. Correcciones: (1) `sub`
+también escribe en la libreta; (2) en la máquina no hay «?», y al arrancar Linux deja los registros en 0;
+(3) hay dos `mov rax, 60`, y el dedo va al de `iguales:`. gdb lo confirmó: el dedo saltó de `0x401011` a
+`0x40101f`. Los corchetes de `$eflags` (`[ PF ZF IF ]`) son el soporte f⁻¹(1) de la libreta.
+
+### B.5 Mini-tarea 5 — Bucle con indirección (2026-11-23)
+
+**Concepto:** las piezas viven en `section .data`. `mov rsi, piezas` pone en la mesa el **número del
+estante**; `[rsi]` trae la pieza; `inc rsi` avanza un estante. Es la sucesión a: {0,1,2,3} → bytes:
+`rsi` recorre el dominio y `[rsi]` evalúa la función.
+
+**Ejercicios previos de lectura** (con `piezas: db 5, 3, 8, 2`):
+
+1. `mov rsi, piezas` / `inc rsi` / `inc rsi` / `mov al, [rsi]`. Respuesta final: `rsi = piezas + 2`,
+   `al = 8`. Errores en el camino: primero omitió los `inc` (`al = 5`) y después se quedó un estante
+   atrás (`al = 3`).
+2. `mov rsi, piezas` / `add rsi, 3` / `mov al, [rsi]` / `dec rsi` / `mov al, [rsi]`. Primero sumó 3 a la
+   **pieza** (5 + 3 = 8) en vez de al **estante**. Con la tabla de estantes reales (`0x402000` → 5, …),
+   respuesta final correcta: `rsi = piezas + 3`, `al = 2`, `rsi = piezas + 2`, `al = 8`.
+
+**Ejemplo del Tutor** (bucle **sin** indirección: suma 3 + 2 + 1, sale con 6):
+
+```nasm
+global _start
+section .text
+_start:
+    mov  rcx, 3       ; contador
+    mov  rdi, 0       ; acumulador
+bucle:
+    add  dil, cl      ; cl = byte bajo de rcx
+    dec  rcx
+    cmp  rcx, 0
+    je   fin
+    jmp  bucle
+fin:
+    mov  rax, 60
+    syscall
+```
+
+**Respuesta final del estudiante** (solo, juntando bucle e indirección, `retos/fase-1/mt5.asm`):
+
+```nasm
+global _start
+section .data
+    piezas: db 5, 3, 8, 2
+
+section .text
+_start:
+    mov rcx, 4          ; contador: 4 piezas
+    mov rdi, 0          ; acumulador
+    mov rsi, piezas     ; rsi apunta al primer estante
+
+bucle:
+    add dil, [rsi]      ; suma la pieza actual
+    inc rsi             ; el dedo avanza al siguiente estante
+    dec rcx
+    cmp rcx, 0
+    je fin
+    jmp bucle
+
+fin:
+    mov rax, 60
+    syscall             ; código de salida = rdi
+```
+
+- **Predicción:** 4 vueltas (5, 3, 8, 2); al salir `rcx = 0`, `rsi = piezas + 4`; código 5+3+8+2 = 18.
+- **Verificación** (`trazar.sh --mem piezas`): `rdi` = 5 → 8 → 16 → 18; `rsi` = `0x402000` →
+  `0x402004`; `je` salta en la 4.ª vuelta; `codigo: 18`. Todo coincide.
+- **Pregunta final:** ¿qué vale ZF justo tras `dec rcx` en la 4.ª vuelta? Respuesta: **ZF = 1** (la
+  traza lo marca `1*` en el paso 24). Matiz: no significa «son iguales», sino «la última cuenta dio 0».
+  Por eso `cmp rcx, 0` sobra: `dec` ya dejó la marca.
+- **Observaciones de la salida:** `rsi = 4202497` es `0x402001` en decimal. `[piezas] = 0x2c02080305` se
+  lee de derecha a izquierda (`05 03 08 02`); el `2c` es el estante siguiente, que no es del arreglo. La
+  máquina no sabe dónde termina un arreglo: semilla de los buffer overflows de Fase 2.
+
 ## Cierre
 
 **Criterio de salida cumplido:** el estudiante lee un fragmento de Assembly x86 básico y traza, paso a paso, qué hace la CPU y cómo cambia el estado de los registros y de la memoria. Verificado en los trazados A.1 y A.2, el segundo de ellos con indirección.
 
-Queda pendiente, por disposición del plan de fase, el reto de escritorio: escribir y ejecutar Assembly en Termux o en un emulador, en vez de solo trazarlo. Es la transición natural de leer a escribir.
+**Reto de escritorio cumplido (2026-11-23):** escribió, ensambló y ejecutó Assembly x86-64 en WSL, y verificó en gdb y con `trazar.sh` cada predicción (Apéndice B). La transición de leer a escribir quedó hecha: el bucle con indirección de B.5 lo escribió solo, a partir de un ejemplo sin indirección.
+
+**Gaps que pasan a la Fase 2:** la finitud (tamaños de tipos, overflow), las marcas SF y CF sin ejercicio propio, la distinción estante / pieza (dirección / contenido) que todavía tropezó en B.5, la intuición de que «el hardware se recupera solo» y la disciplina de predecir antes de correr.
 
 La Fase 2 introduce C. Los conceptos cubiertos en este reporte —direcciones, indirección, stack, direcciones de retorno, organización de la memoria— son la materia prima directa de esa etapa: los punteros de C son exactamente los números-dirección de la Sección 8, y el primer contacto con buffer overflows es el desarrollo de la semilla sembrada en la Sección 7.4.

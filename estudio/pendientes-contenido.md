@@ -12,3 +12,12 @@
 - **Por qué:** en la sesión `sesiones/2026-11-22-reto-f1-mt3-mt4.md` el estudiante creía que solo `cmp`
   dejaba marcas y no sabía leer los corchetes de `$eflags`; quedó consolidado al verlo en gdb. La lección no
   menciona las marcas.
+
+## 2026-11-23 · Mapa de la CPU (`temas/cpu/mapa.html`): el dedo de lectura y `[ ]`
+
+- **Qué cambiar:** mostrar un registro que guarda un **número de estante** (`rsi`) y un arreglo en el
+  almacén (`piezas: db 5, 3, 8, 2`). Al avanzar, que se vea que `inc rsi` cambia el número sin tocar las
+  piezas y que solo `[rsi]` trae la pieza a la mesa. Opcional: el estante vecino al final del arreglo.
+- **Por qué:** en la sesión `sesiones/2026-11-23-reto-f1-mt5-cierre.md` el estudiante confundió dos veces
+  estante y pieza; lo destrabó una tabla con direcciones concretas (`0x402000` → 5). Es la base de los
+  punteros de Fase 2.

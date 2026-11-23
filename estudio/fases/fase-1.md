@@ -1,4 +1,4 @@
-# Fase 1 — La máquina desnuda · plan de fase (EN CURSO)
+# Fase 1 — La máquina desnuda · plan de fase (CERRADA)
 
 > Fuente: `Prompt_Maestro_3_Fase_1`. Reporte de cierre: `estudio/reportes/fase-1-cierre.md`.
 
