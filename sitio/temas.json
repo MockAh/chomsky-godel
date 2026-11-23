@@ -76,9 +76,16 @@
     {
       "id": "fase-1",
       "corto": "Fase 1",
-      "nombre": "La máquina desnuda: reto de cierre en cinco mini-tareas",
+      "nombre": "La máquina desnuda: arquitectura y Assembly x86",
       "grupo": "claude",
       "secciones": [
+        {"id": "l1", "nombre": "Lección I · La CPU"},
+        {"id": "l2", "nombre": "Lección II · Von Neumann y la hoja"},
+        {"id": "l3", "nombre": "Lección III · Jerarquía de memoria y caché"},
+        {"id": "l4", "nombre": "Lección IV · El ciclo fetch-decode-execute"},
+        {"id": "l5", "nombre": "Lección V · Saltos y banderas"},
+        {"id": "l6", "nombre": "Lección VI · Pila e indirección"},
+        {"id": "l7", "nombre": "Lección VII · Assembly y el taller"},
         {"id": "mt1", "nombre": "Mini-tarea 1 · Preparar el taller"},
         {"id": "mt2", "nombre": "Mini-tarea 2 · Primer programa verificable"},
         {"id": "mt3", "nombre": "Mini-tarea 3 · Traducir el trazado A.1"},
@@ -86,8 +93,10 @@
         {"id": "mt5", "nombre": "Mini-tarea 5 · Bucle con indirección"}
       ],
       "pestanas": [
-        {"id": "leccion", "etiqueta": "Lección", "anotable": true,
-         "archivo": "temas/fase-1/leccion.html", "version": "v0.1"}
+        {"id": "lecciones", "etiqueta": "Lecciones", "anotable": true,
+         "archivo": "temas/fase-1/lecciones.html", "version": "v0.1"},
+        {"id": "reto", "etiqueta": "Reto de cierre", "anotable": true,
+         "archivo": "temas/fase-1/reto.html", "version": "v0.1"}
       ]
     },
     {
