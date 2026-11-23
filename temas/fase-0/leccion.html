@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fase 0 · El puente — Lecciones de Claude</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,800&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f3ece0;
+    --paper-deep: #ebe2d2;
+    --ink: #1c1610;
+    --ink-soft: #3d342a;
+    --ink-faint: #7a6f5e;
+    --rule: #c9bda7;
+    --accent: #8b1e1e;
+    --accent-soft: #b14a3a;
+    --gold: #a8862a;
+    --grid: rgba(139, 30, 30, 0.06);
+    --ok: #2f6b3a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    background-color: var(--paper);
+    background-image:
+      radial-gradient(at 20% 10%, rgba(139, 30, 30, 0.04) 0%, transparent 50%),
+      radial-gradient(at 80% 90%, rgba(168, 134, 42, 0.05) 0%, transparent 50%),
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: auto, auto, 28px 28px, 28px 28px;
+    color: var(--ink);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.65;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.05 0 0 0 0.15 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.4;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    z-index: 1;
+  }
+
+  .wrap { position: relative; z-index: 2; max-width: 780px; margin: 0 auto; padding: 28px 22px 80px; }
+
+  /* HEADER */
+  header { border-bottom: 1px solid var(--rule); padding-bottom: 22px; margin-bottom: 28px; }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  }
+  .eyebrow::after { content: ""; height: 1px; background: var(--accent); flex: 1; opacity: 0.5; }
+  h1.title {
+    font-family: 'Fraunces', serif; font-weight: 300; font-size: clamp(34px, 9vw, 54px);
+    line-height: 1.02; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 8px; font-variation-settings: "opsz" 144;
+  }
+  h1.title em { font-style: italic; font-weight: 600; color: var(--accent); }
+  .subtitle { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 15px; color: var(--ink-faint); margin-top: 6px; }
+  .colophon { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 0.18em; color: var(--ink-faint); margin-top: 14px; text-transform: uppercase; }
+
+  /* TABS */
+  .tabs { display: flex; flex-direction: column; gap: 0; margin-bottom: 32px; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); }
+  .tab-btn {
+    background: transparent; border: none; border-bottom: 1px solid var(--rule); text-align: left;
+    padding: 15px 4px 13px; font-family: 'Fraunces', serif; font-size: 17px; font-weight: 400; color: var(--ink);
+    cursor: pointer; display: flex; align-items: baseline; gap: 12px; transition: all 0.2s ease; position: relative;
+  }
+  .tab-btn:last-child { border-bottom: none; }
+  .tab-btn .num { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: var(--accent); font-weight: 500; min-width: 30px; }
+  .tab-btn .name { flex: 1; font-style: italic; }
+  .tab-btn .marker { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); opacity: 0; transition: opacity 0.2s; }
+  .tab-btn:hover { background: var(--paper-deep); padding-left: 12px; }
+  .tab-btn:hover .marker { opacity: 1; }
+  .tab-btn.active { background: var(--ink); color: var(--paper); padding-left: 12px; }
+  .tab-btn.active .num { color: var(--gold); }
+  .tab-btn.active .marker { opacity: 1; color: var(--gold); }
+
+  /* PANELS */
+  .panel { display: none; animation: fadeIn 0.5s ease-out; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* CONTENT */
+  h2 {
+    font-family: 'Fraunces', serif; font-weight: 400; font-size: clamp(25px, 6vw, 31px); line-height: 1.15;
+    letter-spacing: -0.01em; margin: 38px 0 10px; color: var(--ink); font-variation-settings: "opsz" 100;
+  }
+  h2:first-child { margin-top: 0; }
+  h2 .marker { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); display: block; letter-spacing: 0.2em; margin-bottom: 6px; font-weight: 500; }
+  h3 { font-family: 'Fraunces', serif; font-weight: 600; font-style: italic; font-size: 19px; margin: 26px 0 8px; color: var(--ink-soft); letter-spacing: -0.005em; }
+  p { margin: 0 0 14px; }
+  p + p { text-indent: 1.4em; }
+  strong { font-weight: 600; color: var(--accent); }
+  em { font-style: italic; color: var(--ink-soft); }
+
+  .math, code {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.88em; background: var(--paper-deep);
+    padding: 1px 6px; border-radius: 2px; color: var(--ink); white-space: nowrap;
+  }
+  .display-math {
+    display: block; font-family: 'JetBrains Mono', monospace; font-size: 15px; text-align: center; margin: 18px 0;
+    padding: 16px 12px; background: var(--paper-deep); border-left: 2px solid var(--accent); overflow-x: auto; line-height: 1.5; color: var(--ink); white-space: pre;
+  }
+
+  .aside { border-left: 2px solid var(--accent); padding: 4px 0 4px 16px; margin: 22px 0; font-style: italic; color: var(--ink-soft); font-size: 16px; line-height: 1.55; }
+  .aside .label { display: block; font-family: 'JetBrains Mono', monospace; font-style: normal; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+
+  ul.props { list-style: none; margin: 14px 0; padding: 0; }
+  ul.props li { padding: 8px 0 8px 22px; position: relative; border-bottom: 1px dashed var(--rule); font-size: 16px; }
+  ul.props li:last-child { border-bottom: none; }
+  ul.props li::before { content: "§"; position: absolute; left: 0; top: 8px; color: var(--accent); font-family: 'Fraunces', serif; font-weight: 600; }
+  ul.props li strong { display: inline-block; min-width: 120px; }
+
+  .derivation {
+    margin: 18px 0; padding: 14px 16px; background: linear-gradient(to bottom, var(--paper-deep), var(--paper));
+    border: 1px solid var(--rule); border-left: 3px solid var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.85; overflow-x: auto;
+  }
+  .derivation .step { display: block; color: var(--ink); }
+  .derivation .comment { color: var(--ink-faint); font-style: italic; font-size: 12px; }
+  .derivation .key { color: var(--accent); font-weight: 700; }
+
+  /* TABLES */
+  .truth-table { width: 100%; max-width: 420px; margin: 18px auto; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 14px; }
+  .truth-table caption { font-family: 'Fraunces', serif; font-style: italic; font-size: 14px; color: var(--ink-faint); margin-bottom: 8px; caption-side: top; text-align: center; }
+  .truth-table th, .truth-table td { padding: 7px 10px; text-align: center; border-bottom: 1px solid var(--rule); }
+  .truth-table th { font-weight: 700; color: var(--accent); border-bottom: 2px solid var(--ink); font-size: 13px; }
+  .truth-table tr:last-child td { border-bottom: none; }
+  .truth-table td:not(:last-child), .truth-table th:not(:last-child) { border-right: 1px solid var(--rule); }
+
+  /* DIAGRAM FIGURE */
+  .diagram-fig { margin: 26px 0; padding: 20px 14px 14px; background: var(--paper-deep); border: 1px solid var(--rule); }
+  .diagram-fig svg { width: 100%; height: auto; display: block; }
+  .diagram-fig figcaption { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 14px; color: var(--ink-faint); text-align: center; margin-top: 12px; line-height: 1.4; }
+  .diagram-fig .fig-num { font-family: 'JetBrains Mono', monospace; font-style: normal; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 4px; }
+
+  /* NIBBLE REFERENCE GRID */
+  .nibble-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 18px 0; }
+  .nibble-grid .cell { background: var(--paper-deep); border: 1px solid var(--rule); padding: 7px 4px; text-align: center; font-family: 'JetBrains Mono', monospace; }
+  .nibble-grid .cell .hx { font-size: 16px; font-weight: 700; color: var(--accent); }
+  .nibble-grid .cell .bn { font-size: 11px; color: var(--ink-faint); display: block; margin-top: 2px; }
+
+  /* THEOREM */
+  .theorem { margin: 26px 0; padding: 18px 18px 16px; background: var(--ink); color: var(--paper); position: relative; overflow: hidden; }
+  .theorem::before { content: ""; position: absolute; inset: 4px; border: 1px solid rgba(243, 236, 224, 0.18); pointer-events: none; }
+  .theorem .th-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  .theorem .th-title { font-family: 'Fraunces', serif; font-style: italic; font-size: 22px; margin-bottom: 8px; color: var(--paper); }
+  .theorem p { color: var(--paper); margin-bottom: 0; font-size: 15.5px; }
+  .theorem p + p { margin-top: 10px; text-indent: 0; }
+  .theorem strong { color: var(--gold); }
+  .theorem .math { background: rgba(243,236,224,0.12); color: var(--paper); }
+
+  .divider { text-align: center; margin: 34px 0; color: var(--rule); font-family: 'Fraunces', serif; font-size: 22px; letter-spacing: 1em; line-height: 1; }
+  .footnote { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--rule); font-size: 13.5px; font-style: italic; color: var(--ink-faint); text-align: center; }
+
+  /* DESKTOP TABS */
+  @media (min-width: 640px) {
+    .wrap { padding: 44px 36px 100px; }
+    body { font-size: 18px; }
+    .tabs { flex-direction: row; }
+    .tab-btn { flex: 1; flex-direction: column; align-items: flex-start; gap: 6px; padding: 14px 14px; border-bottom: none; border-right: 1px solid var(--rule); }
+    .tab-btn:last-child { border-right: none; }
+    .tab-btn:hover { padding-left: 14px; }
+    .tab-btn.active { padding-left: 14px; }
+    .tab-btn .name { font-size: 17px; }
+  }
+
+  ::selection { background: var(--accent); color: var(--paper); }
+
+  /* ===== LECCIONES DE CLAUDE ===== */
+  .estado { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; padding: 3px 8px; border: 1px solid var(--accent); color: var(--accent); margin: 0 6px 16px 0; }
+  .estado.ok { border-color: var(--ok); color: var(--ok); }
+  .estado.curso { border-color: var(--gold); color: var(--gold); }
+  pre.code { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; background: var(--ink); color: var(--paper); padding: 14px 16px; margin: 16px 0; border-left: 3px solid var(--gold); overflow-x: auto; white-space: pre; }
+  pre.code .c { color: #b9ab8f; font-style: italic; }
+  pre.code .k { color: #f0c96a; font-weight: 700; }
+  .ejercicio { margin: 24px 0; border: 1px solid var(--rule); background: var(--paper-deep); }
+  .ejercicio .ej-cabeza { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); padding: 12px 14px 0; }
+  .ejercicio .ej-titulo { font-family: 'Fraunces', serif; font-style: italic; font-size: 19px; padding: 2px 14px 6px; color: var(--ink); }
+  .ejercicio .ej-cuerpo { padding: 0 14px 6px; }
+  .ejercicio .ej-cuerpo p + p { text-indent: 0; }
+  details.solucion { border-top: 1px dashed var(--rule); padding: 10px 14px; }
+  details.solucion summary { cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); }
+  details.solucion[open] summary { margin-bottom: 10px; }
+  .respuesta, .correccion { padding: 10px 14px; margin: 16px 0; font-size: 16px; }
+  .respuesta { border-left: 3px solid var(--ok); background: rgba(47, 107, 58, 0.07); }
+  .correccion { border-left: 3px solid var(--accent-soft); background: rgba(139, 30, 30, 0.05); }
+  .respuesta .label, .correccion .label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 4px; }
+  .respuesta .label { color: var(--ok); }
+  .correccion .label { color: var(--accent); }
+  .respuesta p + p, .correccion p + p { text-indent: 0; }
+  dl.qa { margin: 14px 0; }
+  dl.qa dt { font-weight: 600; margin-top: 14px; }
+  dl.qa dd { margin: 4px 0 0; padding-left: 14px; border-left: 1px solid var(--rule); color: var(--ink-soft); }
+  .tabla { overflow-x: auto; margin: 16px 0; }
+  table.datos { width: 100%; border-collapse: collapse; font-size: 15px; }
+  table.datos th, table.datos td { padding: 6px 8px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+  table.datos th { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); border-bottom: 2px solid var(--ink); }
+  table.datos td code, table.datos td .math { white-space: nowrap; }
+  ol.pasos { margin: 10px 0 14px 22px; }
+  ol.pasos li, ul.lista li { margin: 4px 0; }
+  ul.lista { margin: 10px 0 14px 22px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Lecciones de Claude · Fase 0</div>
+  <h1 class="title">El <em>puente</em></h1>
+  <div class="subtitle">De la matemática a la lógica de la máquina · 21 ejercicios resueltos</div>
+  <div class="colophon">Guillermo · Fase cerrada</div>
+</header>
+
+<div class="aside">
+  <span class="label">Criterio de salida, cumplido</span>
+  Razonar en binario y hexadecimal con fluidez, y entender cómo la lógica booleana materializa las operaciones matemáticas en hardware real. Cada ejercicio tiene la solución plegada: intenta antes de abrirla.
+</div>
+
+<nav class="tabs" role="tablist">
+  <button class="tab-btn active" role="tab" data-target="t1" data-seccion="s1" data-titulo="Fase 0 · Álgebra y completitud"><span class="num">I.</span><span class="name">Lógica</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t2" data-seccion="s2" data-titulo="Fase 0 · Representación posicional"><span class="num">II.</span><span class="name">Bases</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t3" data-seccion="s3" data-titulo="Fase 0 · Aritmética y complemento a dos"><span class="num">III.</span><span class="name">Aritmética</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t4" data-seccion="s4" data-titulo="Fase 0 · Texto y memoria"><span class="num">IV.</span><span class="name">Texto y memoria</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t5" data-seccion="s5" data-titulo="Fase 0 · Transistores"><span class="num">V.</span><span class="name">Transistores</span><span class="marker">→</span></button>
+</nav>
+
+<!-- ===== I. LÓGICA ===== -->
+<section class="panel active" id="t1" role="tabpanel">
+  <h2><span class="marker">§ 1</span>Álgebra booleana</h2>
+  <p>El álgebra de Boole sobre <span class="math">{0,1}</span> es el caso más pequeño de una estructura que ya conocías: <span class="math">𝒫(X)</span> con unión, intersección y complemento.</p>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 1 · evaluación</div>
+    <div class="ej-titulo">Evalúa ¬(x · ¬y) + (¬x · y) para x = 1, y = 0</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <div class="derivation">
+        <span class="step">¬y = ¬0 = 1</span>
+        <span class="step">x · ¬y = 1 · 1 = 1   →   ¬(x · ¬y) = 0</span>
+        <span class="step">¬x = 0   →   ¬x · y = 0 · 0 = 0</span>
+        <span class="step">Resultado: 0 + 0 = <span class="key">0</span></span>
+      </div>
+    </details>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 2 · tabla de verdad</div>
+    <div class="ej-titulo">Tabla completa de ¬(x · ¬y) + (¬x · y): ¿qué operación es?</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <table class="truth-table">
+        <tr><th>x</th><th>y</th><th>resultado</th></tr>
+        <tr><td>0</td><td>0</td><td>1</td></tr>
+        <tr><td>0</td><td>1</td><td>1</td></tr>
+        <tr><td>1</td><td>0</td><td>0</td></tr>
+        <tr><td>1</td><td>1</td><td>1</td></tr>
+      </table>
+      <p>Es la implicación material <span class="math">x → y</span>: solo es falsa cuando el antecedente es verdadero y el consecuente falso.</p>
+    </details>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 3 · demostración</div>
+    <div class="ej-titulo">Demuestra ¬(x · ¬y) + (¬x · y) = ¬x + y solo con axiomas</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <div class="derivation">
+        <span class="step">¬(x · ¬y) + (¬x · y)</span>
+        <span class="step">= (¬x + y) + (¬x · y)   <span class="comment">De Morgan; ¬¬y = y</span></span>
+        <span class="step">= ¬x + y · (1 + ¬x)   <span class="comment">factorizar y</span></span>
+        <span class="step">= ¬x + y · 1   <span class="comment">1 + A = 1</span></span>
+        <span class="step">= <span class="key">¬x + y</span>   ∎</span>
+      </div>
+    </details>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 4</div>
+    <div class="ej-titulo">Expresa XOR con AND, OR y NOT</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <div class="display-math">XOR(x, y) = (x · ¬y) + (¬x · y)</div>
+    </details>
+  </div>
+
+  <h2><span class="marker">§ 2</span>Completitud funcional</h2>
+  <div class="theorem">
+    <div class="th-label">El hecho central</div>
+    <div class="th-title">NAND basta</div>
+    <p>Con suficientes compuertas NAND se construye cualquier función booleana. Por eso NAND es la pieza fundamental del hardware.</p>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 5</div>
+    <div class="ej-titulo">Expresa NOT(x) solo con NAND</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <div class="display-math">NOT(x) = NAND(x, x) = ¬(x · x) = ¬x</div>
+      <p>Paso clave: idempotencia, <span class="math">x · x = x</span>.</p>
+    </details>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 6</div>
+    <div class="ej-titulo">Expresa AND(x, y) solo con NAND y verifica (1,1) y (1,0)</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <div class="derivation">
+        <span class="step">AND(x, y) = NOT(NAND(x, y)) = NAND(NAND(x, y), NAND(x, y))</span>
+        <span class="step">(1,1): NAND(0, 0) = 1   ✓</span>
+        <span class="step">(1,0): NAND(1, 1) = 0   ✓</span>
+      </div>
+    </details>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 7</div>
+    <div class="ej-titulo">Expresa NOR(x, y) solo con NAND</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <div class="derivation">
+        <span class="step">NOR(x, y) = ¬(x + y) = NAND(x + y, x + y)</span>
+        <span class="step comment">con OR(x, y) = NAND(NAND(x,x), NAND(y,y)):</span>
+        <span class="step">NOR(x, y) = NAND( NAND(NAND(x,x), NAND(y,y)),</span>
+        <span class="step">                 NAND(NAND(x,x), NAND(y,y)) )</span>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ===== II. BASES ===== -->
+<section class="panel" id="t2" role="tabpanel">
+  <h2><span class="marker">§ 3</span>Representación posicional</h2>
+  <p>Toda base <span class="math">b</span> evalúa el mismo polinomio <span class="math">N = Σ dᵢ·bⁱ</span>. Cuando una base es potencia de otra (<span class="math">16 = 2⁴</span>, <span class="math">8 = 2³</span>), convertir es <strong>concatenar bloques</strong>, sin aritmética.</p>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 8</div>
+    <div class="ej-titulo">Convierte 0xA3 a binario sin pasar por decimal</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <div class="derivation">
+        <span class="step">A → 1010,   3 → 0011</span>
+        <span class="step">0xA3 = <span class="key">1010 0011</span></span>
+      </div>
+    </details>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 9</div>
+    <div class="ej-titulo">0xA3 en decimal, y verificación por el binario</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <div class="derivation">
+        <span class="step">Por hex: 10·16 + 3 = 163</span>
+        <span class="step">Por binario: 128 + 32 + 2 + 1 = <span class="key">163</span>   ✓</span>
+      </div>
+    </details>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 10</div>
+    <div class="ej-titulo">¿Cuántos bits por dígito octal? ¿Por qué funciona concatenar?</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <p>Tres: <span class="math">2³ = 8</span> combinaciones, exactamente los dígitos <span class="math">{0..7}</span>.</p>
+      <p>Para un octal XY: <span class="math">XY = X·2³ + Y</span>. Multiplicar por <span class="math">2³</span> desplaza los bits de X a las posiciones <span class="math">2⁵, 2⁴, 2³</span>, sin traslapar las de Y. Regla general: si <span class="math">b = 2ᵏ</span>, cada dígito consume k bits.</p>
+    </details>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 11</div>
+    <div class="ej-titulo">Si 'A' = 0x41 y las letras son consecutivas, ¿cuánto vale 'G'?</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <div class="derivation">
+        <span class="step">'A' = 0x41, 'B' = 0x42, …, 'G' = <span class="key">0x47</span></span>
+        <span class="step">4 → 0100,  7 → 0111   →   'G' = 0100 0111</span>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ===== III. ARITMÉTICA ===== -->
+<section class="panel" id="t3" role="tabpanel">
+  <h2><span class="marker">§ 4</span>Suma, resta y complemento a dos</h2>
+  <p>La máquina solo sabe sumar. Restar es sumar el complemento a dos: invertir los bits y sumar 1. El acarreo que no cabe se tira: es aritmética en <span class="math">ℤ/2ⁿℤ</span>.</p>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 12</div>
+    <div class="ej-titulo">Suma 0xA3 + 0x1D en binario</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <div class="derivation">
+        <span class="step">  1010 0011   (0xA3 = 163)</span>
+        <span class="step">+ 0001 1101   (0x1D = 29)</span>
+        <span class="step">= <span class="key">1100 0000</span>   (0xC0 = 192)   ✓</span>
+      </div>
+    </details>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 13</div>
+    <div class="ej-titulo">0xC0 − 0x1D con préstamo directo</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <div class="derivation">
+        <span class="step">  1100 0000</span>
+        <span class="step">− 0001 1101</span>
+        <span class="step comment">bits 0 a 5 piden préstamo en cadena; el bit 6 lo salda</span>
+        <span class="step">= <span class="key">1010 0011</span> = 0xA3 = 163   ✓</span>
+      </div>
+    </details>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 14</div>
+    <div class="ej-titulo">0xC0 − 0x1D vía complemento a dos</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <div class="derivation">
+        <span class="step">0x1D = 0001 1101  →  invertir 1110 0010  →  +1  →  1110 0011 (= −29)</span>
+        <span class="step">  1100 0000</span>
+        <span class="step">+ 1110 0011</span>
+        <span class="step">= 1 1010 0011</span>
+        <span class="step comment">el 9.º bit no cabe en 8: se descarta</span>
+        <span class="step">= <span class="key">1010 0011</span> = 163   ✓</span>
+      </div>
+    </details>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 15</div>
+    <div class="ej-titulo">Rango de 8 bits en complemento a dos</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <div class="derivation">
+        <span class="step">0111 1111 = +127,   1000 0000 = −128</span>
+        <span class="step"><span class="key">−2⁷ ≤ x ≤ 2⁷ − 1</span>;  con n bits: −2ⁿ⁻¹ ≤ x ≤ 2ⁿ⁻¹ − 1</span>
+      </div>
+    </details>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 16</div>
+    <div class="ej-titulo">Complemento a dos de 1000 0000 (−128)</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <div class="derivation">
+        <span class="step">1000 0000  →  invertir 0111 1111  →  +1  →  <span class="key">1000 0000</span></span>
+      </div>
+      <p>La negación tiene un punto fijo no trivial: <strong>no existe +128 en 8 bits</strong>.</p>
+    </details>
+  </div>
+</section>
+
+<!-- ===== IV. TEXTO Y MEMORIA ===== -->
+<section class="panel" id="t4" role="tabpanel">
+  <h2><span class="marker">§ 5</span>Texto es número</h2>
+  <p>Un carácter es un <em>code point</em> (un número en el catálogo Unicode); la codificación (UTF-8, UTF-32) decide cuántos bytes ocupa.</p>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 17</div>
+    <div class="ej-titulo">¿Cuánto pesa 'HOLA' en UTF-8 y en UTF-32?</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <div class="derivation">
+        <span class="step">UTF-8:  4 × 1 byte  =  <span class="key">4 bytes</span></span>
+        <span class="step">UTF-32: 4 × 4 bytes = <span class="key">16 bytes</span></span>
+      </div>
+      <p>Factor 4 a favor de UTF-8 para texto mayormente ASCII.</p>
+    </details>
+  </div>
+
+  <h2><span class="marker">§ 6</span>Palabra y direcciones</h2>
+  <p>La memoria se direcciona por byte, y una dirección cabe en una palabra: 64 bits.</p>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 18</div>
+    <div class="ej-titulo">¿Cuántas direcciones distintas hay con 64 bits?</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <div class="derivation">
+        <span class="step">2⁶⁴ direcciones</span>
+        <span class="step comment">atajo: 2¹⁰ ≈ 10³</span>
+        <span class="step">2⁶⁴ = 2⁶⁰ · 2⁴ ≈ 10¹⁸ · 16 ≈ <span class="key">1.6 × 10¹⁹</span></span>
+      </div>
+    </details>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 19</div>
+    <div class="ej-titulo">2⁶⁴ bytes en gigabytes (1 GB ≈ 2³⁰ bytes)</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <div class="derivation">
+        <span class="step">2⁶⁴ / 2³⁰ = 2³⁴ GB ≈ 10⁹ · 16 ≈ <span class="key">1.6 × 10¹⁰ GB</span></span>
+      </div>
+      <p>Unos 16 exabytes: mucho más de lo que tiene cualquier RAM real.</p>
+    </details>
+  </div>
+</section>
+
+<!-- ===== V. TRANSISTORES ===== -->
+<section class="panel" id="t5" role="tabpanel">
+  <h2><span class="marker">§ 7</span>Del interruptor a la compuerta</h2>
+  <p>Un transistor es un interruptor. En serie computan AND; en paralelo, OR; uno configurado al revés es NOT.</p>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 20</div>
+    <div class="ej-titulo">¿Cuántos transistores mínimo para NAND, y en qué disposición?</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <p><strong>Tres.</strong> Dos en serie computan <span class="math">A · B</span>; el tercero, como NOT, va al final e invierte la salida. La posición del NOT importa: al principio produciría <span class="math">¬A · B</span>, otra función.</p>
+      <div class="aside"><span class="label">Nota</span>En CMOS real, NAND se construye directo con cuatro transistores, sin encadenar AND + NOT. Es una razón por la que NAND es la pieza fundamental.</div>
+    </details>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Ejercicio 21</div>
+    <div class="ej-titulo">Construye NOR con la misma lógica</div>
+    <details class="solucion"><summary>Ver solución</summary>
+      <p><strong>Óptima, tres:</strong> dos en paralelo computan <span class="math">A + B</span>; el tercero invierte. Es la imagen especular de NAND.</p>
+      <p><strong>Vía De Morgan, cuatro:</strong> <span class="math">¬(A + B) = ¬A · ¬B</span>: dos NOT y un AND en serie. Funciona, con un transistor de más.</p>
+      <p>Expresiones algebraicamente equivalentes pueden tener costos físicos distintos: de eso trata la minimización lógica.</p>
+    </details>
+  </div>
+</section>
+
+<div class="footnote">Fuente: reporte de cierre de la Fase 0 (Apéndice A). Las lecciones interactivas de la fase están en los temas Lógica booleana y ALU.</div>
+
+</div>
+
+<script>
+  // Pestañas, y aviso al sitio de qué parte se está viendo (contrato postMessage, spec 03 §3).
+  const buttons = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.panel');
+  function avisar(btn) {
+    if (window.parent === window) return;
+    parent.postMessage({ tipo: 'elemento', seccion: btn.dataset.seccion, titulo: btn.dataset.titulo,
+                         clase: 'lectura' }, location.origin);
+  }
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+      panels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      document.getElementById(btn.dataset.target).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      avisar(btn);
+    });
+  });
+  const inicial = document.querySelector('.tab-btn.active');
+  if (inicial) { inicial.setAttribute('aria-selected', 'true'); avisar(inicial); }
+</script>
+
+</body>
+</html>

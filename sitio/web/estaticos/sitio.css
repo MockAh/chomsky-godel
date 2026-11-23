@@ -52,6 +52,18 @@ body {
 .tema-nombre { display: block; color: var(--texto-suave); font-size: 13px; margin-bottom: 16px; }
 .tema-versiones { display: block; font-size: 11px; letter-spacing: 1px; color: var(--menta); opacity: .8; }
 
+/* «Lecciones de Claude»: una tarjeta por fase, aparte de los temas */
+.bloque-lecciones { margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--linea); }
+.bloque-lecciones h2 {
+  font-size: 13px; font-weight: 600; letter-spacing: 5px; text-transform: uppercase;
+  color: var(--magenta); margin-bottom: 28px;
+}
+.leccion-tarjeta { border-color: rgba(221, 68, 255, 0.3); }
+.leccion-tarjeta:hover, .leccion-tarjeta:focus-visible {
+  border-color: var(--magenta);
+  box-shadow: 0 0 30px rgba(221, 68, 255, 0.14);
+}
+
 /* Página de tema */
 body.tema { display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
 .volver { color: var(--texto-suave); text-decoration: none; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
@@ -126,6 +138,9 @@ body.tema { display: flex; flex-direction: column; height: 100vh; height: 100dvh
 .nota-previa { border-left: 2px solid var(--linea-fuerte); padding: 4px 0 4px 10px; margin-top: 8px; }
 
 .flotante { position: fixed; right: 24px; bottom: 24px; z-index: 20; box-shadow: 0 0 30px rgba(221, 68, 255, 0.35); }
+/* Fondo sólido: el botón flota sobre lecciones de fondo claro, donde el translúcido no se lee. */
+.flotante.boton-principal { background: #1c0a28; }
+.flotante.boton-principal:hover { background: #2e0f42; }
 body.con-cajon .flotante { right: calc(min(440px, 100vw) + 24px); }
 .aviso-sesion {
   position: fixed; left: 50%; top: 64px; transform: translateX(-50%); z-index: 30;

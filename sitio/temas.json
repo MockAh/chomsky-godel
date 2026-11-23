@@ -55,6 +55,55 @@
         {"id": "mapa", "etiqueta": "Mapa", "anotable": false,
          "archivo": "temas/cpu/mapa.html", "version": "v0.1", "aviso": "En revisión"}
       ]
+    },
+    {
+      "id": "fase-0",
+      "corto": "Fase 0",
+      "nombre": "El puente: de la matemática a la lógica de la máquina",
+      "grupo": "claude",
+      "secciones": [
+        {"id": "s1", "nombre": "Álgebra y completitud"},
+        {"id": "s2", "nombre": "Representación posicional"},
+        {"id": "s3", "nombre": "Aritmética y complemento a dos"},
+        {"id": "s4", "nombre": "Texto y memoria"},
+        {"id": "s5", "nombre": "Transistores"}
+      ],
+      "pestanas": [
+        {"id": "leccion", "etiqueta": "Lección", "anotable": true,
+         "archivo": "temas/fase-0/leccion.html", "version": "v0.1"}
+      ]
+    },
+    {
+      "id": "fase-1",
+      "corto": "Fase 1",
+      "nombre": "La máquina desnuda: reto de cierre en cinco mini-tareas",
+      "grupo": "claude",
+      "secciones": [
+        {"id": "mt1", "nombre": "Mini-tarea 1 · Preparar el taller"},
+        {"id": "mt2", "nombre": "Mini-tarea 2 · Primer programa verificable"},
+        {"id": "mt3", "nombre": "Mini-tarea 3 · Traducir el trazado A.1"},
+        {"id": "mt4", "nombre": "Mini-tarea 4 · Paso a paso en gdb"},
+        {"id": "mt5", "nombre": "Mini-tarea 5 · Bucle con indirección"}
+      ],
+      "pestanas": [
+        {"id": "leccion", "etiqueta": "Lección", "anotable": true,
+         "archivo": "temas/fase-1/leccion.html", "version": "v0.1"}
+      ]
+    },
+    {
+      "id": "fase-2",
+      "corto": "Fase 2",
+      "nombre": "El lenguaje del sistema: C",
+      "grupo": "claude",
+      "secciones": [
+        {"id": "s1", "nombre": "El plan"},
+        {"id": "s2", "nombre": "Los siete temas"},
+        {"id": "s3", "nombre": "Lo que viene de la Fase 1"}
+      ],
+      "pestanas": [
+        {"id": "leccion", "etiqueta": "Lección", "anotable": true,
+         "archivo": "temas/fase-2/leccion.html", "version": "v0.1"}
+      ]
     }
   ]
 }

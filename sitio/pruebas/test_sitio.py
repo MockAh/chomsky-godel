@@ -27,7 +27,8 @@ def test_csp_del_contenido_y_del_sitio(cliente):
 def test_sesion_devuelve_temas_en_orden_y_sin_rutas(cliente):
     entrar(cliente)
     temas = cliente.get("/api/sesion").json()["temas"]
-    assert [t["id"] for t in temas] == ["logica", "alu"]
+    assert [t["id"] for t in temas] == ["logica", "alu", "fase-1"]
+    assert [t["grupo"] for t in temas] == ["", "", "claude"]
     assert temas[1]["secciones"] == [{"id": "general", "nombre": "General"}]
     assert "archivo" not in str(temas)
     assert temas[0]["pestanas"][1]["aviso"] == "En revisión"

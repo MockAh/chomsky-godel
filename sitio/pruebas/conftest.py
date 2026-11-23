@@ -39,9 +39,13 @@ def contenido(tmp_path):
         {"id": "alu", "corto": "ALU", "nombre": "Unidad aritmético-lógica", "secciones": [],
          "pestanas": [{"id": "practica", "etiqueta": "Práctica", "anotable": True,
                        "version": "v0.1", "sha256": "h3", "aviso": ""}]},
+        {"id": "fase-1", "corto": "Fase 1", "nombre": "La máquina desnuda", "grupo": "claude",
+         "secciones": [{"id": "mt1", "nombre": "Mini-tarea 1"}],
+         "pestanas": [{"id": "leccion", "etiqueta": "Lección", "anotable": True,
+                       "version": "v0.1", "sha256": "h4", "aviso": ""}]},
     ]}
     (d / "manifiesto.json").write_text(json.dumps(manifiesto), "utf-8")
-    for nombre in ("logica-practica", "logica-mapa", "alu-practica"):
+    for nombre in ("logica-practica", "logica-mapa", "alu-practica", "fase-1-leccion"):
         (d / f"{nombre}.html").write_text(f"<!doctype html><p>{nombre}</p>", "utf-8")
     return d
 

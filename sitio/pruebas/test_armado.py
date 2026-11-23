@@ -55,3 +55,16 @@ def test_se_niega_si_falta_archivo_o_pestanas(repo):
     (repo / "sitio" / "temas.json").write_text(json.dumps(datos), "utf-8")
     with pytest.raises(ErrorArmado):
         armar(repo, repo / "salida", permitir_sucio=True)
+
+
+def test_grupo_se_copia_y_se_valida(repo):
+    m = armar(repo, repo / "salida")
+    assert m["temas"][0]["grupo"] == ""
+    datos = json.loads((repo / "sitio" / "temas.json").read_text("utf-8"))
+    datos["temas"][0]["grupo"] = "claude"
+    (repo / "sitio" / "temas.json").write_text(json.dumps(datos), "utf-8")
+    assert armar(repo, repo / "salida", permitir_sucio=True)["temas"][0]["grupo"] == "claude"
+    datos["temas"][0]["grupo"] = "Claude!"
+    (repo / "sitio" / "temas.json").write_text(json.dumps(datos), "utf-8")
+    with pytest.raises(ErrorArmado):
+        armar(repo, repo / "salida", permitir_sucio=True)

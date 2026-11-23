@@ -34,6 +34,8 @@ pantalla «Elige un tema».
 Reglas:
 - `id` de tema y de pestaña: `[a-z0-9-]+`. Son parte de la URL.
 - Cada tema tiene **al menos una** pestaña antes de publicarse (las listas vacías del ejemplo son de relleno).
+- `grupo` (opcional, `[a-z0-9-]+`): agrupa temas en la pantalla de inicio. Con `"claude"`, el tema va en
+  la sección «Lecciones de Claude» (una por fase, P-24); sin él, en la lista de siempre.
 - `secciones` son las casillas fijas de anotaciones del tema. Si un tema no las
   tiene, se usa una sola sección implícita `general`.
 - Para agregar un tema: crear `temas/{id}/…html`, añadirlo aquí, hacer commit y desplegar. No se toca el código.

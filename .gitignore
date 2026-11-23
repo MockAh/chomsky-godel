@@ -20,3 +20,6 @@ __pycache__/
 # Basura de Windows
 *:Zone.Identifier
 *Zone.Identifier
+
+# Ejemplos de estilo traídos de fuera (llevan datos personales; P-8)
+docs/ejemplos-html/

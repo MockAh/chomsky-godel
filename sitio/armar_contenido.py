@@ -40,6 +40,8 @@ def leer_temas(raiz: Path) -> list[dict]:
         if not ID_VALIDO.match(t["id"]) or t["id"] in vistos:
             raise ErrorArmado(f"id de tema inválido o repetido: {t['id']!r}")
         vistos.add(t["id"])
+        if "grupo" in t and not ID_VALIDO.match(t["grupo"]):
+            raise ErrorArmado(f"grupo inválido en {t['id']!r}: {t['grupo']!r}")
         if not t["pestanas"]:
             raise ErrorArmado(f"el tema {t['id']!r} no tiene pestañas")
         ids_p = [p["id"] for p in t["pestanas"]]
@@ -79,6 +81,7 @@ def armar(raiz: Path, salida: Path, permitir_sucio: bool = False) -> dict:
                 "aviso": p.get("aviso", ""),
             })
         manifiesto["temas"].append({"id": t["id"], "corto": t["corto"], "nombre": t["nombre"],
+                                    "grupo": t.get("grupo", ""),
                                     "secciones": t.get("secciones", []), "pestanas": pestanas})
     (salida / "manifiesto.json").write_text(json.dumps(manifiesto, ensure_ascii=False, indent=1), "utf-8")
     return manifiesto

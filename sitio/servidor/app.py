@@ -107,7 +107,7 @@ def cargar_manifiesto(dir_contenido: Path) -> dict:
             if not ID_VALIDO.match(p["id"]):
                 raise ValueError(f"id de pestaña inválido: {t['id']}/{p['id']!r}")
         temas.append({
-            "id": t["id"], "corto": t["corto"], "nombre": t["nombre"],
+            "id": t["id"], "corto": t["corto"], "nombre": t["nombre"], "grupo": t.get("grupo", ""),
             "secciones": t.get("secciones") or [dict(SECCION_IMPLICITA)],
             "pestanas": [{
                 "id": p["id"], "etiqueta": p["etiqueta"], "anotable": bool(p["anotable"]),

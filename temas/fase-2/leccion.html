@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fase 2 · El lenguaje del sistema — Lecciones de Claude</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,800&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f3ece0;
+    --paper-deep: #ebe2d2;
+    --ink: #1c1610;
+    --ink-soft: #3d342a;
+    --ink-faint: #7a6f5e;
+    --rule: #c9bda7;
+    --accent: #8b1e1e;
+    --accent-soft: #b14a3a;
+    --gold: #a8862a;
+    --grid: rgba(139, 30, 30, 0.06);
+    --ok: #2f6b3a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    background-color: var(--paper);
+    background-image:
+      radial-gradient(at 20% 10%, rgba(139, 30, 30, 0.04) 0%, transparent 50%),
+      radial-gradient(at 80% 90%, rgba(168, 134, 42, 0.05) 0%, transparent 50%),
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: auto, auto, 28px 28px, 28px 28px;
+    color: var(--ink);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.65;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.05 0 0 0 0.15 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.4;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    z-index: 1;
+  }
+
+  .wrap { position: relative; z-index: 2; max-width: 780px; margin: 0 auto; padding: 28px 22px 80px; }
+
+  /* HEADER */
+  header { border-bottom: 1px solid var(--rule); padding-bottom: 22px; margin-bottom: 28px; }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  }
+  .eyebrow::after { content: ""; height: 1px; background: var(--accent); flex: 1; opacity: 0.5; }
+  h1.title {
+    font-family: 'Fraunces', serif; font-weight: 300; font-size: clamp(34px, 9vw, 54px);
+    line-height: 1.02; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 8px; font-variation-settings: "opsz" 144;
+  }
+  h1.title em { font-style: italic; font-weight: 600; color: var(--accent); }
+  .subtitle { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 15px; color: var(--ink-faint); margin-top: 6px; }
+  .colophon { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 0.18em; color: var(--ink-faint); margin-top: 14px; text-transform: uppercase; }
+
+  /* TABS */
+  .tabs { display: flex; flex-direction: column; gap: 0; margin-bottom: 32px; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); }
+  .tab-btn {
+    background: transparent; border: none; border-bottom: 1px solid var(--rule); text-align: left;
+    padding: 15px 4px 13px; font-family: 'Fraunces', serif; font-size: 17px; font-weight: 400; color: var(--ink);
+    cursor: pointer; display: flex; align-items: baseline; gap: 12px; transition: all 0.2s ease; position: relative;
+  }
+  .tab-btn:last-child { border-bottom: none; }
+  .tab-btn .num { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: var(--accent); font-weight: 500; min-width: 30px; }
+  .tab-btn .name { flex: 1; font-style: italic; }
+  .tab-btn .marker { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); opacity: 0; transition: opacity 0.2s; }
+  .tab-btn:hover { background: var(--paper-deep); padding-left: 12px; }
+  .tab-btn:hover .marker { opacity: 1; }
+  .tab-btn.active { background: var(--ink); color: var(--paper); padding-left: 12px; }
+  .tab-btn.active .num { color: var(--gold); }
+  .tab-btn.active .marker { opacity: 1; color: var(--gold); }
+
+  /* PANELS */
+  .panel { display: none; animation: fadeIn 0.5s ease-out; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* CONTENT */
+  h2 {
+    font-family: 'Fraunces', serif; font-weight: 400; font-size: clamp(25px, 6vw, 31px); line-height: 1.15;
+    letter-spacing: -0.01em; margin: 38px 0 10px; color: var(--ink); font-variation-settings: "opsz" 100;
+  }
+  h2:first-child { margin-top: 0; }
+  h2 .marker { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); display: block; letter-spacing: 0.2em; margin-bottom: 6px; font-weight: 500; }
+  h3 { font-family: 'Fraunces', serif; font-weight: 600; font-style: italic; font-size: 19px; margin: 26px 0 8px; color: var(--ink-soft); letter-spacing: -0.005em; }
+  p { margin: 0 0 14px; }
+  p + p { text-indent: 1.4em; }
+  strong { font-weight: 600; color: var(--accent); }
+  em { font-style: italic; color: var(--ink-soft); }
+
+  .math, code {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.88em; background: var(--paper-deep);
+    padding: 1px 6px; border-radius: 2px; color: var(--ink); white-space: nowrap;
+  }
+  .display-math {
+    display: block; font-family: 'JetBrains Mono', monospace; font-size: 15px; text-align: center; margin: 18px 0;
+    padding: 16px 12px; background: var(--paper-deep); border-left: 2px solid var(--accent); overflow-x: auto; line-height: 1.5; color: var(--ink); white-space: pre;
+  }
+
+  .aside { border-left: 2px solid var(--accent); padding: 4px 0 4px 16px; margin: 22px 0; font-style: italic; color: var(--ink-soft); font-size: 16px; line-height: 1.55; }
+  .aside .label { display: block; font-family: 'JetBrains Mono', monospace; font-style: normal; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+
+  ul.props { list-style: none; margin: 14px 0; padding: 0; }
+  ul.props li { padding: 8px 0 8px 22px; position: relative; border-bottom: 1px dashed var(--rule); font-size: 16px; }
+  ul.props li:last-child { border-bottom: none; }
+  ul.props li::before { content: "§"; position: absolute; left: 0; top: 8px; color: var(--accent); font-family: 'Fraunces', serif; font-weight: 600; }
+  ul.props li strong { display: inline-block; min-width: 120px; }
+
+  .derivation {
+    margin: 18px 0; padding: 14px 16px; background: linear-gradient(to bottom, var(--paper-deep), var(--paper));
+    border: 1px solid var(--rule); border-left: 3px solid var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.85; overflow-x: auto;
+  }
+  .derivation .step { display: block; color: var(--ink); }
+  .derivation .comment { color: var(--ink-faint); font-style: italic; font-size: 12px; }
+  .derivation .key { color: var(--accent); font-weight: 700; }
+
+  /* TABLES */
+  .truth-table { width: 100%; max-width: 420px; margin: 18px auto; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 14px; }
+  .truth-table caption { font-family: 'Fraunces', serif; font-style: italic; font-size: 14px; color: var(--ink-faint); margin-bottom: 8px; caption-side: top; text-align: center; }
+  .truth-table th, .truth-table td { padding: 7px 10px; text-align: center; border-bottom: 1px solid var(--rule); }
+  .truth-table th { font-weight: 700; color: var(--accent); border-bottom: 2px solid var(--ink); font-size: 13px; }
+  .truth-table tr:last-child td { border-bottom: none; }
+  .truth-table td:not(:last-child), .truth-table th:not(:last-child) { border-right: 1px solid var(--rule); }
+
+  /* DIAGRAM FIGURE */
+  .diagram-fig { margin: 26px 0; padding: 20px 14px 14px; background: var(--paper-deep); border: 1px solid var(--rule); }
+  .diagram-fig svg { width: 100%; height: auto; display: block; }
+  .diagram-fig figcaption { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 14px; color: var(--ink-faint); text-align: center; margin-top: 12px; line-height: 1.4; }
+  .diagram-fig .fig-num { font-family: 'JetBrains Mono', monospace; font-style: normal; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 4px; }
+
+  /* NIBBLE REFERENCE GRID */
+  .nibble-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 18px 0; }
+  .nibble-grid .cell { background: var(--paper-deep); border: 1px solid var(--rule); padding: 7px 4px; text-align: center; font-family: 'JetBrains Mono', monospace; }
+  .nibble-grid .cell .hx { font-size: 16px; font-weight: 700; color: var(--accent); }
+  .nibble-grid .cell .bn { font-size: 11px; color: var(--ink-faint); display: block; margin-top: 2px; }
+
+  /* THEOREM */
+  .theorem { margin: 26px 0; padding: 18px 18px 16px; background: var(--ink); color: var(--paper); position: relative; overflow: hidden; }
+  .theorem::before { content: ""; position: absolute; inset: 4px; border: 1px solid rgba(243, 236, 224, 0.18); pointer-events: none; }
+  .theorem .th-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  .theorem .th-title { font-family: 'Fraunces', serif; font-style: italic; font-size: 22px; margin-bottom: 8px; color: var(--paper); }
+  .theorem p { color: var(--paper); margin-bottom: 0; font-size: 15.5px; }
+  .theorem p + p { margin-top: 10px; text-indent: 0; }
+  .theorem strong { color: var(--gold); }
+  .theorem .math { background: rgba(243,236,224,0.12); color: var(--paper); }
+
+  .divider { text-align: center; margin: 34px 0; color: var(--rule); font-family: 'Fraunces', serif; font-size: 22px; letter-spacing: 1em; line-height: 1; }
+  .footnote { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--rule); font-size: 13.5px; font-style: italic; color: var(--ink-faint); text-align: center; }
+
+  /* DESKTOP TABS */
+  @media (min-width: 640px) {
+    .wrap { padding: 44px 36px 100px; }
+    body { font-size: 18px; }
+    .tabs { flex-direction: row; }
+    .tab-btn { flex: 1; flex-direction: column; align-items: flex-start; gap: 6px; padding: 14px 14px; border-bottom: none; border-right: 1px solid var(--rule); }
+    .tab-btn:last-child { border-right: none; }
+    .tab-btn:hover { padding-left: 14px; }
+    .tab-btn.active { padding-left: 14px; }
+    .tab-btn .name { font-size: 17px; }
+  }
+
+  ::selection { background: var(--accent); color: var(--paper); }
+
+  /* ===== LECCIONES DE CLAUDE ===== */
+  .estado { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; padding: 3px 8px; border: 1px solid var(--accent); color: var(--accent); margin: 0 6px 16px 0; }
+  .estado.ok { border-color: var(--ok); color: var(--ok); }
+  .estado.curso { border-color: var(--gold); color: var(--gold); }
+  pre.code { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; background: var(--ink); color: var(--paper); padding: 14px 16px; margin: 16px 0; border-left: 3px solid var(--gold); overflow-x: auto; white-space: pre; }
+  pre.code .c { color: #b9ab8f; font-style: italic; }
+  pre.code .k { color: #f0c96a; font-weight: 700; }
+  .ejercicio { margin: 24px 0; border: 1px solid var(--rule); background: var(--paper-deep); }
+  .ejercicio .ej-cabeza { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); padding: 12px 14px 0; }
+  .ejercicio .ej-titulo { font-family: 'Fraunces', serif; font-style: italic; font-size: 19px; padding: 2px 14px 6px; color: var(--ink); }
+  .ejercicio .ej-cuerpo { padding: 0 14px 6px; }
+  .ejercicio .ej-cuerpo p + p { text-indent: 0; }
+  details.solucion { border-top: 1px dashed var(--rule); padding: 10px 14px; }
+  details.solucion summary { cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); }
+  details.solucion[open] summary { margin-bottom: 10px; }
+  .respuesta, .correccion { padding: 10px 14px; margin: 16px 0; font-size: 16px; }
+  .respuesta { border-left: 3px solid var(--ok); background: rgba(47, 107, 58, 0.07); }
+  .correccion { border-left: 3px solid var(--accent-soft); background: rgba(139, 30, 30, 0.05); }
+  .respuesta .label, .correccion .label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 4px; }
+  .respuesta .label { color: var(--ok); }
+  .correccion .label { color: var(--accent); }
+  .respuesta p + p, .correccion p + p { text-indent: 0; }
+  dl.qa { margin: 14px 0; }
+  dl.qa dt { font-weight: 600; margin-top: 14px; }
+  dl.qa dd { margin: 4px 0 0; padding-left: 14px; border-left: 1px solid var(--rule); color: var(--ink-soft); }
+  .tabla { overflow-x: auto; margin: 16px 0; }
+  table.datos { width: 100%; border-collapse: collapse; font-size: 15px; }
+  table.datos th, table.datos td { padding: 6px 8px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+  table.datos th { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); border-bottom: 2px solid var(--ink); }
+  table.datos td code, table.datos td .math { white-space: nowrap; }
+  ol.pasos { margin: 10px 0 14px 22px; }
+  ol.pasos li, ul.lista li { margin: 4px 0; }
+  ul.lista { margin: 10px 0 14px 22px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Lecciones de Claude · Fase 2</div>
+  <h1 class="title">El lenguaje del <em>sistema</em></h1>
+  <div class="subtitle">C: punteros, memoria manual, structs y el primer buffer overflow</div>
+  <div class="colophon">Guillermo · Plan aprobado el 2026-11-23 · En curso</div>
+</header>
+
+<span class="estado curso">En curso · aún sin sesiones</span>
+
+<nav class="tabs" role="tablist">
+  <button class="tab-btn active" role="tab" data-target="t1" data-seccion="s1" data-titulo="Fase 2 · El plan"><span class="num">I.</span><span class="name">El plan</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t2" data-seccion="s2" data-titulo="Fase 2 · Los siete temas"><span class="num">II.</span><span class="name">Los siete temas</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t3" data-seccion="s3" data-titulo="Fase 2 · Lo que viene de la Fase 1"><span class="num">III.</span><span class="name">Lo que viene de la Fase 1</span><span class="marker">→</span></button>
+</nav>
+
+<!-- ===== I. EL PLAN ===== -->
+<section class="panel active" id="t1" role="tabpanel">
+  <h2><span class="marker">§ 1</span>Objetivo</h2>
+  <p>Pasar de ver la máquina a darle órdenes con nombre. C pone nombre a lo que la Fase 1 hacía a mano: los estantes se vuelven <strong>punteros</strong>, los huecos de la mesa se vuelven <strong>variables de tamaño fijo</strong> y la pila de hojas se vuelve la <strong>llamada a función</strong>.</p>
+
+  <div class="theorem">
+    <div class="th-label">Criterio de salida</div>
+    <div class="th-title">Escribir y ver debajo</div>
+    <p>Escribe programas pequeños en C que manipulan memoria manualmente, y entiende qué ocurre debajo: para un fragmento dado, dice qué Assembly produce a grandes rasgos y qué pasa en el stack o en el heap.</p>
+  </div>
+
+  <h2><span class="marker">§ 2</span>Cómo se trabaja</h2>
+  <ul class="props">
+    <li><strong>Escritorio</strong> WSL para escribir, compilar y depurar (<code>gcc</code>, <code>gdb</code>).</li>
+    <li><strong>Teléfono</strong> cápsulas conceptuales y trazados.</li>
+    <li><strong>Formato</strong> ejemplo resuelto → ejercicio equivalente hecho solo. Siempre predice primero.</li>
+    <li><strong>Ancla</strong> cada tema de C se mira en su Assembly: «¿qué hoja escribió el compilador?».</li>
+  </ul>
+
+  <h2><span class="marker">§ 3</span>Retos</h2>
+  <ul class="props">
+    <li><strong>Semanal</strong> 30–45 min: un programa corto o un trazado C ↔ Assembly.</li>
+    <li><strong>Quincenal</strong> reescribir en C tu <code>mt5.asm</code> (sumar un arreglo con un puntero) y comparar el Assembly del compilador con el tuyo.</li>
+    <li><strong>Cierre</strong> se redacta al llegar al tema 7. Idea: lista enlazada en el heap sin fugas, más un overflow controlado observado en gdb.</li>
+  </ul>
+</section>
+
+<!-- ===== II. LOS SIETE TEMAS ===== -->
+<section class="panel" id="t2" role="tabpanel">
+  <p>En orden estricto. Esta página se irá llenando con las notas y los ejercicios de cada tema conforme avancen las sesiones.</p>
+  <div class="tabla"><table class="datos">
+    <tr><th>#</th><th>Tema</th><th>Ancla en la Fase 1</th><th>Estado</th></tr>
+    <tr><td>1</td><td><strong>De C a Assembly</strong>: <code>gcc -S -O0</code>, <code>objdump</code></td><td>El compilador escribe la hoja por ti</td><td>Siguiente</td></tr>
+    <tr><td>2</td><td><strong>Tipos y tamaños</strong>: con y sin signo, overflow</td><td><span class="math">ℤ/2ⁿℤ</span>; SF, CF, OF</td><td>Por empezar</td></tr>
+    <tr><td>3</td><td><strong>Punteros</strong>: <code>&amp;</code>, <code>*</code>, aritmética, arreglos</td><td>El estante y el viaje al estante; <code>inc rsi</code></td><td>Por empezar</td></tr>
+    <tr><td>4</td><td><strong>Funciones y stack frame</strong>: <code>call</code>/<code>ret</code></td><td>La pila de hojas; dirección de retorno</td><td>Por empezar</td></tr>
+    <tr><td>5</td><td><strong>Memoria manual</strong>: <code>malloc</code>, <code>free</code></td><td>Estantes que el dueño presta</td><td>Por empezar</td></tr>
+    <tr><td>6</td><td><strong>Structs</strong>: layout, padding, listas</td><td>Cada nodo guarda el estante del siguiente</td><td>Por empezar</td></tr>
+    <tr><td>7</td><td><strong>Primer buffer overflow</strong>, en laboratorio</td><td>El estante vecino no es tuyo</td><td>Por empezar</td></tr>
+  </table></div>
+  <div class="aside">
+    <span class="label">Anclas matemáticas</span>
+    Un tipo es un anillo finito con una interpretación. Un puntero es un elemento del dominio de <span class="math">f : D → {0,1}⁸</span>. Un struct es un producto con coordenadas en posiciones fijas. <code>free</code> encoge el dominio de una función parcial que el programa sigue evaluando.
+  </div>
+</section>
+
+<!-- ===== III. LO QUE VIENE DE LA FASE 1 ===== -->
+<section class="panel" id="t3" role="tabpanel">
+  <h2><span class="marker">§ 4</span>Lo que hay que vigilar</h2>
+  <ul class="props">
+    <li><strong>Estante vs. pieza</strong> dirección contra contenido. En la mini-tarea 5 sumaste a la pieza en vez de al estante; lo destrabaron las direcciones reales en hex. Es el corazón de los punteros (tema 3).</li>
+    <li><strong>Finitud</strong> tamaños de tipos y overflow (tema 2).</li>
+    <li><strong>SF y CF</strong> explicadas, sin ejercicio propio todavía (tema 2).</li>
+    <li><strong>ZF</strong> no es «son iguales»: es «la última cuenta dio 0».</li>
+    <li><strong>El hardware no se recupera solo</strong> vuelve en memoria manual y overflows (temas 5 y 7).</li>
+  </ul>
+  <div class="theorem">
+    <div class="th-label">La puerta de salida de la Fase 1</div>
+    <div class="th-title">El estante vecino no es tuyo</div>
+    <p>En tu <code>mt5</code>, después de las cuatro piezas había un <code>2c</code> que no era del arreglo. La máquina no sabe dónde termina un arreglo: en C eso se llama <strong>buffer overflow</strong>.</p>
+  </div>
+</section>
+
+<div class="footnote">Fuente: plan de la Fase 2 (estudio/fases/fase-2.md), aprobado el 2026-11-23.</div>
+
+</div>
+
+<script>
+  // Pestañas, y aviso al sitio de qué parte se está viendo (contrato postMessage, spec 03 §3).
+  const buttons = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.panel');
+  function avisar(btn) {
+    if (window.parent === window) return;
+    parent.postMessage({ tipo: 'elemento', seccion: btn.dataset.seccion, titulo: btn.dataset.titulo,
+                         clase: 'lectura' }, location.origin);
+  }
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+      panels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      document.getElementById(btn.dataset.target).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      avisar(btn);
+    });
+  });
+  const inicial = document.querySelector('.tab-btn.active');
+  if (inicial) { inicial.setAttribute('aria-selected', 'true'); avisar(inicial); }
+</script>
+
+</body>
+</html>
