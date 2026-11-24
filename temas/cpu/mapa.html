@@ -229,6 +229,73 @@
     line-height:1.65;
   }
 
+  /* ---------- el taller: la libreta y el dedo de lectura ---------- */
+  .taller{margin-top:64px; padding-top:40px; border-top:1px solid var(--rule)}
+  .taller h2{
+    font-family:"IBM Plex Sans Condensed",sans-serif; font-weight:700;
+    font-size:clamp(1.5rem,3.4vw,2.1rem); letter-spacing:-.01em; margin:0 0 14px;
+  }
+  .taller > p{color:var(--ink-soft); max-width:68ch; margin:0 0 22px}
+  .taller > p b{color:var(--ink); font-weight:500}
+  .t-grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:18px}
+  .t-card{border:1px solid var(--rule); background:var(--panel); border-radius:3px; padding:16px 18px; min-width:0}
+  .t-card h3{
+    font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--ink-faint); font-weight:500; margin:0 0 10px;
+  }
+  .t-card h3 + h3, .t-card .t-sep{margin-top:18px}
+  ol.t-prog{list-style:none; margin:0; padding:0; font-family:"IBM Plex Mono",monospace; font-size:13.5px}
+  ol.t-prog li{
+    display:grid; grid-template-columns:4.6em 1fr; gap:8px; padding:4px 8px; border-left:2px solid transparent;
+    color:var(--ink-faint); border-radius:2px;
+  }
+  ol.t-prog li .et{color:var(--ink-faint)}
+  ol.t-prog li.hecho{color:var(--ink-soft)}
+  ol.t-prog li.actual{color:var(--ink); background:var(--comb-fill); border-left-color:var(--comb)}
+  ol.t-prog li .cm{grid-column:2; font-size:12px; color:var(--ink-faint)}
+  .t-btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px}
+  .t-btns button.ctl[disabled]{opacity:.35; cursor:default}
+  table.t-tab{width:100%; border-collapse:collapse; font-family:"IBM Plex Mono",monospace; font-size:13px}
+  table.t-tab td{padding:4px 6px; border-bottom:1px solid var(--rule-soft); vertical-align:top}
+  table.t-tab td.k{color:var(--ink-faint); width:5.2em}
+  table.t-tab td.v{color:var(--ink)}
+  table.t-tab td.n{color:var(--ink-faint); font-size:12px}
+  table.t-tab tr.cambio td.v{color:var(--state)}
+  table.t-tab tr.apunta td{background:var(--state-fill)}
+  table.t-tab tr.leida td.v{color:var(--state); font-weight:600}
+  table.t-tab tr.fuera td.k, table.t-tab tr.fuera td.n{color:var(--ink-faint); font-style:italic}
+  .dedo{color:var(--state); white-space:nowrap}
+  .t-flags{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px}
+  .flag{
+    font-family:"IBM Plex Mono",monospace; font-size:12.5px; min-width:3.1em; text-align:center;
+    padding:5px 6px 4px; border:1px solid var(--rule); border-radius:2px; color:var(--ink-faint);
+  }
+  .flag small{display:block; font-size:10px; opacity:.8}
+  .flag.on{color:var(--plate-deep); background:var(--comb); border-color:var(--comb); font-weight:600}
+  .flag.fija{border-style:dashed}
+  .flag.toco{outline:2px solid var(--state); outline-offset:1px}
+  .gdb{
+    font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--comb);
+    background:var(--comb-fill); border:1px solid var(--comb-dim); padding:8px 10px; border-radius:2px;
+    overflow-x:auto; white-space:nowrap;
+  }
+  .quien{
+    display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.08em;
+    padding:3px 8px; border-radius:2px; border:1px solid var(--rule); color:var(--ink-soft); margin-top:10px;
+  }
+  .quien.escribe{border-color:var(--state); color:var(--state)}
+  .quien.lee{border-color:var(--comb); color:var(--comb)}
+  .t-texto{
+    grid-column:1 / -1; font-size:15px; color:var(--ink-soft); line-height:1.6;
+    border-left:2px solid var(--comb); padding:4px 0 4px 16px; min-height:5.2em;
+  }
+  .t-texto b{color:var(--ink); font-weight:500}
+  .t-texto code{font-family:"IBM Plex Mono",monospace; font-size:.9em; color:var(--ink)}
+  @media (max-width:720px){
+    .t-grid{grid-template-columns:1fr}
+    .t-texto{grid-row:2}
+  }
+
   @media (max-width:720px){
     header{padding:48px 0 30px}
     .legend{grid-template-columns:1fr; gap:14px}
@@ -441,6 +508,39 @@
   </div>
 </div>
 
+<section class="taller" id="taller" aria-labelledby="taller-h">
+  <h2 id="taller-h">En el taller: la libreta y el dedo de lectura</h2>
+  <p>
+    Dos piezas del banco de registros, vistas por dentro con un programa de nueve pasos.
+    <b>rsi</b> guarda un <b>número de estante</b>, no la pieza: solo los corchetes <code>[rsi]</code>
+    van al almacén y traen la pieza a la mesa. Y <b>rflags</b> es la <b>libreta</b> donde la ALU anota
+    cómo le fue a la última cuenta: la escriben <code>cmp</code>, <code>sub</code>, <code>add</code> e
+    <code>inc</code>; <code>mov</code> y los saltos no la tocan, y <code>je</code> solo la lee.
+  </p>
+  <div class="t-grid">
+    <div class="t-card">
+      <h3>Programa</h3>
+      <ol class="t-prog" id="t-prog"></ol>
+      <div class="t-btns">
+        <button class="ctl" id="t-atras" type="button">← Paso</button>
+        <button class="ctl" id="t-sig" type="button">Paso →</button>
+        <button class="ctl" id="t-reini" type="button">Reiniciar</button>
+      </div>
+    </div>
+    <div class="t-card">
+      <h3>Registros</h3>
+      <table class="t-tab" id="t-regs"></table>
+      <h3 class="t-sep">Almacén <span style="text-transform:none;letter-spacing:0">· piezas: db 5, 3, 8, 2</span></h3>
+      <table class="t-tab" id="t-mem"></table>
+      <h3 class="t-sep">Libreta · rflags</h3>
+      <div class="t-flags" id="t-flags"></div>
+      <div class="gdb" id="t-gdb"></div>
+      <span class="quien" id="t-quien"></span>
+    </div>
+    <div class="t-texto" id="t-texto" aria-live="polite"></div>
+  </div>
+</section>
+
 <section class="closer">
   <h2>Dónde vive el isomorfismo</h2>
   <p>
@@ -501,7 +601,7 @@ const DATA = {
   regs: {
     name:"Banco de registros",
     kind:"state",
-    body:"Un puñado de posiciones muy rápidas donde el procesador guarda los valores con los que está trabajando ahora mismo. Se leen al principio del ciclo y se escriben al final.",
+    body:"Un puñado de posiciones muy rápidas donde el procesador guarda los valores con los que está trabajando ahora mismo. Se leen al principio del ciclo y se escriben al final. Entre ellos están rsi (un número de estante) y rflags (la libreta de la ALU): míralos por dentro en «En el taller», abajo.",
     why:"<b>Por qué es estado:</b> es exactamente el punto donde un ciclo le pasa información al siguiente. La flecha larga que vuelve desde la derecha termina aquí: eso es la máquina recordando."
   },
   muxA: {
@@ -589,6 +689,107 @@ btnPulse.addEventListener('click', ()=>{
     glow.setAttribute('opacity','0');
   }, 2600);
 });
+</script>
+<script>
+// El taller: programa de 9 pasos. Las marcas se calculan con las reglas de x86 (no están escritas a mano).
+(function(){
+  const PIEZAS = 0x402000;
+  const MEM0 = {0x402000:5, 0x402001:3, 0x402002:8, 0x402003:2, 0x402004:0x2A};
+  const NOMBRE = {0x402000:'piezas[0]', 0x402001:'piezas[1]', 0x402002:'piezas[2]', 0x402003:'piezas[3]',
+                  0x402004:'vecino: ya no es de piezas'};
+  const BANDERAS = [['CF','acarreo'],['PF','paridad'],['AF','ajuste'],['ZF','cero'],['SF','signo'],['OF','desborde']];
+  const BIT = {CF:0, PF:2, AF:4, ZF:6, SF:7, IF:9, OF:11};
+
+  const paridad = x => { let n = 0; x &= 0xFF; while (x){ n += x & 1; x >>= 1; } return n % 2 === 0; };
+  function resta8(a, b){
+    const r = (a - b) & 0xFF;
+    return {r, f:{CF:a < b, PF:paridad(r), AF:((a ^ b ^ r) & 0x10) !== 0, ZF:r === 0,
+                  SF:(r & 0x80) !== 0, OF:((a ^ b) & (a ^ r) & 0x80) !== 0}};
+  }
+  function suma64(a, b){            // direcciones pequeñas: no hay acarreo ni signo en 64 bits
+    const r = a + b;
+    return {r, f:{CF:false, PF:paridad(r), AF:((a ^ b ^ r) & 0x10) !== 0, ZF:r === 0, SF:false, OF:false}};
+  }
+
+  const PASOS = [
+    {et:'',       asm:'mov rsi, piezas', cm:'rsi = número del primer estante', libreta:'no',
+     run:s => { s.rsi = PIEZAS; s.cambia = ['rsi']; },
+     txt:'<b>rsi recibe un número de estante</b>: la dirección <code>0x402000</code>, donde empieza el arreglo. La pieza 5 sigue en el almacén; nada viajó a la mesa. <code>mov</code> no es una cuenta: la libreta no se entera.'},
+    {et:'',       asm:'mov al, [rsi]',   cm:'los corchetes: ir al estante y traer la pieza', libreta:'no',
+     run:s => { s.al = s.mem[s.rsi]; s.leida = s.rsi; s.cambia = ['al']; },
+     txt:'<b>Los corchetes son el dedo de lectura</b>: «ve al estante cuyo número está en rsi y trae lo que haya». Ahora <code>al = 5</code>, y rsi sigue siendo <code>0x402000</code>. Estante y pieza son dos cosas distintas.'},
+    {et:'',       asm:'cmp al, 5',       cm:'la ALU resta al − 5 y tira el resultado', libreta:'escribe',
+     run:s => { s.anota(resta8(s.al, 5).f); },
+     txt:'<code>cmp</code> es una <b>resta que no guarda el resultado</b>: solo deja la libreta escrita. 5 − 5 = 0, así que se enciende <b>ZF</b> (dio cero). PF también: 0 tiene una cantidad par de unos. Es lo que gdb muestra como <code>[ PF ZF IF ]</code>.'},
+    {et:'',       asm:'je sigue',        cm:'salta si ZF = 1', libreta:'lee',
+     run:s => { s.salta = s.f.ZF; },
+     txt:'<code>je</code> <b>no hace cuentas</b>: mira la libreta. ZF = 1, así que salta a <code>sigue</code>. La libreta queda igual; un salto la lee, nunca la escribe.'},
+    {et:'sigue:', asm:'inc rsi',         cm:'siguiente estante', libreta:'escribe-sin-cf',
+     run:s => { const x = suma64(s.rsi, 1); s.rsi = x.r; const f = Object.assign({}, x.f); delete f.CF; s.anota(f); s.cambia = ['rsi']; },
+     txt:'<b>inc cambia el número, no la pieza</b>: rsi pasa a <code>0x402001</code> y el almacén no se movió. <code>inc</code> sí es una cuenta de la ALU, así que reescribe la libreta (todas las marcas salvo CF): ZF se apaga porque el resultado no fue cero.'},
+    {et:'',       asm:'mov al, [rsi]',   cm:'trae la pieza del nuevo estante', libreta:'no',
+     run:s => { s.al = s.mem[s.rsi]; s.leida = s.rsi; s.cambia = ['al']; },
+     txt:'Mismo dedo, otro estante: ahora <code>al = 3</code>. Para recorrer un arreglo no se mueven las piezas; se mueve el número del estante.'},
+    {et:'',       asm:'sub al, 5',       cm:'al = al − 5, y anota cómo salió', libreta:'escribe',
+     run:s => { const x = resta8(s.al, 5); s.al = x.r; s.anota(x.f); s.cambia = ['al']; },
+     txt:'3 − 5 no cabe sin signo: <b>CF se enciende</b> (hubo préstamo) y al queda en <code>0xFE</code>, que leído <b>con signo</b> es −2: por eso <b>SF</b> (el bit alto está en 1). AF marca el préstamo entre los dos medios bytes. Mismo resultado, dos lecturas: la libreta guarda las dos.'},
+    {et:'',       asm:'add rsi, 3',      cm:'tres estantes más adelante', libreta:'escribe',
+     run:s => { const x = suma64(s.rsi, 3); s.rsi = x.r; s.anota(x.f); s.cambia = ['rsi']; },
+     txt:'<code>add</code> también escribe la libreta, <b>CF incluida</b>: como esta suma no tuvo acarreo, CF se apaga. rsi queda en <code>0x402004</code>… que ya no es de <code>piezas</code>.'},
+    {et:'',       asm:'mov al, [rsi]',   cm:'¿y este estante?', libreta:'no',
+     run:s => { s.al = s.mem[s.rsi]; s.leida = s.rsi; s.cambia = ['al']; },
+     txt:'<b>La CPU no sabe dónde termina un arreglo.</b> El dedo va al estante <code>0x402004</code> y trae lo que haya ahí (<code>0x2A</code>), aunque no sea una pieza. En C (Fase 2) esto se llama <b>leer fuera de los límites</b>, y es la raíz de muchos fallos de seguridad.'},
+  ];
+  const INICIO = '<b>Antes de empezar.</b> rsi y al en cero, la libreta en blanco. Solo <b>IF</b> está encendida: la pone el sistema operativo (permite interrupciones) y gdb siempre la muestra. Avanza con <b>Paso →</b>.';
+
+  function estado(k){
+    const s = {rsi:0, al:0, mem:Object.assign({}, MEM0), f:{CF:false,PF:false,AF:false,ZF:false,SF:false,OF:false},
+               cambia:[], toco:[], leida:null, salta:null};
+    s.anota = f => { for (const b in f){ s.f[b] = f[b]; } s.toco = Object.keys(f); };
+    for (let i = 0; i < k; i++){ s.cambia = []; s.toco = []; s.leida = null; s.salta = null; PASOS[i].run(s); }
+    return s;
+  }
+
+  const hex = (n, d) => '0x' + n.toString(16).toUpperCase().padStart(d || 1, '0');
+  const $ = id => document.getElementById(id);
+  let k = 0;
+
+  function pinta(){
+    const s = estado(k), p = PASOS[k - 1];
+    $('t-prog').innerHTML = PASOS.map((q, i) =>
+      `<li class="${i + 1 === k ? 'actual' : i + 1 < k ? 'hecho' : ''}"><span class="et">${q.et}</span><span>${q.asm}</span><span class="cm">; ${q.cm}</span></li>`).join('');
+    const alTxt = s.al >= 0x80 ? `${hex(s.al, 2)}  (${s.al} sin signo · ${s.al - 256} con signo)` : `${hex(s.al, 2)}  (${s.al})`;
+    $('t-regs').innerHTML =
+      `<tr class="${s.cambia.includes('rsi') ? 'cambio' : ''}"><td class="k">rsi</td><td class="v">${hex(s.rsi)}</td><td class="n">número de estante</td></tr>` +
+      `<tr class="${s.cambia.includes('al') ? 'cambio' : ''}"><td class="k">al</td><td class="v">${alTxt}</td><td class="n">la pieza en la mesa</td></tr>`;
+    $('t-mem').innerHTML = Object.keys(MEM0).map(Number).map(d =>
+      `<tr class="${d === s.rsi ? 'apunta' : ''} ${d === s.leida ? 'leida' : ''} ${d >= PIEZAS + 4 ? 'fuera' : ''}">` +
+      `<td class="k">${hex(d)}</td><td class="v">${s.mem[d]}</td><td class="n">${NOMBRE[d]}${d === s.rsi ? ' <span class="dedo">◀ rsi</span>' : ''}</td></tr>`).join('');
+    $('t-flags').innerHTML = BANDERAS.map(([b, n]) =>
+      `<span class="flag ${s.f[b] ? 'on' : ''} ${s.toco.includes(b) ? 'toco' : ''}" title="${n}">${b}<small>${n}</small></span>`).join('') +
+      `<span class="flag on fija" title="interrupciones permitidas">IF<small>sistema</small></span>`;
+    let v = (1 << 1) | (1 << BIT.IF);
+    const enc = [];
+    for (const [b] of [['CF'],['PF'],['AF'],['ZF'],['SF'],['IF'],['OF']]){
+      if (b === 'IF' || s.f[b]){ v |= 1 << BIT[b]; enc.push(b); }
+    }
+    $('t-gdb').textContent = `(gdb) p $eflags   →   ${hex(v).toLowerCase()}  [ ${enc.join(' ')} ]`;
+    const q = $('t-quien');
+    const lib = p ? p.libreta : '';
+    q.className = 'quien ' + (lib.startsWith('escribe') ? 'escribe' : lib === 'lee' ? 'lee' : '');
+    q.textContent = !p ? 'libreta en blanco' : lib === 'no' ? `${p.asm.split(' ')[0]}: no toca la libreta`
+      : lib === 'lee' ? `${p.asm.split(' ')[0]}: solo lee la libreta${s.salta ? ' → salta' : ''}`
+      : `${p.asm.split(' ')[0]}: escribe la libreta${lib === 'escribe-sin-cf' ? ' (menos CF)' : ''}`;
+    $('t-texto').innerHTML = p ? p.txt : INICIO;
+    $('t-atras').disabled = k === 0;
+    $('t-sig').disabled = k === PASOS.length;
+  }
+  $('t-sig').addEventListener('click', () => { if (k < PASOS.length){ k++; pinta(); } });
+  $('t-atras').addEventListener('click', () => { if (k > 0){ k--; pinta(); } });
+  $('t-reini').addEventListener('click', () => { k = 0; pinta(); });
+  pinta();
+  window.__taller = {estado, PASOS};
+})();
 </script>
 </body>
 </html>

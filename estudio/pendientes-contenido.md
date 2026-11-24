@@ -6,6 +6,8 @@
 
 ## 2026-11-22 · Mapa de la CPU (`temas/cpu/mapa.html`): la libreta tiene varias marcas
 
+- **Atendido 2026-11-24** (P-32): sección «En el taller» del Mapa de la CPU, v0.2.
+
 - **Qué cambiar:** que la libreta (`rflags`) muestre más marcas que ZF (al menos SF y CF) y quién escribe en
   ella: las cuentas de la ALU (`sub`, `cmp`) sí; `mov` y los saltos (`je`) no, solo la leen. Opcional:
   mostrarla como gdb, con la lista de marcas encendidas (`[ PF ZF IF ]`).
@@ -14,6 +16,8 @@
   menciona las marcas.
 
 ## 2026-11-23 · Mapa de la CPU (`temas/cpu/mapa.html`): el dedo de lectura y `[ ]`
+
+- **Atendido 2026-11-24** (P-32): sección «En el taller» del Mapa de la CPU, v0.2.
 
 - **Qué cambiar:** mostrar un registro que guarda un **número de estante** (`rsi`) y un arreglo en el
   almacén (`piezas: db 5, 3, 8, 2`). Al avanzar, que se vea que `inc rsi` cambia el número sin tocar las

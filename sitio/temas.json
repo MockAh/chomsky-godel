@@ -51,9 +51,9 @@
       ],
       "pestanas": [
         {"id": "practica", "etiqueta": "Práctica", "anotable": true,
-         "archivo": "temas/cpu/practica.html", "version": "v0.1"},
+         "archivo": "temas/cpu/practica.html", "version": "v0.2"},
         {"id": "mapa", "etiqueta": "Mapa", "anotable": false,
-         "archivo": "temas/cpu/mapa.html", "version": "v0.1", "aviso": "En revisión"}
+         "archivo": "temas/cpu/mapa.html", "version": "v0.2"}
       ]
     },
     {
