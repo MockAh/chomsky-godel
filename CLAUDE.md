@@ -50,13 +50,16 @@ herramientas de retos (paso 2) y Fase 1 del estudio cerrada (2026-11-23; sigue F
 
 1. **Paso 3 · GitHub privado (P-20, P-22, P-23): hecho el 2026-11-23.** Repo privado
    `MockAh/chomsky-godel`, autor «Guillermo» + noreply (config local). P-22: el `push` usa un token clásico en
-   `~/.git-credentials`; el estudiante decidió conservarlo y autoriza el `push` desde Claude. No usar `gh auth login`.
+   `~/.git-credentials`; el estudiante decidió conservarlo y autoriza el `push` desde Claude (el modo automático de Claude Code lo
+   bloquea: el estudiante corre `! git push origin main`). No usar `gh auth login`.
 2. **Paso 3b · Claude Code en la nube:** entorno con script de preparación
    (`retos/herramientas/preparar-entorno.sh`, Python del sitio). Verificar antes en la documentación qué
    permite el entorno (paquetes, red).
 3. **Paso 4 · Sitio en línea:** F4 y F5 hechas el 2026-11-23 (P-25, P-26). Siguen F6 (construir) y F7
    (publicar, con visto bueno). Los comandos de `gcloud` llevan siempre `--project=chomsky-godel`: el
-   proyecto activo del `gcloud` del estudiante es otro y no debe tocarse. Decidir P-21 (publicar con PR + despliegue automático, o a mano).
+   proyecto activo del `gcloud` del estudiante es otro y no debe tocarse. Claude corre los comandos con el
+   visto bueno del estudiante en el chat (P-26). **Siguiente al retomar:** F6 según `04` §4–5 (`armar_imagen.py`,
+   `Dockerfile`, `cloudbuild.yaml`, `desplegar.sh` con `chomsky-godel`/`us-central1`) y construir; no publicar. Decidir P-21 (publicar con PR + despliegue automático, o a mano).
 4. **Paso 5 · Agente de contenido:** atender `estudio/pendientes-contenido.md` (Mapa CPU, ALU 3D) en ramas
    con aprobación. Resolver P-7 (propuesta nueva: `script-src 'self'` en la CSP de contenido).
 
