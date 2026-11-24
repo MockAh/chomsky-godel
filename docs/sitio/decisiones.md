@@ -43,3 +43,4 @@ Registro de decisiones tomadas al construir el sitio desde las specs v0.2
 
 | Fecha | Revisión de Cloud Run | Imagen / commit | Visto bueno |
 |---|---|---|---|
+| 2026-11-24 | `sitio-00001-mzc` (primera; URL `https://sitio-541993059289.us-central1.run.app`) | `sitio:e829479` | Guillermo, en el chat |

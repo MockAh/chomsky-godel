@@ -31,7 +31,7 @@ Formato por defecto en sesiones de estudio: respuestas cortas, aptas para pantal
 - Pruebas: `cd sitio && .venv/bin/python -m pytest -q`.
 - Probar en local: `sitio/.venv/bin/python sitio/local.py --puerto 8090` (el 8080 lo usa otro proyecto).
 - Orden de trabajo: fases F0–F8 de `docs/plantilla-sitio-estudio/05-pruebas-y-orden-de-trabajo.md`.
-  F0–F6 hechas (F4: Firestore + emulador, P-25; F5: proyecto GCP `chomsky-godel`, P-26; F6: imagen construida, P-27); sigue F7.
+  F0–F6 hechas (F4: Firestore + emulador, P-25; F5: proyecto GCP `chomsky-godel`, P-26; F6: imagen construida, P-27); F7 a medias: publicado, falta `invitar.py`.
 - Toda decisión nueva se anota en `docs/sitio/decisiones.md` con su clave P-n.
 - **Publicar = desplegar, y solo con visto bueno explícito del estudiante.** Nunca despliegues por tu cuenta.
 - Cambios al contenido de `temas/` (p. ej. lo que pida `estudio/pendientes-contenido.md`): en una rama,
@@ -56,10 +56,11 @@ herramientas de retos (paso 2) y Fase 1 del estudio cerrada (2026-11-23; sigue F
    (`retos/herramientas/preparar-entorno.sh`, Python del sitio). Verificar antes en la documentación qué
    permite el entorno (paquetes, red).
 3. **Paso 4 · Sitio en línea:** F4 y F5 hechas el 2026-11-23 (P-25, P-26); F6 el 2026-11-24 (P-27, imagen
-   `sitio:1bc84ee`). Sigue F7 (publicar, con visto bueno). Los comandos de `gcloud` llevan siempre `--project=chomsky-godel`: el
+   `sitio:1bc84ee`). F7: publicado el 2026-11-24 (`sitio-00001-mzc`, imagen `e829479`); falta `invitar.py`. Los comandos de `gcloud` llevan siempre `--project=chomsky-godel`: el
    proyecto activo del `gcloud` del estudiante es otro y no debe tocarse. Claude corre los comandos con el
-   visto bueno del estudiante en el chat (P-26). **Siguiente al retomar:** F7: `sitio/desplegar.sh publicar` (con visto bueno; antes `construir` otra vez si
-   HEAD ya no es el commit de la imagen: la etiqueta es siempre HEAD), anotar en el registro de despliegues, e `invitar.py` (`04` §6). P-21 decidida: B (a mano).
+   visto bueno del estudiante en el chat (P-26). **Siguiente al retomar:** escribir y correr `invitar.py` (`04` §6) para las dos cuentas. Cada
+   despliegue nuevo: `construir` (la etiqueta es HEAD) y luego `publicar`, con visto bueno, y anotarlo en el registro.
+   P-21 decidida: B (a mano).
 4. **Paso 5 · Agente de contenido:** atender `estudio/pendientes-contenido.md` (Mapa CPU, ALU 3D) en ramas
    con aprobación. Resolver P-7 (propuesta nueva: `script-src 'self'` en la CSP de contenido).
 
