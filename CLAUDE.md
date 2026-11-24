@@ -58,8 +58,8 @@ herramientas de retos (paso 2) y Fase 1 del estudio cerrada (2026-11-23; sigue F
 3. **Paso 4 · Sitio en línea:** F4 y F5 hechas el 2026-11-23 (P-25, P-26); F6 el 2026-11-24 (P-27, imagen
    `sitio:1bc84ee`). Sigue F7 (publicar, con visto bueno). Los comandos de `gcloud` llevan siempre `--project=chomsky-godel`: el
    proyecto activo del `gcloud` del estudiante es otro y no debe tocarse. Claude corre los comandos con el
-   visto bueno del estudiante en el chat (P-26). **Siguiente al retomar:** F7: `sitio/desplegar.sh publicar` (con visto bueno; reconstruir si
-   hubo commits en `sitio/`), anotar en el registro de despliegues, e `invitar.py` (`04` §6). Decidir P-21 (publicar con PR + despliegue automático, o a mano).
+   visto bueno del estudiante en el chat (P-26). **Siguiente al retomar:** F7: `sitio/desplegar.sh publicar` (con visto bueno; antes `construir` otra vez si
+   HEAD ya no es el commit de la imagen: la etiqueta es siempre HEAD), anotar en el registro de despliegues, e `invitar.py` (`04` §6). Decidir P-21 (publicar con PR + despliegue automático, o a mano).
 4. **Paso 5 · Agente de contenido:** atender `estudio/pendientes-contenido.md` (Mapa CPU, ALU 3D) en ramas
    con aprobación. Resolver P-7 (propuesta nueva: `script-src 'self'` en la CSP de contenido).
 
