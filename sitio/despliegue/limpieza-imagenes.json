@@ -1,0 +1,4 @@
+[
+  {"name": "conservar-3", "action": {"type": "Keep"}, "mostRecentVersions": {"keepCount": 3}},
+  {"name": "borrar-resto", "action": {"type": "Delete"}, "condition": {"tagState": "any"}}
+]
