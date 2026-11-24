@@ -158,7 +158,7 @@ footer{border-top:1px solid var(--hair);padding:32px 0 70px;color:var(--mute);fo
   <p class="lede">No hay traducción ni analogía aquí: hay <strong>identidad estructural</strong>. Si acuerdas que un voltaje alto significa 1 y uno bajo significa 0, entonces un circuito con dos entradas ya está calculando una función booleana — lo quieras o no. Las tres operaciones del álgebra tienen cada una su gesto físico, y son gestos muy simples: poner en fila, poner en paralelo, invertir.</p>
 
   <div class="convention">
-    <div><p class="v one">1 · ALTO</p><p>Típicamente 3.3 V o 5 V. Se le llama V<sub>DD</sub>. En el álgebra: <span class="m">[⊤]</span>, verdadero.</p></div>
+    <div><p class="v one">1 · ALTO</p><p>Unos 5 V o 3.3 V en circuitos viejos o de prácticas; cerca de 1 V dentro de una CPU moderna. Se le llama V<sub>DD</sub>. En el álgebra: <span class="m">[⊤]</span>, verdadero.</p></div>
     <div><p class="v zero">0 · BAJO</p><p>0 V, tierra. En el álgebra: <span class="m">[⊥]</span>, falso.</p></div>
     <div><p class="v" style="color:var(--copper)">Entre medio</p><p>Prohibido. El circuito se diseña para cruzar esa zona rápido y no quedarse: por eso el ruido no corrompe el valor.</p></div>
   </div>
@@ -285,7 +285,7 @@ footer{border-top:1px solid var(--hair);padding:32px 0 70px;color:var(--mute);fo
   <div class="layers">
     <div class="layer">
       <h3><b>Nivel 1</b> · interruptores en paralelo</h3>
-      <p class="cap">Dos apagadores para la misma luz, como los de una escalera con acceso arriba y abajo.</p>
+      <p class="cap">Dos apagadores para la misma luz, cada uno con su propio cable. (Ojo: los apagadores de escalera no son esto; esos calculan p ⊕ q, la XOR.)</p>
       <svg viewBox="0 0 360 150" role="img" aria-label="Dos interruptores en paralelo alimentando una lámpara">
         <line class="rail" x1="24" y1="58" x2="24" y2="94"/>
         <line class="rail" x1="16" y1="66" x2="32" y2="66"/><line class="rail" x1="19" y1="86" x2="29" y2="86"/>
@@ -399,7 +399,7 @@ footer{border-top:1px solid var(--hair);padding:32px 0 70px;color:var(--mute);fo
 
     <div class="layer">
       <h3><b>Nivel 2</b> · CMOS real</h3>
-      <p class="cap">El inversor: dos transistores complementarios. Cuando uno conduce el otro corta, siempre. Nunca hay camino directo de V<sub>DD</sub> a tierra — por eso casi no consume energía en reposo.</p>
+      <p class="cap">El inversor: dos transistores complementarios. Cuando uno conduce el otro corta. En reposo nunca hay camino directo de V<sub>DD</sub> a tierra —solo un instante, al conmutar—: por eso casi no consume energía mientras no cambia.</p>
       <svg viewBox="0 0 300 200" role="img" aria-label="Inversor CMOS de dos transistores">
         <line class="rail" x1="70" y1="24" x2="230" y2="24"/>
         <text class="glabel" x="70" y="16">V<tspan dy="2">DD</tspan></text>
@@ -450,7 +450,7 @@ footer{border-top:1px solid var(--hair);padding:32px 0 70px;color:var(--mute);fo
     <div>
       <span class="tag">Serie y paralelo</span>
       <h3>La dualidad ∧ / ∨ es una dualidad topológica</h3>
-      <p>En el primer documento, las diez reglas venían en pares duales. Aquí se ve de dónde sale esa simetría: intercambiar ∧ por ∨ es intercambiar “en fila” por “en paralelo”. Son las dos únicas formas de conectar dos cosas.</p>
+      <p>En el álgebra de Boole, las leyes vienen en pares duales. Aquí se ve de dónde sale esa simetría: intercambiar ∧ por ∨ es intercambiar “en fila” por “en paralelo”. Son las dos únicas formas de conectar dos cosas.</p>
     </div>
     <div>
       <span class="tag">Costo asimétrico</span>
@@ -460,7 +460,7 @@ footer{border-top:1px solid var(--hair);padding:32px 0 70px;color:var(--mute);fo
     <div>
       <span class="tag">Completitud funcional</span>
       <h3>Con la NAND sola alcanza</h3>
-      <p>De <span class="m">¬p = p NAND p</span> y <span class="m">p ∧ q = ¬(p NAND q)</span> se obtiene todo lo demás. Un chip entero puede fabricarse con una sola pieza repetida — y de hecho así se hace.</p>
+      <p>De <span class="m">¬p = p NAND p</span> y <span class="m">p ∧ q = ¬(p NAND q)</span> se obtiene todo lo demás. En principio, un chip entero podría fabricarse con una sola pieza repetida; en la práctica se usa una biblioteca de varias celdas porque sale más barato, pero ninguna agrega poder de cálculo.</p>
     </div>
   </div>
 </section>
@@ -468,9 +468,9 @@ footer{border-top:1px solid var(--hair);padding:32px 0 70px;color:var(--mute);fo
 <section>
   <p class="eyebrow">El enunciado exacto</p>
   <h2>Por qué esto no es una analogía</h2>
-  <p class="sub">Un circuito combinacional de k entradas define una función <span class="m">{0,1}ᵏ → {0,1}</span>. El conjunto de todas esas funciones, con las operaciones puerta a puerta, es un álgebra de Boole finita con <span class="m">2^(2ᵏ)</span> elementos: la misma ℘(Y) con la que trabajaron las dos páginas anteriores, tomando Y como las 2ᵏ combinaciones de entrada.</p>
+  <p class="sub">Un circuito combinacional de k entradas define una función <span class="m">{0,1}ᵏ → {0,1}</span>. El conjunto de todas esas funciones, con las operaciones puerta a puerta, es un álgebra de Boole finita con <span class="m">2^(2ᵏ)</span> elementos: es ℘(X), tomando X como el conjunto de las 2ᵏ combinaciones de entrada (cada función queda dada por las filas donde vale 1). Y es la misma álgebra que Lindenbaum–Tarski construye con las fórmulas de k variables, Φ/∼.</p>
 
-  <p class="finale">Φ/∼ &nbsp;<span class="c">≅</span>&nbsp; ℘(X) &nbsp;<span class="c">≅</span>&nbsp; circuitos combinacionales de n entradas</p>
+  <p class="finale">Φ/∼ &nbsp;<span class="c">≅</span>&nbsp; ℘(X) &nbsp;<span class="c">≅</span>&nbsp; circuitos combinacionales de k entradas</p>
 
   <p class="sub">Con dos variables, eso son 16 circuitos esencialmente distintos — ni uno más. Cualquier maraña de compuertas con dos entradas que armes, por enredada que sea, es equivalente a una de esas 16. El isomorfismo no permite que exista una decimoséptima.</p>
 

@@ -16,7 +16,7 @@
         {"id": "practica", "etiqueta": "Práctica", "anotable": true,
          "archivo": "temas/logica-booleana/practica.html", "version": "v0.1"},
         {"id": "mapa", "etiqueta": "Mapa", "anotable": false,
-         "archivo": "temas/logica-booleana/mapa.html", "version": "v0.1", "aviso": "En revisión"}
+         "archivo": "temas/logica-booleana/mapa.html", "version": "v0.2"}
       ]
     },
     {
