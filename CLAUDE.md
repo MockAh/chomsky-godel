@@ -31,7 +31,7 @@ Formato por defecto en sesiones de estudio: respuestas cortas, aptas para pantal
 - Pruebas: `cd sitio && .venv/bin/python -m pytest -q`.
 - Probar en local: `sitio/.venv/bin/python sitio/local.py --puerto 8090` (el 8080 lo usa otro proyecto).
 - Orden de trabajo: fases F0–F8 de `docs/plantilla-sitio-estudio/05-pruebas-y-orden-de-trabajo.md`.
-  F0–F3 hechas; sigue F4 (Firestore).
+  F0–F4 hechas (F4: Firestore + emulador, P-25); sigue F5 (proyecto GCP).
 - Toda decisión nueva se anota en `docs/sitio/decisiones.md` con su clave P-n.
 - **Publicar = desplegar, y solo con visto bueno explícito del estudiante.** Nunca despliegues por tu cuenta.
 - Cambios al contenido de `temas/` (p. ej. lo que pida `estudio/pendientes-contenido.md`): en una rama,
@@ -45,7 +45,7 @@ Formato por defecto en sesiones de estudio: respuestas cortas, aptas para pantal
 
 ## Estado y próximos pasos (al 2026-11-23)
 
-Hecho: sitio F0–F3 (servidor, front con login 3D, anotaciones), capa de estudio (`estudio/`, skills),
+Hecho: sitio F0–F4 (servidor, front con login 3D, anotaciones), capa de estudio (`estudio/`, skills),
 herramientas de retos (paso 2) y Fase 1 del estudio cerrada (2026-11-23; sigue Fase 2, C). Plan acordado con el estudiante, en orden:
 
 1. **Paso 3 · GitHub privado (P-20, P-22, P-23): hecho el 2026-11-23.** Repo privado
@@ -55,8 +55,8 @@ herramientas de retos (paso 2) y Fase 1 del estudio cerrada (2026-11-23; sigue F
 2. **Paso 3b · Claude Code en la nube:** entorno con script de preparación
    (`retos/herramientas/preparar-entorno.sh`, Python del sitio). Verificar antes en la documentación qué
    permite el entorno (paquetes, red).
-3. **Paso 4 · Sitio en línea:** F4 (Firestore + emulador; requiere Java y `cloud-firestore-emulator`),
-   F5–F7. Decidir P-21 (publicar con PR + despliegue automático, o a mano).
+3. **Paso 4 · Sitio en línea:** F4 hecha el 2026-11-23 (P-25; Java y el emulador instalados en WSL).
+   Siguen F5–F7. Decidir P-21 (publicar con PR + despliegue automático, o a mano).
 4. **Paso 5 · Agente de contenido:** atender `estudio/pendientes-contenido.md` (Mapa CPU, ALU 3D) en ramas
    con aprobación. Resolver P-7 (propuesta nueva: `script-src 'self'` en la CSP de contenido).
 

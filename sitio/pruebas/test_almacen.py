@@ -1,15 +1,23 @@
-"""Pruebas de contrato del almacén (spec 02 §3).
+"""Pruebas de contrato del almacén (spec 02 §3 y 05 §1).
 
-En F4 se parametrizan también contra AlmacenFirestore en el emulador.
+Las mismas pruebas corren contra AlmacenMemoria y contra AlmacenFirestore en el
+emulador de Firestore (fixture `emulador` de conftest.py), con un prefijo de
+colecciones por prueba.
 """
+import uuid
+
 import pytest
 
 from servidor.almacen import AlmacenMemoria, CuentaYaActiva
 
 
-@pytest.fixture(params=["memoria"])
+@pytest.fixture(params=["memoria", "firestore"])
 def alm(request):
-    return AlmacenMemoria()
+    if request.param == "memoria":
+        return AlmacenMemoria()
+    cliente = request.getfixturevalue("emulador")
+    from servidor.almacen_firestore import AlmacenFirestore
+    return AlmacenFirestore(cliente, prefijo=f"prueba-{uuid.uuid4().hex[:8]}-")
 
 
 def test_usuarios(alm):
@@ -63,3 +71,16 @@ def test_anotaciones(alm):
     assert len(notas) == 3 and len(alm.listar_anotaciones()) == 4
     misma = next(n for n in notas if n["version_hash"] == "h1" and n["elemento"] is None)
     assert (misma["texto"], misma["creada"], misma["actualizada"]) == ("dos", 1, 2)
+
+
+def test_invitacion_repetida_con_la_misma_huella(alm):
+    alm.crear_invitacion("i1", "c@x.org", "tester", expira=100)
+    alm.crear_invitacion("i1", "c@x.org", "admin", expira=200)
+    assert alm.obtener_invitacion("i1", ahora=150)["rol"] == "admin"
+
+
+def test_activar_vencida_o_inexistente(alm):
+    alm.crear_invitacion("i1", "d@x.org", "tester", expira=100)
+    assert alm.activar_invitacion("i1", "h", ahora=100) is None
+    assert alm.activar_invitacion("nada", "h", ahora=1) is None
+    assert alm.obtener_usuario("d@x.org") is None

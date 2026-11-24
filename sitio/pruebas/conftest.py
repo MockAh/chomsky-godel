@@ -1,4 +1,9 @@
 import json
+import os
+import shutil
+import socket
+import subprocess
+import time
 
 import pytest
 from fastapi.testclient import TestClient
@@ -80,3 +85,46 @@ def cliente(app):
 
 def entrar(c, correo=TESTER, contrasena=CONTRASENA):
     return c.post("/api/login", json={"correo": correo, "contrasena": contrasena})
+
+
+# ---------- emulador de Firestore (F4) ----------
+
+PUERTO_EMULADOR = 8085
+
+
+def _escucha(host, puerto):
+    try:
+        with socket.create_connection((host, puerto), timeout=0.5):
+            return True
+    except OSError:
+        return False
+
+
+@pytest.fixture(scope="session")
+def emulador():
+    """Cliente de Firestore contra el emulador.
+
+    Usa FIRESTORE_EMULATOR_HOST si ya hay uno corriendo; si no, lo levanta con
+    `gcloud emulators firestore start` y lo apaga al final. Sin Java o sin el
+    componente del emulador, las pruebas de Firestore se saltan con el motivo.
+    """
+    proceso = None
+    if not os.environ.get("FIRESTORE_EMULATOR_HOST"):
+        if not shutil.which("gcloud") or not shutil.which("java"):
+            pytest.skip("emulador de Firestore no disponible: falta gcloud o java")
+        proceso = subprocess.Popen(
+            ["gcloud", "emulators", "firestore", "start", f"--host-port=127.0.0.1:{PUERTO_EMULADOR}"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+        limite = time.time() + 60
+        while not _escucha("127.0.0.1", PUERTO_EMULADOR):
+            if proceso.poll() is not None or time.time() > limite:
+                proceso.kill()
+                pytest.skip("el emulador de Firestore no arrancó (¿falta el componente?)")
+            time.sleep(0.5)
+        os.environ["FIRESTORE_EMULATOR_HOST"] = f"127.0.0.1:{PUERTO_EMULADOR}"
+    from google.cloud import firestore
+    yield firestore.Client(project="chomsky-godel-pruebas")
+    if proceso:
+        os.killpg(proceso.pid, 15)
+        proceso.wait(timeout=10)
+        del os.environ["FIRESTORE_EMULATOR_HOST"]
