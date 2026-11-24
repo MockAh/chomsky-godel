@@ -49,9 +49,8 @@ Hecho: sitio F0–F4 (servidor, front con login 3D, anotaciones), capa de estudi
 herramientas de retos (paso 2) y Fase 1 del estudio cerrada (2026-11-23; sigue Fase 2, C). Plan acordado con el estudiante, en orden:
 
 1. **Paso 3 · GitHub privado (P-20, P-22, P-23): hecho el 2026-11-23.** Repo privado
-   `MockAh/chomsky-godel`, autor «Guillermo» + noreply (config local). Pendiente (P-22): el `push` usó un
-   token clásico guardado en `~/.git-credentials`; cambiarlo por el fine-grained y revocar el clásico.
-   No usar `gh auth login`.
+   `MockAh/chomsky-godel`, autor «Guillermo» + noreply (config local). P-22: el `push` usa un token clásico en
+   `~/.git-credentials`; el estudiante decidió conservarlo y autoriza el `push` desde Claude. No usar `gh auth login`.
 2. **Paso 3b · Claude Code en la nube:** entorno con script de preparación
    (`retos/herramientas/preparar-entorno.sh`, Python del sitio). Verificar antes en la documentación qué
    permite el entorno (paquetes, red).
