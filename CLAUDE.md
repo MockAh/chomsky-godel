@@ -52,9 +52,8 @@ herramientas de retos (paso 2) y Fase 1 del estudio cerrada (2026-11-23; sigue F
    `MockAh/chomsky-godel`, autor «Guillermo» + noreply (config local). P-22: el `push` usa un token clásico en
    `~/.git-credentials`; el estudiante decidió conservarlo y autoriza el `push` desde Claude (el modo automático de Claude Code lo
    bloquea: el estudiante corre `! git push origin main`). No usar `gh auth login`.
-2. **Paso 3b · Claude Code en la nube:** entorno con script de preparación
-   (`retos/herramientas/preparar-entorno.sh`, Python del sitio). Verificar antes en la documentación qué
-   permite el entorno (paquetes, red).
+2. **Paso 3b · Claude Code en la nube: descartado por ahora (P-29).** Se estudia en Claude Code en el escritorio;
+   el sitio es un «museo» de lo hecho y aprendido, no el lugar donde se aprende.
 3. **Paso 4 · Sitio en línea:** F4 y F5 hechas el 2026-11-23 (P-25, P-26); F6 el 2026-11-24 (P-27, imagen
    `sitio:1bc84ee`). F7: publicado el 2026-11-24 (`sitio-00001-mzc`, imagen `e829479`); invitación de admin creada (P-28), tester pendiente. Los comandos de `gcloud` llevan siempre `--project=chomsky-godel`: el
    proyecto activo del `gcloud` del estudiante es otro y no debe tocarse. Claude corre los comandos con el
