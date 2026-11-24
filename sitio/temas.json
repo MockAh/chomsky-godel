@@ -32,9 +32,9 @@
       ],
       "pestanas": [
         {"id": "practica", "etiqueta": "Práctica", "anotable": true,
-         "archivo": "temas/alu/practica.html", "version": "v0.1"},
+         "archivo": "temas/alu/practica.html", "version": "v0.2"},
         {"id": "mapa", "etiqueta": "Mapa", "anotable": false,
-         "archivo": "temas/alu/mapa.html", "version": "v0.1", "aviso": "En revisión"}
+         "archivo": "temas/alu/mapa.html", "version": "v0.2"}
       ]
     },
     {

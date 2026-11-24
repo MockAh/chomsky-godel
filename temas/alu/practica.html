@@ -1,15 +1,1001 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ALU · Práctica</title>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Radiografía de la ALU</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
-  body { margin:0; min-height:100vh; display:grid; place-items:center; background:#050510; color:#cfe8ff;
-         font:15px/1.6 ui-monospace,"Courier New",monospace; padding:16px; box-sizing:border-box; }
-  main { max-width:520px; text-align:center; }
-  h1 { font-size:13px; letter-spacing:4px; text-transform:uppercase; color:#78c8ff; }
-  p { color:rgba(120,200,255,.65); }
-</style></head>
-<body><main>
-<h1>ALU · Práctica</h1>
-<p>Contenido en preparación. Aquí irá la Radiografía de la ALU (pendiente P-7: Three.js incrustado).</p>
-</main>
+/* Layout: tres columnas — mando (izq.) · visor 3D (centro) · ficha técnica (der.); en pantallas angostas se apilan con el visor arriba */
+:root{
+  --bg:#0a0e14; --surface:#0d131b; --surface-2:#121a25; --line:#1e2a39; --line-2:#2a3a4e;
+  --ink:#d9e4ef; --ink-2:#8696a9; --ink-3:#5b6b7e;
+  --accent:#5cc8da; --hi:#ffc857; --lo:#33404f;
+  --pmos:#f08a5d; --nmos:#6c9cff; --poly:#e0526a; --metal:#b9c6d6;
+  --f-display:"Barlow Semi Condensed","Arial Narrow",sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--f-body)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.app{display:grid;grid-template-columns:292px minmax(0,1fr) 340px;height:100%}
+.panel{overflow-y:auto;padding:18px 16px 24px;background:var(--surface);display:flex;flex-direction:column;gap:20px;min-width:0}
+.panel.left{border-right:1px solid var(--line)}
+.panel.right{border-left:1px solid var(--line)}
+
+.brand .eyebrow{font:600 11px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.brand h1{font:700 30px/1.02 var(--f-display);margin:8px 0 6px;letter-spacing:.01em;text-wrap:balance}
+.brand p{margin:0;color:var(--ink-2);font-size:13px}
+
+.sec{display:flex;flex-direction:column;gap:10px}
+.sec h2{margin:0;font:600 12px/1 var(--f-display);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);display:flex;justify-content:space-between;align-items:baseline}
+.sec h2 small{font:400 11px var(--f-mono);letter-spacing:0;text-transform:none;color:var(--ink-3)}
+
+.bits{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.bit{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:8px 10px;background:var(--surface-2);border:1px solid var(--line-2);border-radius:4px;cursor:pointer;text-align:left;transition:border-color .15s,background .15s}
+.bit .k{font:500 11px var(--f-mono);color:var(--ink-2)}
+.bit .v{font:600 26px/1 var(--f-mono);color:var(--ink-3)}
+.bit[aria-pressed="true"]{border-color:var(--hi);background:color-mix(in srgb,var(--hi) 10%,var(--surface-2))}
+.bit[aria-pressed="true"] .v{color:var(--hi)}
+.bit:hover{border-color:var(--ink-3)}
+
+.ops{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--line-2);border-radius:4px;overflow:hidden}
+.op{background:var(--surface-2);border:0;border-right:1px solid var(--line-2);padding:7px 0 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px}
+.op:last-child{border-right:0}
+.op b{font:600 15px/1 var(--f-display);letter-spacing:.05em}
+.op span{font:400 10px var(--f-mono);color:var(--ink-3)}
+.op[aria-pressed="true"]{background:var(--accent);color:#06222a}
+.op[aria-pressed="true"] span{color:#0b3a44}
+.selbits{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+.outs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.out{padding:10px 12px;border:1px solid var(--line-2);border-radius:4px;background:var(--surface-2)}
+.out .k{font:500 11px var(--f-mono);color:var(--ink-2)}
+.out .v{font:600 32px/1.05 var(--f-mono);color:var(--ink-3)}
+.out.on .v{color:var(--hi)}
+.out .x{font:400 11px var(--f-mono);color:var(--ink-3)}
+
+.tt-wrap{overflow-x:auto}
+table.tt{border-collapse:collapse;width:100%;font:400 12px/1 var(--f-mono);font-variant-numeric:tabular-nums}
+.tt th{font-weight:500;color:var(--ink-2);padding:6px 4px;border-bottom:1px solid var(--line-2);text-align:center}
+.tt td{padding:5px 4px;text-align:center;color:var(--ink-2);border-bottom:1px solid var(--line)}
+.tt td.sep,.tt th.sep{border-left:1px solid var(--line-2)}
+.tt tr.row{cursor:pointer}
+.tt tr.row:hover td{background:var(--surface-2)}
+.tt tr.cur td{background:color-mix(in srgb,var(--hi) 14%,transparent);color:var(--ink);font-weight:500}
+.tt td.one{color:var(--hi)}
+.tt-note{font-size:12px;color:var(--ink-3);margin:0}
+
+.layers{display:flex;flex-direction:column;gap:6px}
+.lrow{display:grid;grid-template-columns:minmax(0,1fr);gap:5px}
+.lrow .nm{display:flex;align-items:center;gap:8px;min-width:0;font-size:13px}
+.lrow .sw{width:10px;height:10px;border-radius:2px;flex:none}
+.lrow .nm span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg{display:flex;border:1px solid var(--line-2);border-radius:4px;overflow:hidden}
+.seg button{flex:1;background:var(--surface-2);border:0;border-right:1px solid var(--line-2);padding:4px 7px;font:500 11px var(--f-mono);color:var(--ink-2);cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--line-2);color:var(--ink)}
+
+.slider{display:flex;flex-direction:column;gap:4px}
+.slider input{width:100%;accent-color:var(--accent)}
+.slider .ends{display:flex;justify-content:space-between;font:400 11px var(--f-mono);color:var(--ink-3)}
+
+.views{display:flex;flex-wrap:wrap;gap:6px}
+.btn{background:var(--surface-2);border:1px solid var(--line-2);border-radius:4px;padding:6px 10px;cursor:pointer;font-size:12.5px}
+.btn:hover{border-color:var(--accent)}
+.chk{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2);cursor:pointer}
+.chk input{accent-color:var(--accent)}
+
+/* Visor */
+.viewport{position:relative;min-width:0;min-height:0;overflow:hidden;background:var(--bg)}
+.viewport canvas{display:block}
+.labels{position:absolute;inset:0;pointer-events:none}
+.labels.off .lbl:not(.keep){display:none}
+.lbl{font:500 11px/1.25 var(--f-mono);color:var(--ink);background:rgba(10,14,20,.78);border:1px solid var(--line-2);padding:2px 6px;border-radius:3px;white-space:nowrap;pointer-events:none}
+.lbl b{color:var(--hi);font-weight:600}
+.lbl i{font-style:normal;color:var(--ink-3)}
+.lbl.layer{font:600 12px/1 var(--f-display);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,transparent);padding:5px 8px}
+.lbl.pin{font-size:12px;font-weight:600}
+.lbl.pin.on{color:var(--hi);border-color:color-mix(in srgb,var(--hi) 55%,transparent)}
+.lbl.big{font:700 22px/1 var(--f-display);letter-spacing:.06em;padding:6px 10px;text-align:center}
+.lbl.big small{display:block;font:500 11px/1.4 var(--f-mono);letter-spacing:0;color:var(--ink-2);margin-top:3px}
+.lbl.si{font-size:10px;color:var(--metal);background:rgba(10,14,20,.6)}
+.lbl.probe{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+
+.overlay{position:absolute;pointer-events:none;font:400 11.5px var(--f-mono);color:var(--ink-2)}
+.hint{left:14px;top:12px;background:rgba(10,14,20,.7);padding:5px 8px;border-radius:3px;border:1px solid var(--line)}
+.legend{left:14px;bottom:12px;display:flex;flex-wrap:wrap;gap:10px;background:rgba(10,14,20,.75);padding:6px 10px;border-radius:3px;border:1px solid var(--line);max-width:calc(100% - 28px)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.tip{position:absolute;pointer-events:none;background:var(--surface-2);border:1px solid var(--accent);color:var(--ink);font:500 12px var(--f-mono);padding:4px 8px;border-radius:3px;white-space:nowrap;transform:translate(12px,12px);z-index:5}
+.msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;color:var(--ink-2);font:400 13px var(--f-mono)}
+
+/* Ficha técnica */
+.info .lay{font:600 11px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.info h2{font:700 24px/1.08 var(--f-display);margin:8px 0 0;text-wrap:balance;letter-spacing:.01em}
+.info h3{margin:0 0 6px;font:600 11.5px/1 var(--f-display);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+.expr{font:500 14px/1.55 var(--f-mono);background:var(--bg);border:1px solid var(--line-2);border-left:3px solid var(--hi);padding:10px 12px;border-radius:3px;white-space:pre-wrap;overflow-wrap:anywhere}
+.phys{margin:0;color:var(--ink);font-size:13.5px;line-height:1.6;max-width:65ch}
+.state{font:600 13px var(--f-mono);padding:6px 10px;border-radius:3px;display:inline-block}
+.state.on{background:color-mix(in srgb,var(--hi) 18%,transparent);color:var(--hi)}
+.state.off{background:var(--surface-2);color:var(--ink-2)}
+.sigs{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}
+.sig{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:5px 8px;border:1px solid var(--line-2);border-radius:3px;background:var(--surface-2);font:400 12px var(--f-mono);min-width:0}
+.sig .nm{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sig .vv{font-weight:600;color:var(--ink-3)}
+.sig.on{border-color:color-mix(in srgb,var(--hi) 55%,var(--line-2))}
+.sig.on .vv{color:var(--hi)}
+.where{font-size:12.5px;color:var(--ink-2);border-top:1px solid var(--line);padding-top:14px;margin:0}
+.where b{color:var(--ink);font-weight:600}
+
+@media (max-width:1180px){ .app{grid-template-columns:260px minmax(0,1fr) 300px} }
+@media (max-width:900px){
+  html,body{height:auto}
+  .app{grid-template-columns:minmax(0,1fr);height:auto}
+  .viewport{order:-1;height:62svh;min-height:380px}
+  .panel{overflow:visible;border:0!important;border-top:1px solid var(--line)!important}
+  .panel.left{order:0}
+  .panel.right{order:1}
+  .hint .long{display:none}
+}
+@media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="panel left" aria-label="Controles">
+    <div class="brand">
+      <div class="eyebrow">ALU de 1 bit · 4 capas</div>
+      <h1>Radiografía de la ALU</h1>
+      <p>Cambia un bit y sigue el mismo valor booleano desde el bloque funcional hasta el canal del transistor.</p>
+    </div>
+
+    <section class="sec">
+      <h2>Entradas <small>clic = 0 ↔ 1</small></h2>
+      <div class="bits">
+        <button class="bit" id="bA" data-k="A"><span class="k">A</span><span class="v">0</span></button>
+        <button class="bit" id="bB" data-k="B"><span class="k">B</span><span class="v">0</span></button>
+        <button class="bit" id="bCin" data-k="Cin"><span class="k">Cin</span><span class="v">0</span></button>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>Operación <small>S1 S0</small></h2>
+      <div class="ops" role="group" aria-label="Operación">
+        <button class="op" data-sel="0"><b>ADD</b><span>00</span></button>
+        <button class="op" data-sel="1"><b>AND</b><span>01</span></button>
+        <button class="op" data-sel="2"><b>OR</b><span>10</span></button>
+        <button class="op" data-sel="3"><b>XOR</b><span>11</span></button>
+      </div>
+      <div class="selbits">
+        <button class="bit" id="bS1" data-k="S1"><span class="k">S1</span><span class="v">0</span></button>
+        <button class="bit" id="bS0" data-k="S0"><span class="k">S0</span><span class="v">0</span></button>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>Salidas</h2>
+      <div class="outs">
+        <div class="out" id="oR"><div class="k">Resultado R</div><div class="v">0</div><div class="x" id="oRx">A ⊕ B ⊕ Cin</div></div>
+        <div class="out" id="oC"><div class="k">Cout</div><div class="v">0</div><div class="x">A·B + Cin·(A⊕B)</div></div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>Tabla de verdad <small id="ttop">ADD</small></h2>
+      <div class="tt-wrap"><table class="tt" id="tt"></table></div>
+      <p class="tt-note">Clic en una fila para cargar esas entradas.</p>
+    </section>
+
+    <section class="sec">
+      <h2>Capas</h2>
+      <div class="layers" id="layers"></div>
+    </section>
+
+    <section class="sec">
+      <h2>Despiece <small id="exv">75 %</small></h2>
+      <div class="slider">
+        <input type="range" id="explode" min="0" max="100" value="75" aria-label="Despiece de capas">
+        <div class="ends"><span>ensamblado</span><span>explotado</span></div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2>Vista</h2>
+      <div class="views">
+        <button class="btn" id="vReset">Reiniciar</button>
+        <button class="btn" id="vTop">Superior</button>
+        <button class="btn" id="vSi">Ir al silicio</button>
+      </div>
+      <label class="chk"><input type="checkbox" id="lbls" checked> Mostrar etiquetas</label>
+    </section>
+  </aside>
+
+  <main class="viewport" id="viewport" aria-label="Modelo 3D de la ALU">
+    <div class="overlay hint">Arrastra: girar · <span class="long">Rueda: zoom · Clic derecho: desplazar · </span>Clic en una pieza: inspeccionar</div>
+    <div class="overlay legend">
+      <span><i style="background:var(--hi)"></i>1 lógico</span>
+      <span><i style="background:var(--lo)"></i>0 lógico</span>
+      <span><i style="background:var(--pmos)"></i>pMOS</span>
+      <span><i style="background:var(--nmos)"></i>nMOS</span>
+      <span><i style="background:var(--poly)"></i>polisilicio</span>
+    </div>
+    <div class="tip" id="tip" hidden></div>
+    <div class="msg" id="msg">Cargando Three.js…</div>
+  </main>
+
+  <aside class="panel right info" id="info" aria-live="polite"></aside>
+</div>
+
+<script>
+  setTimeout(function(){ if(!window.__aluReady){ var m=document.getElementById('msg'); if(m){ m.hidden=false; m.textContent='No se pudo cargar Three.js. Recarga la página; si sigue, avisa al admin.'; } } }, 9000);
+</script>
+<script type="importmap">
+{ "imports": {
+  "three": "/estaticos/vendor/three-0.160.0/three.module.min.js",
+  "three/addons/": "/estaticos/vendor/three-0.160.0/addons/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+const $ = s => document.querySelector(s);
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* =====================================================================
+   1 · MOTOR LÓGICO — una sola fuente de verdad para las 4 capas
+   ===================================================================== */
+const IN = { A:1, B:0, Cin:1, S1:0, S0:0 };
+const V = {};
+const OPS = [
+  { k:'ADD', expr:'R = A ⊕ B ⊕ Cin' },
+  { k:'AND', expr:'R = A · B' },
+  { k:'OR',  expr:'R = A + B' },
+  { k:'XOR', expr:'R = A ⊕ B' },
+];
+function evaluate(){
+  const { A, B, Cin, S1, S0 } = IN;
+  const X1 = A ^ B, SUM = X1 ^ Cin, G1 = A & B, G2 = X1 & Cin, COUT = G1 | G2, GOR = A | B;
+  const L01 = S0 ? G1 : SUM, L23 = S0 ? X1 : GOR, RES = S1 ? L23 : L01;
+  Object.assign(V, { A, B, Cin, S1, S0, X1, SUM, G1, G2, COUT, GOR, L01, L23, RES, VDD:1, GND:0, sel: S1*2+S0 });
+  for (const k of ['A','B','Cin','S1','S0','X1','G1','G2','COUT','GOR']) V['n'+k] = 1 - V[k];
+}
+const SIG = {
+  A:'A', B:'B', Cin:'Cin', S1:'S1', S0:'S0', X1:'A⊕B', SUM:'Suma', G1:'A·B', G2:'(A⊕B)·Cin',
+  COUT:'Cout', GOR:'A+B', RES:'R', L01:'nodo nivel 1 (S0)', L23:'nodo nivel 1 (S0)',
+  nA:'¬A', nB:'¬B', nCin:'¬Cin', nS0:'¬S0', nS1:'¬S1', nX1:'¬(A⊕B)', nG1:'¬(A·B)', nG2:'¬((A⊕B)·Cin)',
+  nCOUT:'¬Cout', nGOR:'¬(A+B)', VDD:'VDD', GND:'GND'
+};
+const SIGEXPR = {
+  A:'A', B:'B', Cin:'Cin', S1:'S1', S0:'S0', X1:'X = A ⊕ B', SUM:'Suma = A ⊕ B ⊕ Cin', G1:'G = A · B',
+  G2:'P = (A ⊕ B) · Cin', COUT:'Cout = A·B + Cin·(A⊕B)', GOR:'A + B', RES:'R = MUX(S1S0; Suma, A·B, A+B, A⊕B)'
+};
+
+/* =====================================================================
+   2 · ESCENA
+   ===================================================================== */
+const vp = $('#viewport');
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ antialias:true }); }
+catch(e){ $('#msg').textContent = 'Este navegador no tiene WebGL activo; el modelo 3D no puede dibujarse.'; throw e; }
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+vp.prepend(renderer.domElement);
+const labelR = new CSS2DRenderer();
+labelR.domElement.className = 'labels';
+vp.insertBefore(labelR.domElement, renderer.domElement.nextSibling);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0e14);
+scene.fog = new THREE.Fog(0x0a0e14, 38, 75);
+const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 200);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.minDistance = 2; controls.maxDistance = 55; controls.screenSpacePanning = true;
+
+scene.add(new THREE.HemisphereLight(0xcfe6ff, 0x0a0e14, 0.7));
+scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+const key = new THREE.DirectionalLight(0xffffff, 1.7); key.position.set(9, 22, 12); scene.add(key);
+const rim = new THREE.DirectionalLight(0x5cc8da, 0.7); rim.position.set(-12, 8, -10); scene.add(rim);
+const floor = new THREE.GridHelper(44, 44, 0x1b2a3a, 0x111a25); floor.position.y = -0.6; scene.add(floor);
+
+const C = {
+  hi:0xffc857, hiE:0xff9a1f, lo:0x33404f, flash:0x5cc8da, accent:0x5cc8da,
+  p:0xf08a5d, n:0x6c9cff, poly:0xe0526a, metal:0xb9c6d6, nplus:0x4fb37a, pplus:0xc58be0,
+  nwell:0x234c3e, psub:0x2e2a40, gate:0x17414b, plate:0x0e1620
+};
+const COL = {}; for (const k in C) COL[k] = new THREE.Color(C[k]);
+COL.black = new THREE.Color(0x000000);
+
+/* ---------- capas ---------- */
+const LAYERS = [
+  { n:1, name:'Silicio (VLSI)',        title:'Capa 1 · Silicio', sw:'#e0526a' },
+  { n:2, name:'Transistores CMOS',     title:'Capa 2 · Transistores CMOS', sw:'#f08a5d' },
+  { n:3, name:'Lógica combinacional',  title:'Capa 3 · Álgebra de Boole', sw:'#5cc8da' },
+  { n:4, name:'Bloque funcional',      title:'Capa 4 · Bloque funcional', sw:'#9fb8d6' },
+];
+for (const L of LAYERS){ L.group = new THREE.Group(); L.mats = []; L.labels = []; L.state = 'on'; scene.add(L.group); }
+const [L1, L2, L3, L4] = LAYERS;
+
+function mat(L, o = {}){
+  const base = o.opacity ?? 1;
+  const m = new THREE.MeshStandardMaterial({ roughness:0.55, metalness:0.25, ...o });
+  m.userData.base = base; m.transparent = base < 1; m.depthWrite = base >= 1;
+  L.mats.push(m); return m;
+}
+function lineMat(L, o){
+  const prm = { color:o.color, transparent:true, opacity:o.opacity ?? 1 };
+  const m = o.dashed ? new THREE.LineDashedMaterial({ ...prm, dashSize:o.dashSize, gapSize:o.gapSize }) : new THREE.LineBasicMaterial(prm);
+  m.userData.base = o.opacity ?? 1; L && L.mats.push(m); return m;
+}
+function label(L, html, pos, cls = '', center = [0.5, 1]){
+  const el = document.createElement('div'); el.className = 'lbl ' + cls; el.innerHTML = html;
+  const o = new CSS2DObject(el); o.position.copy(pos); o.center.set(center[0], center[1]);
+  (L ? L.group : scene).add(o); if (L) L.labels.push(el); return o;
+}
+const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+function addEdges(L, mesh, color, opacity = 0.8){
+  const e = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry, 25), lineMat(L, { color, opacity }));
+  e.position.copy(mesh.position); e.rotation.copy(mesh.rotation); e.scale.copy(mesh.scale);
+  mesh.parent.add(e); return e;
+}
+
+/* ---------- enlaces señal → material ---------- */
+const binds = [];
+function bind(m, fn, style){ binds.push({ m, fn, style, val:undefined, t0:-1e9 }); }
+const sigFn = s => () => V[s];
+const conducts = (type, g) => type === 'n' ? V[g] === 1 : V[g] === 0;
+const sWire = (m, v, p) => {
+  m.color.copy(v ? COL.hi : COL.lo);
+  m.emissive.copy(v ? COL.hiE : COL.flash);
+  m.emissiveIntensity = v ? 0.75 + 1.6 * p : 0.9 * p;
+};
+const sTr = type => (m, v, p) => {
+  const c = type === 'p' ? COL.p : COL.n;
+  m.color.copy(c).multiplyScalar(v ? 1 : 0.28);
+  m.emissive.copy(c);
+  m.emissiveIntensity = v ? 0.85 + 1.4 * p : 0.6 * p;
+};
+const sPin = (m, v, p) => sWire(m, v, p);
+
+/* ---------- objetos seleccionables ---------- */
+const pickables = [];
+function pickable(mesh, info, target){ mesh.userData.info = info; mesh.userData.target = target || mesh; pickables.push(mesh); }
+
+/* =====================================================================
+   3 · DATOS DEL CIRCUITO — misma huella XZ en todas las capas
+   ===================================================================== */
+const GATES = {
+  XOR1:{ type:'XOR', x:-3.5, z:-2.6, ins:['A','B'],   out:'X1',   short:'XOR₁', ex:'A⊕B' },
+  AND1:{ type:'AND', x:-3.5, z:-0.4, ins:['A','B'],   out:'G1',   short:'AND₁', ex:'A·B' },
+  OR2: { type:'OR',  x:-3.5, z: 1.8, ins:['A','B'],   out:'GOR',  short:'OR₂',  ex:'A+B' },
+  XOR2:{ type:'XOR', x:-0.5, z:-2.6, ins:['X1','Cin'],out:'SUM',  short:'XOR₂', ex:'X⊕Cin' },
+  AND2:{ type:'AND', x:-0.5, z:-0.4, ins:['X1','Cin'],out:'G2',   short:'AND₂', ex:'X·Cin' },
+  OR1: { type:'OR',  x: 2.0, z: 0.6, ins:['G1','G2'], out:'COUT', short:'OR₁',  ex:'G+P' },
+  MUX: { type:'MUX', x: 4.3, z:-1.0, ins:['SUM','G1','GOR','X1'], out:'RES', short:'MUX 4:1', ex:'R' },
+};
+const GINFO = {
+  XOR1:{ title:'XOR₁ · propagación', expr:'X = A ⊕ B = A·¬B + ¬A·B',
+    phys:'Se usa tres veces: para la suma, para el acarreo (Cin·X) y como resultado de la operación XOR. En la capa 2 son 12 transistores.' },
+  AND1:{ title:'AND₁ · generación', expr:'G = A · B',
+    phys:'Si A y B valen 1, el acarreo se genera aquí sin importar Cin. También es el resultado de la operación AND. Es la compuerta cuyo layout de silicio aparece en la capa 1.' },
+  OR2: { title:'OR₂ · operación OR', expr:'A + B',
+    phys:'Se calcula siempre, aunque solo llega a la salida cuando S1 S0 = 10.' },
+  XOR2:{ title:'XOR₂ · suma', expr:'Suma = X ⊕ Cin = A ⊕ B ⊕ Cin',
+    phys:'La suma de 1 bit es la paridad de las tres entradas: vale 1 cuando hay un número impar de unos.' },
+  AND2:{ title:'AND₂ · propagación del acarreo', expr:'P = (A ⊕ B) · Cin',
+    phys:'Si exactamente una de A, B vale 1, el acarreo de entrada atraviesa la etapa y sale.' },
+  OR1: { title:'OR₁ · acarreo de salida', expr:'Cout = A·B + Cin·(A ⊕ B)',
+    phys:'Une las dos maneras de producir acarreo: generarlo (G = A·B) o propagarlo (P = X·Cin).' },
+  MUX: { title:'MUX 4:1 · selector de operación', expr:'R = ¬S1·¬S0·Suma + ¬S1·S0·(A·B)\n  + S1·¬S0·(A+B) + S1·S0·(A⊕B)',
+    phys:'Las cuatro operaciones se calculan siempre en paralelo; el MUX solo elige cuál llega a la salida. Es una suma de productos: cada minitérmino de (S1, S0) habilita una entrada.' },
+};
+const MUXIN = [['SUM',-2.2],['G1',-1.4],['GOR',-0.6],['X1',0.2]];
+
+const NETS = {
+  A:   [[[-6.6,-2.9],[-4.2,-2.9]], [[-5.6,-2.9],[-5.6,1.5],[-4.2,1.5]], [[-5.6,-0.7],[-4.2,-0.7]]],
+  B:   [[[-6.6,-2.3],[-4.2,-2.3]], [[-5.0,-2.3],[-5.0,2.1],[-4.2,2.1]], [[-5.0,-0.1],[-4.2,-0.1]]],
+  Cin: [[[-6.6,0.6],[-1.9,0.6],[-1.9,-2.3],[-1.2,-2.3]], [[-1.9,-0.1],[-1.2,-0.1]]],
+  X1:  [[[-2.75,-2.6],[-2.2,-2.6],[-2.2,-2.9],[-1.2,-2.9]], [[-2.2,-2.6],[-2.2,3.2],[3.4,3.2],[3.4,0.2],[3.8,0.2]], [[-2.2,-0.7],[-1.2,-0.7]]],
+  G1:  [[[-2.75,-0.4],[-2.5,-0.4],[-2.5,1.0],[0.8,1.0],[0.8,0.3],[1.3,0.3]], [[0.8,0.3],[0.8,-1.4],[3.8,-1.4]]],
+  G2:  [[[0.25,-0.4],[0.55,-0.4],[0.55,0.9],[1.3,0.9]]],
+  GOR: [[[-2.75,1.8],[3.6,1.8],[3.6,-0.6],[3.8,-0.6]]],
+  SUM: [[[0.25,-2.6],[3.0,-2.6],[3.0,-2.2],[3.8,-2.2]]],
+  COUT:[[[2.75,0.6],[3.0,0.6],[3.0,2.4],[6.6,2.4]]],
+  RES: [[[4.8,-1.0],[6.6,-1.0]]],
+  S1:  [[[4.1,3.8],[4.1,0.6]]],
+  S0:  [[[4.5,3.8],[4.5,0.6]]],
+};
+const PINS = [
+  { s:'A',   x:-6.6, z:-2.9, side:'L' }, { s:'B', x:-6.6, z:-2.3, side:'L' }, { s:'Cin', x:-6.6, z:0.6, side:'L' },
+  { s:'S1',  x:4.1,  z:3.8,  side:'D' }, { s:'S0', x:4.5, z:3.8, side:'D' },
+  { s:'RES', x:6.6,  z:-1.0, side:'R', nm:'R' }, { s:'COUT', x:6.6, z:2.4, side:'R', nm:'Cout' },
+];
+
+/* ---------- trazo ortogonal: x en metal 1, z en metal 2 (más alto), vías en esquinas ---------- */
+function buildNet(L, sig, polylines, y, w, info){
+  const g = new THREE.Group(); L.group.add(g);
+  const m = mat(L, { color:C.lo, metalness:0.65, roughness:0.32 });
+  bind(m, sigFn(sig), sWire);
+  const th = w * 0.55, dz = w * 0.9;
+  const addSeg = (geo, px, py, pz) => { const me = new THREE.Mesh(geo, m); me.position.set(px, py, pz); g.add(me); pickable(me, info, g); };
+  polylines.forEach((pl, pi) => {
+    for (let i = 0; i < pl.length - 1; i++){
+      const [x1, z1] = pl[i], [x2, z2] = pl[i+1];
+      if (z1 === z2) addSeg(box(Math.abs(x2-x1) + w, th, w), (x1+x2)/2, y, z1);
+      else addSeg(box(w, th, Math.abs(z2-z1) + w), x1, y + dz, (z1+z2)/2);
+    }
+    const vias = pl.slice(1, -1); if (pi > 0) vias.push(pl[0]);
+    for (const [vx, vz] of vias) addSeg(box(w*1.25, dz + th, w*1.25), vx, y + dz/2, vz);
+  });
+  return g;
+}
+
+/* =====================================================================
+   4 · CAPA 3 — compuertas (el Álgebra de Boole como geometría)
+   ===================================================================== */
+function gateShapes(type){
+  const s = new THREE.Shape();
+  if (type === 'AND'){
+    s.moveTo(-0.6,-0.55); s.lineTo(0.05,-0.55); s.absarc(0.05,0,0.55,-Math.PI/2,Math.PI/2,false); s.lineTo(-0.6,0.55); s.closePath();
+    return [s];
+  }
+  const orS = (dx) => { const o = new THREE.Shape();
+    o.moveTo(-0.62+dx,-0.55); o.quadraticCurveTo(0.25+dx,-0.55,0.7+dx,0); o.quadraticCurveTo(0.25+dx,0.55,-0.62+dx,0.55);
+    o.quadraticCurveTo(-0.36+dx,0,-0.62+dx,-0.55); return o; };
+  if (type === 'OR') return [orS(0)];
+  if (type === 'XOR'){
+    const c = new THREE.Shape();
+    c.moveTo(-0.66,-0.55); c.quadraticCurveTo(-0.4,0,-0.66,0.55); c.lineTo(-0.75,0.55); c.quadraticCurveTo(-0.49,0,-0.75,-0.55); c.closePath();
+    return [orS(0.06), c];
+  }
+  const t = new THREE.Shape(); // MUX trapezoide
+  t.moveTo(-0.5,-1.6); t.lineTo(0.5,-1.1); t.lineTo(0.5,1.1); t.lineTo(-0.5,1.6); t.closePath();
+  return [t];
+}
+const gateLabels = {};
+for (const [id, g] of Object.entries(GATES)){
+  const geo = new THREE.ExtrudeGeometry(gateShapes(g.type), { depth:0.28, bevelEnabled:true, bevelThickness:0.03, bevelSize:0.03, bevelSegments:2, curveSegments:24 });
+  geo.rotateX(-Math.PI/2);
+  const m = mat(L3, { color:C.gate, emissive:C.accent, emissiveIntensity:0.12, metalness:0.45, roughness:0.35, opacity:0.93 });
+  const me = new THREE.Mesh(geo, m); me.position.set(g.x, 0.02, g.z); L3.group.add(me);
+  addEdges(L3, me, C.accent, 0.85);
+  const gi = GINFO[id];
+  pickable(me, { L:L3, title:gi.title, expr:gi.expr, phys:gi.phys, sigs:[...g.ins, g.out, ...(id==='MUX'?['S1','S0']:[])] });
+  // LED de salida
+  const lm = mat(L3, { color:C.lo, metalness:0.2, roughness:0.3 }); bind(lm, sigFn(g.out), sWire);
+  const led = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 12), lm);
+  led.position.set(g.x + (id==='MUX' ? 0.5 : 0.74), 0.16, g.z); L3.group.add(led);
+  gateLabels[id] = label(L3, '', new THREE.Vector3(g.x, 0.4, g.z - (id==='MUX'?1.65:0.6)));
+}
+// rutas internas del MUX: la entrada elegida se ilumina
+const muxPaths = MUXIN.map(([s, z], i) => {
+  const m = mat(L3, { color:C.lo, metalness:0.3 });
+  bind(m, () => (V.sel === i ? V[s] : 0) , (mm, v, p) => { const on = V.sel === i; mm.color.copy(on ? (v ? COL.hi : COL.accent) : COL.lo); mm.emissive.copy(on ? (v ? COL.hiE : COL.accent) : COL.black); mm.emissiveIntensity = on ? 0.8 + p : 0; });
+  const len = Math.hypot(1.0, -1.0 - z);
+  const me = new THREE.Mesh(box(len, 0.03, 0.04), m);
+  me.position.set(4.3, 0.34, (z - 1.0) / 2); me.rotation.y = Math.atan2(-(-1.0 - z), 1.0);
+  L3.group.add(me); return me;
+});
+for (const [sig, pls] of Object.entries(NETS))
+  buildNet(L3, sig, pls, 0.06, 0.075, { L:L3, title:`Señal ${SIG[sig]}`, expr:SIGEXPR[sig] || SIG[sig],
+    phys:'Un cable de la red lógica transporta un único valor booleano. Los tramos en x y en z van en niveles distintos y se unen por vías, igual que metal 1 y metal 2 en un chip.', sigs:[sig] });
+{ // placa
+  const pl = new THREE.Mesh(box(14.8, 0.04, 8.6), mat(L3, { color:C.plate, opacity:0.55, metalness:0.1, roughness:0.9 }));
+  pl.position.set(0, -0.03, 0.3); L3.group.add(pl); addEdges(L3, pl, C.accent, 0.35);
+}
+
+/* =====================================================================
+   5 · CAPA 2 — redes CMOS (serie = AND, paralelo = OR)
+   ===================================================================== */
+const P = g => ({ t:'p', g }), N = g => ({ t:'n', g }), ser = (...s) => ({ s }), par = (...p) => ({ p });
+function stagesFor(g){
+  const [a, b] = g.ins, o = g.out;
+  if (g.type === 'AND') return [{ pu:par(P(a),P(b)), pd:ser(N(a),N(b)), out:'n'+o, nm:'NAND' }, { pu:P('n'+o), pd:N('n'+o), out:o, nm:'INV' }];
+  if (g.type === 'OR')  return [{ pu:ser(P(a),P(b)), pd:par(N(a),N(b)), out:'n'+o, nm:'NOR' },  { pu:P('n'+o), pd:N('n'+o), out:o, nm:'INV' }];
+  return [{ pu:ser(par(P(a),P(b)), par(P('n'+a),P('n'+b))), pd:par(ser(N(a),N(b)), ser(N('n'+a),N('n'+b))), out:o, nm:'XOR' }];
+}
+function spConducts(t){ if (t.t) return conducts(t.t, t.g); if (t.s) return t.s.every(spConducts); return t.p.some(spConducts); }
+function spSize(t){
+  if (t.t) return { w:1, h:1 };
+  const ss = (t.s || t.p).map(spSize);
+  return t.s ? { w:Math.max(...ss.map(s=>s.w)), h:ss.reduce((a,s)=>a+s.h,0) }
+             : { w:ss.reduce((a,s)=>a+s.w,0), h:Math.max(...ss.map(s=>s.h)) };
+}
+function spPlace(t, x0, z0, out, net){
+  if (t.t){ const cx = x0 + 0.5; out.tr.push({ ...t, cx, cz:z0 + 0.5, net }); out.segs.push([[cx, z0],[cx, z0+1]]); return { top:[cx, z0], bot:[cx, z0+1] }; }
+  const sz = spSize(t), terms = [];
+  if (t.s){
+    let z = z0;
+    for (const c of t.s){ const cs = spSize(c); terms.push(spPlace(c, x0 + (sz.w - cs.w)/2, z, out, net)); z += cs.h; }
+    for (let i = 0; i < terms.length - 1; i++){ const a = terms[i].bot, b = terms[i+1].top; if (a[0] !== b[0]) out.segs.push([a, b]); }
+    return { top:terms[0].top, bot:terms.at(-1).bot };
+  }
+  let x = x0;
+  for (const c of t.p){ const cs = spSize(c); terms.push(spPlace(c, x, z0, out, net)); x += cs.w; }
+  const xa = terms[0].top[0], xb = terms.at(-1).top[0], zb = z0 + sz.h;
+  out.segs.push([[xa, z0],[xb, z0]]); out.segs.push([[xa, zb],[xb, zb]]);
+  for (const tm of terms) if (tm.bot[1] < zb) out.segs.push([tm.bot, [tm.bot[0], zb]]);
+  return { top:[(xa+xb)/2, z0], bot:[(xa+xb)/2, zb] };
+}
+const CELL = 0.3;
+function segMesh(group, m, a, b, y, w = 0.028, h = 0.02){
+  const [x1, z1] = a, [x2, z2] = b;
+  const me = new THREE.Mesh(box(Math.abs(x2-x1) + w, h, Math.abs(z2-z1) + w), m);
+  me.position.set((x1+x2)/2, y, (z1+z2)/2); group.add(me); return me;
+}
+function transistor(L, group, type, g, wx, wz, y, orient, info, target){
+  const tm = mat(L, { color: type==='p' ? C.p : C.n, metalness:0.3, roughness:0.4 });
+  bind(tm, () => conducts(type, g) ? 1 : 0, sTr(type));
+  const body = new THREE.Mesh(orient === 'h' ? box(0.2, 0.07, 0.13) : box(0.13, 0.07, 0.2), tm);
+  body.position.set(wx, y + 0.035, wz); group.add(body);
+  const gm = mat(L, { color:C.lo, metalness:0.5, roughness:0.3 }); bind(gm, sigFn(g), sWire);
+  const gate = new THREE.Mesh(orient === 'h' ? box(0.05, 0.04, 0.2) : box(0.2, 0.04, 0.05), gm);
+  gate.position.set(wx, y + 0.095, wz); group.add(gate);
+  const tinfo = { L, title:`${type==='p'?'pMOS':'nMOS'} · gate = ${SIG[g]}`,
+    expr: type==='p' ? `conduce ⇔ ${SIG[g]} = 0` : `conduce ⇔ ${SIG[g]} = 1`,
+    phys: info + (type==='p' ? ' El pMOS conecta bien hacia VDD: deja pasar unos fuertes.' : ' El nMOS conecta bien hacia GND: deja pasar ceros fuertes.'),
+    sigs:[g], state:() => conducts(type, g) ? 'CONDUCE · interruptor cerrado' : 'BLOQUEA · interruptor abierto', stateOn:() => conducts(type, g) };
+  pickable(body, tinfo, target); pickable(gate, tinfo, target);
+}
+const NETINFO = {
+  AND: (a, b, o) => ({ title:`${o}: NAND₂ + inversor`,
+    expr:`pull-down: n${a} en serie con n${b}\n  → conduce si ${a}·${b}  (serie = AND)\npull-up: p${a} ∥ p${b}\n  → conduce si ¬${a} + ¬${b}  (paralelo = OR)\nNAND = ¬(${a}·${b}); el inversor da ${a}·${b}`,
+    phys:'La red pull-up es la dual de la pull-down: nunca conducen a la vez, así que la salida queda en VDD (1) o en GND (0), sin corto. En silicio la primitiva es NAND (4 transistores); la AND necesita 2 más para invertir. 6 transistores.' }),
+  OR: (a, b, o) => ({ title:`${o}: NOR₂ + inversor`,
+    expr:`pull-down: n${a} ∥ n${b}\n  → conduce si ${a} + ${b}  (paralelo = OR)\npull-up: p${a} en serie con p${b}\n  → conduce si ¬${a}·¬${b}  (serie = AND)\nNOR = ¬(${a}+${b}); el inversor da ${a}+${b}`,
+    phys:'Es la imagen especular de la NAND: aquí los nMOS van en paralelo y los pMOS en serie. De Morgan está escrito en la topología: ¬(a+b) = ¬a·¬b. 6 transistores.' }),
+  XOR: (a, b, o) => ({ title:`${o}: XOR CMOS estático`,
+    expr:`pull-down: (n${a}–n${b}) ∥ (n¬${a}–n¬${b})\n  → conduce si ${a}·${b} + ¬${a}·¬${b}  (XNOR)\npull-up: (p${a} ∥ p${b}) – (p¬${a} ∥ p¬${b})\n  → conduce si (¬${a}+¬${b})·(${a}+${b}) = ${a}⊕${b}`,
+    phys:'Se dibujan los 8 transistores de la red; los 4 de los inversores que generan las entradas negadas se omiten. Total: 12 transistores.' }),
+};
+const netLabels = {};
+for (const [id, g] of Object.entries(GATES)){
+  if (g.type === 'MUX') continue;
+  const grp = new THREE.Group(); L2.group.add(grp);
+  const stages = stagesFor(g).map(st => {
+    const u = spSize(st.pu), d = spSize(st.pd), W = Math.max(u.w, d.w), out = { tr:[], segs:[] };
+    const zPU = 0.35, pu = spPlace(st.pu, (W-u.w)/2, zPU, out, 'pu');
+    const zOut = zPU + u.h + 0.35, zPD = zOut + 0.35, pd = spPlace(st.pd, (W-d.w)/2, zPD, out, 'pd');
+    const zG = zPD + d.h + 0.35;
+    out.segs.push([[pu.top[0], 0], pu.top], [pu.bot, [pu.bot[0], zOut]], [[pd.top[0], zOut], pd.top], [pd.bot, [pd.bot[0], zG]]);
+    return { st, W, zOut, zG, pu, pd, out };
+  });
+  const H = Math.max(...stages.map(s => s.zG)), gap = 0.8;
+  let x = 0; stages.forEach(s => { s.x0 = x; x += s.W + gap; });
+  const Wt = x - gap;
+  const wx = u => g.x + (u - Wt/2) * CELL, wz = v => g.z + (v - H/2) * CELL;
+  const W2 = p => [wx(p[0]), wz(p[1])];
+  const neutral = mat(L2, { color:0x8a9bb0, metalness:0.6, roughness:0.35 });
+  const [ia, ib] = g.ins.map(s => SIG[s]);
+  const ni = NETINFO[g.type](ia, ib, g.short);
+  const target = grp;
+  const ninfo = { L:L2, title:ni.title, expr:ni.expr, phys:ni.phys, sigs:[...g.ins, ...stages.map(s => s.st.out)] };
+  stages.forEach((s, si) => {
+    const off = p => [p[0] + s.x0, p[1]];
+    for (const sg of s.out.segs){ const [a, b] = sg.map(off); segMesh(grp, neutral, W2(a), W2(b), 0.03); }
+    for (const t of s.out.tr){
+      const [tx, tz] = W2(off([t.cx, t.cz]));
+      transistor(L2, grp, t.t, t.g, tx, tz, 0.02, 'v',
+        `Pertenece a la red ${t.net==='pu'?'pull-up (hacia VDD)':'pull-down (hacia GND)'} de la etapa ${s.st.nm} de ${g.short}.`, target);
+    }
+    // nodo de salida de la etapa
+    const om = mat(L2, { color:C.lo, metalness:0.6 }); bind(om, sigFn(s.st.out), sWire);
+    const xa = Math.min(s.pu.bot[0], s.pd.top[0]) + s.x0, xb = s.x0 + s.W + (si < stages.length - 1 ? gap * 0.5 : 0.35);
+    segMesh(grp, om, W2([xa, s.zOut]), W2([xb, s.zOut]), 0.035, 0.045, 0.03);
+    if (si < stages.length - 1){
+      const nx = stages[si+1], tz = nx.out.tr.map(t => t.cz);
+      const xg = nx.x0 - 0.15;
+      segMesh(grp, om, W2([xb, s.zOut]), W2([xg, s.zOut]), 0.035, 0.045, 0.03);
+      segMesh(grp, om, W2([xg, Math.min(...tz)]), W2([xg, Math.max(...tz)]), 0.035, 0.045, 0.03);
+    } else {
+      const [ex, ez] = W2([xb, s.zOut]);
+      segMesh(grp, om, [ex, ez], [g.x + 0.75, ez], 0.035, 0.045, 0.03);
+      segMesh(grp, om, [g.x + 0.75, ez], [g.x + 0.75, g.z], 0.035, 0.045, 0.03);
+    }
+  });
+  // rieles
+  const vm = mat(L2, { color:0xd8604a, emissive:0xd8604a, emissiveIntensity:0.35, metalness:0.5 });
+  const gm = mat(L2, { color:0x3c4a5c, metalness:0.5 });
+  segMesh(grp, vm, W2([-0.2, 0]), W2([Wt + 0.2, 0]), 0.03, 0.06, 0.03);
+  segMesh(grp, gm, W2([-0.2, H]), W2([Wt + 0.2, H]), 0.03, 0.06, 0.03);
+  stages.forEach(s => { if (s.zG < H) segMesh(grp, neutral, W2([s.x0 + s.pd.bot[0], s.zG]), W2([s.x0 + s.pd.bot[0], H]), 0.03); });
+  // base seleccionable
+  const pad = new THREE.Mesh(box((Wt + 0.8) * CELL, 0.02, (H + 0.5) * CELL), mat(L2, { color:0x1a2533, opacity:0.85, roughness:0.9 }));
+  pad.position.set(g.x, 0, g.z); grp.add(pad); addEdges(L2, pad, C.p, 0.35);
+  pickable(pad, ninfo, target);
+  netLabels[id] = label(L2, `${g.short} <i>${stages.map(s=>s.st.nm).join(' + ')}</i>`, new THREE.Vector3(g.x, 0.25, wz(-0.4)));
+}
+{ // MUX con compuertas de transmisión
+  const g = GATES.MUX, grp = new THREE.Group(); L2.group.add(grp);
+  const nm = mat(L2, { color:0x8a9bb0, metalness:0.6, roughness:0.35 });
+  const info = { L:L2, title:'MUX 4:1 con compuertas de transmisión',
+    expr:'TG = nMOS ∥ pMOS con gates complementarios\nnivel 1: S0 elige (Suma | A·B) y (A+B | A⊕B)\nnivel 2: S1 elige entre los dos ganadores',
+    phys:'Una compuerta de transmisión es un interruptor bidireccional: pasa ceros y unos sin degradarlos, porque el nMOS conduce bien los ceros y el pMOS los unos. 6 TG = 12 transistores, más 4 de los inversores que generan ¬S0 y ¬S1.',
+    sigs:['S1','S0','SUM','G1','GOR','X1','L01','L23','RES'] };
+  const tg = (x, z, ctrl, label) => {
+    const tip = `Compuerta de transmisión ${label}: conduce cuando ${ctrl.on}.`;
+    transistor(L2, grp, 'n', ctrl.n, x, z - 0.085, 0.02, 'h', tip, grp);
+    transistor(L2, grp, 'p', ctrl.p, x, z + 0.085, 0.02, 'h', tip, grp);
+  };
+  const c0 = { n:'nS0', p:'S0', on:'S0 = 0' }, c1 = { n:'S0', p:'nS0', on:'S0 = 1' };
+  const d0 = { n:'nS1', p:'S1', on:'S1 = 0' }, d1 = { n:'S1', p:'nS1', on:'S1 = 1' };
+  MUXIN.forEach(([s, z], i) => {
+    tg(4.15, z, i % 2 ? c1 : c0, `de ${SIG[s]}`);
+    const im = mat(L2, { color:C.lo, metalness:0.6 }); bind(im, sigFn(s), sWire);
+    segMesh(grp, im, [3.8, z], [4.04, z], 0.03, 0.045, 0.03);
+  });
+  tg(4.55, -1.8, d0, 'del nivel 2 (S1 = 0)'); tg(4.55, -0.2, d1, 'del nivel 2 (S1 = 1)');
+  const n1 = mat(L2, { color:C.lo, metalness:0.6 }); bind(n1, sigFn('L01'), sWire);
+  const n2 = mat(L2, { color:C.lo, metalness:0.6 }); bind(n2, sigFn('L23'), sWire);
+  const n3 = mat(L2, { color:C.lo, metalness:0.6 }); bind(n3, sigFn('RES'), sWire);
+  segMesh(grp, n1, [4.27, -2.2], [4.35, -2.2], 0.03, 0.045, 0.03); segMesh(grp, n1, [4.27, -1.4], [4.35, -1.4], 0.03, 0.045, 0.03);
+  segMesh(grp, n1, [4.35, -2.2], [4.35, -1.4], 0.03, 0.045, 0.03); segMesh(grp, n1, [4.35, -1.8], [4.44, -1.8], 0.03, 0.045, 0.03);
+  segMesh(grp, n2, [4.27, -0.6], [4.35, -0.6], 0.03, 0.045, 0.03); segMesh(grp, n2, [4.27, 0.2], [4.35, 0.2], 0.03, 0.045, 0.03);
+  segMesh(grp, n2, [4.35, -0.6], [4.35, 0.2], 0.03, 0.045, 0.03); segMesh(grp, n2, [4.35, -0.2], [4.44, -0.2], 0.03, 0.045, 0.03);
+  segMesh(grp, n3, [4.67, -1.8], [4.75, -1.8], 0.03, 0.045, 0.03); segMesh(grp, n3, [4.67, -0.2], [4.75, -0.2], 0.03, 0.045, 0.03);
+  segMesh(grp, n3, [4.75, -1.8], [4.75, -0.2], 0.03, 0.045, 0.03); segMesh(grp, n3, [4.75, -1.0], [4.8, -1.0], 0.03, 0.045, 0.03);
+  const pad = new THREE.Mesh(box(1.1, 0.02, 3.2), mat(L2, { color:0x1a2533, opacity:0.85, roughness:0.9 }));
+  pad.position.set(4.35, 0, -1.0); grp.add(pad); addEdges(L2, pad, C.p, 0.35);
+  pickable(pad, info, grp);
+  netLabels.MUX = label(L2, 'MUX <i>6 compuertas de transmisión</i>', new THREE.Vector3(4.35, 0.25, -2.75));
+}
+for (const [sig, pls] of Object.entries(NETS))
+  buildNet(L2, sig, pls, 0.03, 0.05, { L:L2, title:`Interconexión ${SIG[sig]}`, expr:SIGEXPR[sig] || SIG[sig],
+    phys:'El mismo valor booleano, ahora como voltaje: 1 ≈ VDD, 0 ≈ GND (0 V). Es la misma señal que se ve en la capa 3, una capa más abajo.', sigs:[sig] });
+{
+  const pl = new THREE.Mesh(box(14.8, 0.04, 8.6), mat(L2, { color:C.plate, opacity:0.5, roughness:0.9 }));
+  pl.position.set(0, -0.04, 0.3); L2.group.add(pl); addEdges(L2, pl, C.p, 0.3);
+}
+
+/* =====================================================================
+   6 · CAPA 1 — layout de silicio de la NAND₂ dentro de AND₁
+   ===================================================================== */
+const SI = { x:GATES.AND1.x, z:GATES.AND1.z, s:1.45 };
+const siRoot = new THREE.Group(); siRoot.position.set(SI.x, 0, SI.z); siRoot.scale.setScalar(SI.s); L1.group.add(siRoot);
+const subs = [0,1,2,3,4].map(() => { const g = new THREE.Group(); siRoot.add(g); return g; });
+function siBox(k, x1, x2, z1, z2, h, m, info){
+  const me = new THREE.Mesh(box(x2-x1, h, z2-z1), m); me.position.set((x1+x2)/2, h/2, (z1+z2)/2); subs[k].add(me);
+  if (info) pickable(me, { L:L1, ...info }, me); return me;
+}
+{
+  // sustrato completo
+  const sm = mat(L1, { color:C.psub, metalness:0.15, roughness:0.85 });
+  const sub = new THREE.Mesh(box(14.8, 0.14, 8.6), sm); sub.position.set(0, -0.07, 0.3); L1.group.add(sub); addEdges(L1, sub, C.poly, 0.3);
+  pickable(sub, { L:L1, title:'Sustrato de silicio tipo p', expr:'cuerpo de los nMOS → GND',
+    phys:'Oblea de silicio dopada con boro. Sobre ella se fabrican los ≈64 transistores de esta ALU; aquí solo se detalla una celda, la NAND₂ de AND₁. Los rectángulos tenues marcan dónde irían las demás celdas.', sigs:[] });
+  // celdas no detalladas
+  const cellT = { XOR:12, AND:6, OR:6, MUX:16 };
+  for (const [id, g] of Object.entries(GATES)){
+    if (id === 'AND1') continue;
+    const w = g.type === 'MUX' ? 1.2 : 1.5, d = g.type === 'MUX' ? 3.3 : (g.type === 'XOR' ? 1.7 : 1.4);
+    const cm = mat(L1, { color:0x3a3555, opacity:0.55, roughness:0.9 });
+    const c = new THREE.Mesh(box(w, 0.03, d), cm); c.position.set(g.x, 0.015, g.z); L1.group.add(c); addEdges(L1, c, 0x8c86b0, 0.5);
+    pickable(c, { L:L1, title:`Celda de ${g.short} (no detallada)`, expr:`${cellT[g.type]} transistores`,
+      phys:`Aquí iría el layout de ${g.short}. Se omite para que la NAND₂ de AND₁ se lea con claridad: cualquier compuerta se construye con las mismas cuatro capas (pozo, difusión, polisilicio, metal).`, sigs:[g.out] });
+  }
+  // n-well
+  siBox(0, -1.1, 1.1, -1.25, -0.05, 0.03, mat(L1, { color:C.nwell, roughness:0.8, opacity:0.95 }),
+    { title:'Pozo n (n-well)', expr:'cuerpo de los pMOS → VDD', phys:'Región dopada con fósforo dentro del sustrato p. Los pMOS necesitan un cuerpo tipo n, así que viven aquí; el pozo se conecta a VDD.', sigs:[] });
+  // difusiones
+  const pdm = mat(L1, { color:C.pplus, roughness:0.6 }), ndm = mat(L1, { color:C.nplus, roughness:0.6 });
+  siBox(1, -0.8, 0.8, -0.85, -0.4, 0.04, pdm, { title:'Difusión p+ · pMOS en paralelo', expr:'Y = 1 ⇔ pA ∨ pB conducen\n  ⇔ ¬A + ¬B',
+    phys:'Los dos polisilicios cortan la franja en tres zonas: los extremos van a VDD y el centro a la salida Y. Hay dos caminos independientes de VDD a Y: eso es el paralelo, el OR físico.', sigs:['A','B','nG1'] });
+  siBox(1, -0.8, 0.8, 0.35, 0.8, 0.04, ndm, { title:'Difusión n+ · nMOS en serie', expr:'Y = 0 ⇔ nA ∧ nB conducen\n  ⇔ A · B',
+    phys:'Una sola franja cruzada por ambos polisilicios: la corriente de Y a GND tiene que atravesar los dos canales en fila. Eso es la serie, el AND físico. Aquí nace literalmente el producto A·B.', sigs:['A','B','nG1'] });
+  // canales (donde el poly cruza la difusión nace un transistor)
+  const chans = [['p','A',-0.25,-0.625],['p','B',0.25,-0.625],['n','A',-0.25,0.575],['n','B',0.25,0.575]];
+  for (const [t, g, cx, cz] of chans){
+    const cm = mat(L1, { color: t==='p' ? C.p : C.n }); bind(cm, () => conducts(t, g) ? 1 : 0, sTr(t));
+    siBox(1, cx-0.07, cx+0.07, cz-0.24, cz+0.24, 0.06, cm, { title:`Canal ${t}${g}`, expr:`conduce ⇔ ${g} = ${t==='n'?1:0}`,
+      phys:`Bajo el polisilicio ${g} y una capa de óxido de pocos nanómetros, el voltaje del gate ${t==='n'?'atrae electrones y forma un canal n':'atrae huecos y forma un canal p'} entre fuente y drenador. Sin canal, el interruptor queda abierto.`,
+      sigs:[g], state:() => conducts(t, g) ? 'CONDUCE · canal formado' : 'BLOQUEA · sin canal', stateOn:() => conducts(t, g) });
+  }
+  // polisilicio
+  for (const [g, cx] of [['A',-0.25],['B',0.25]]){
+    const pm = mat(L1, { color:C.poly, metalness:0.2, roughness:0.45 });
+    bind(pm, sigFn(g), (m, v, p) => { m.color.copy(COL.poly).multiplyScalar(v ? 1.15 : 0.55); m.emissive.copy(v ? COL.hiE : COL.poly); m.emissiveIntensity = v ? 0.45 + p : 0.08 + 0.5*p; });
+    const inf = { title:`Polisilicio ${g} · gate`, expr:`gate de p${g} y de n${g}`,
+      phys:`Una misma franja de polisilicio es el gate de un pMOS (arriba) y de un nMOS (abajo). Con ${g} = 1 el nMOS conduce y el pMOS se abre; con ${g} = 0, al revés. Esa complementariedad es la C de CMOS.`, sigs:[g] };
+    siBox(2, cx-0.06, cx+0.06, -1.0, 1.0, 0.035, pm, inf);
+    siBox(2, cx-0.11, cx+0.11, -0.22, -0.02, 0.035, pm, inf);
+  }
+  // contactos
+  const ctm = mat(L1, { color:0x7d8796, metalness:0.8, roughness:0.3 });
+  const ctInfo = { title:'Contacto', expr:'metal 1 ↔ difusión / polisilicio', phys:'Pilar metálico (tungsteno) que atraviesa el óxido y une el metal 1 con la difusión o con el polisilicio de abajo.', sigs:[] };
+  for (const [cx, cz] of [[-0.6,-0.62],[0,-0.62],[0.6,-0.62],[-0.6,0.58],[0.6,0.58],[-0.25,-0.12],[0.25,-0.12]])
+    siBox(3, cx-0.05, cx+0.05, cz-0.05, cz+0.05, 0.08, ctm, ctInfo);
+  // metal 1
+  const mVdd = mat(L1, { color:0xd8604a, emissive:0xd8604a, emissiveIntensity:0.3, metalness:0.75, roughness:0.3 });
+  const mGnd = mat(L1, { color:0x4a5668, metalness:0.75, roughness:0.3 });
+  const mY = mat(L1, { color:C.lo, metalness:0.75, roughness:0.3 }); bind(mY, sigFn('nG1'), sWire);
+  const mA = mat(L1, { color:C.lo, metalness:0.75, roughness:0.3 }); bind(mA, sigFn('A'), sWire);
+  const mB = mat(L1, { color:C.lo, metalness:0.75, roughness:0.3 }); bind(mB, sigFn('B'), sWire);
+  const vI = { title:'Metal 1 · VDD', expr:'1 lógico (≈ 1 V)', phys:'Riel de alimentación. Los dos extremos de la difusión p+ bajan a él: por eso los pMOS están en paralelo.', sigs:[] };
+  const gI = { title:'Metal 1 · GND', expr:'0 lógico (0 V)', phys:'Riel de tierra. Solo un extremo de la difusión n+ llega aquí: para alcanzarlo hay que cruzar ambos nMOS en serie.', sigs:[] };
+  const yI = { title:'Metal 1 · salida Y', expr:'Y = ¬(A · B)', phys:'Une el centro de la difusión p+ con el extremo derecho de la n+. Esta salida va al inversor (no dibujado), que entrega A·B a la capa de arriba.', sigs:['A','B','nG1'] };
+  const w = 0.07;
+  siBox(4, -1.15, 1.15, -1.3, -1.08, 0.04, mVdd, vI); siBox(4, -1.15, 1.15, 1.08, 1.3, 0.04, mGnd, gI);
+  siBox(4, -0.6-w, -0.6+w, -1.1, -0.55, 0.04, mVdd, vI); siBox(4, 0.6-w, 0.6+w, -1.1, -0.55, 0.04, mVdd, vI);
+  siBox(4, -0.6-w, -0.6+w, 0.51, 1.1, 0.04, mGnd, gI);
+  siBox(4, -w, w, -0.69, 0.18+w, 0.04, mY, yI); siBox(4, -w, 1.15, 0.18-w, 0.18+w, 0.04, mY, yI); siBox(4, 0.6-w, 0.6+w, 0.18, 0.65, 0.04, mY, yI);
+  siBox(4, -1.15, -0.25+w, -0.12-w, -0.12+w, 0.04, mA, { title:'Metal 1 · entrada A', expr:'A', phys:'Lleva la señal A hasta el contacto del polisilicio A.', sigs:['A'] });
+  siBox(4, 0.25-w, 1.15, -0.12-w, -0.12+w, 0.04, mB, { title:'Metal 1 · entrada B', expr:'B', phys:'Lleva la señal B hasta el contacto del polisilicio B.', sigs:['B'] });
+  // etiquetas del layout (en coordenadas locales escaladas)
+  const lp = (x, z) => new THREE.Vector3(SI.x + x*SI.s, 0, SI.z + z*SI.s);
+  const siL = [
+    ['n-well', -1.1, -1.25, 0], ['p+ · pMOS ∥', -0.8, -0.85, 1], ['n+ · nMOS en serie', -0.8, 0.8, 1],
+    ['poly A', -0.25, 1.0, 2], ['poly B', 0.25, 1.0, 2], ['VDD', 1.15, -1.2, 4], ['GND', 1.15, 1.2, 4], ['Y = ¬(A·B)', 1.15, 0.18, 4],
+  ].map(([t, x, z, k]) => ({ o:label(L1, t, lp(x, z), 'si', [0.5, 1.1]), k }));
+  window.__siL = siL;
+}
+
+/* =====================================================================
+   7 · CAPA 4 — bloque funcional
+   ===================================================================== */
+let blockLabel;
+{
+  const s = new THREE.Shape();
+  s.moveTo(-6.2, 3.7); s.lineTo(-6.2, 1.5); s.lineTo(-5.5, 0.75); s.lineTo(-6.2, 0.0); s.lineTo(-6.2, -4.3); s.lineTo(6.2, -2.9); s.lineTo(6.2, 1.9); s.closePath();
+  const geo = new THREE.ExtrudeGeometry(s, { depth:0.5, bevelEnabled:true, bevelThickness:0.04, bevelSize:0.04, bevelSegments:2 });
+  geo.rotateX(-Math.PI/2);
+  const sm = mat(L4, { color:0x9fb8d6, opacity:0.16, metalness:0.2, roughness:0.2, side:THREE.DoubleSide });
+  const shell = new THREE.Mesh(geo, sm); L4.group.add(shell); addEdges(L4, shell, 0xbcd3ea, 0.9);
+  pickable(shell, { L:L4, title:'ALU de 1 bit', expr:'R = MUX(S1S0; A⊕B⊕Cin, A·B, A+B, A⊕B)\nCout = A·B + Cin·(A⊕B)',
+    phys:'Caja negra: desde aquí solo importan los pines y la función. Por dentro hay 7 bloques lógicos y unos 64 transistores en esta implementación (CMOS estático y un MUX de compuertas de transmisión). Una ALU de 32 bits repite esta celda 32 veces, encadenando Cout → Cin.',
+    sigs:['A','B','Cin','S1','S0','RES','COUT'] }, shell);
+  for (const p of PINS){
+    const m = mat(L4, { color:C.lo, metalness:0.7, roughness:0.25 }); bind(m, sigFn(p.s), sPin);
+    const cyl = new THREE.CylinderGeometry(0.08, 0.08, 0.8, 16);
+    const me = new THREE.Mesh(cyl, m);
+    if (p.side === 'L'){ me.rotation.z = Math.PI/2; me.position.set(-6.6, 0.25, p.z); }
+    else if (p.side === 'R'){ me.rotation.z = Math.PI/2; me.position.set(6.6, 0.25, p.z); }
+    else { me.rotation.x = Math.PI/2; me.position.set(p.x, 0.25, 3.5); }
+    L4.group.add(me);
+    pickable(me, { L:L4, title:`Pin ${p.nm || p.s}`, expr:SIGEXPR[p.s] || `${p.s} ∈ {0, 1}`,
+      phys:'Un 1 lógico es un voltaje cercano a VDD; un 0, cercano a GND. El pin no sabe de álgebra: solo transporta un nivel eléctrico que las capas de abajo interpretan.', sigs:[p.s] });
+    const lpos = p.side === 'L' ? new THREE.Vector3(-7.15, 0.25, p.z) : p.side === 'R' ? new THREE.Vector3(7.15, 0.25, p.z) : new THREE.Vector3(p.x, 0.25, 4.05);
+    p.lbl = label(L4, '', lpos, 'pin', p.side === 'L' ? [1, 0.5] : p.side === 'R' ? [0, 0.5] : [0.5, 0]);
+  }
+  blockLabel = label(L4, '', new THREE.Vector3(0, 0.6, 0.2), 'big keep', [0.5, 1]);
+}
+
+/* ---------- títulos de capa ---------- */
+const layerTitles = LAYERS.map(L => label(L, L.title, new THREE.Vector3(-7.4, 0.1, 4.6), 'layer keep', [0, 0.5]));
+
+/* ---------- sondas verticales: misma posición XZ en todas las capas ---------- */
+const probes = [];
+function makeProbe(x, z, color, opacity, from, to){
+  const g = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute([x,0,z, x,1,z], 3));
+  const l = new THREE.Line(g, lineMat(null, { color, opacity, dashed:true, dashSize:0.12, gapSize:0.1 }));
+  scene.add(l); probes.push({ l, x, z, from, to }); return l;
+}
+for (const p of PINS) makeProbe(p.x, p.z, 0x8fb3d0, 0.45, 2, 4);
+makeProbe(SI.x, SI.z, C.accent, 0.95, 1, 4);
+const probeLabel = label(null, 'misma compuerta: A·B', new THREE.Vector3(SI.x, 0, SI.z), 'probe', [0, 0.5]);
+
+/* =====================================================================
+   8 · DESPIECE
+   ===================================================================== */
+let explodeT = 0.75, spacing = 0;
+const layerY = i => i * spacing;
+function setExplode(t){
+  const oldMid = 1.5 * spacing;
+  explodeT = t; spacing = 0.65 + 2.65 * t;
+  LAYERS.forEach((L, i) => L.group.position.y = layerY(i));
+  subs.forEach((g, k) => g.position.y = k * (0.012 + 0.11 * t));
+  for (const pr of probes){
+    const y0 = layerY(pr.from - 1), y1 = layerY(pr.to - 1) + 0.3;
+    const a = pr.l.geometry.attributes.position; a.setY(0, y0); a.setY(1, y1); a.needsUpdate = true;
+    pr.l.computeLineDistances(); pr.l.geometry.computeBoundingSphere();
+  }
+  probeLabel.position.set(SI.x + 1.9, layerY(0) + 0.15, SI.z - 1.9);
+  for (const it of (window.__siL || [])) it.o.position.y = it.k * (0.012 + 0.11 * t) * SI.s + 0.12;
+  const dy = 1.5 * spacing - oldMid;
+  if (oldMid > 0){ controls.target.y += dy; camera.position.y += dy; }
+  $('#exv').textContent = Math.round(t * 100) + ' %';
+}
+
+/* =====================================================================
+   9 · VISIBILIDAD DE CAPAS (visible / fantasma / oculta)
+   ===================================================================== */
+function applyLayer(L){
+  L.group.visible = L.state !== 'off';
+  const f = L.state === 'ghost' ? 0.12 : 1;
+  for (const m of L.mats){
+    const op = m.userData.base * f, tr = op < 0.999;
+    m.opacity = op;
+    if (m.transparent !== tr){ m.transparent = tr; m.needsUpdate = true; }
+    m.depthWrite = !tr || (L.state !== 'ghost' && m.userData.base >= 1);
+  }
+  for (const el of L.labels) el.style.opacity = L.state === 'ghost' ? 0.25 : 1;
+  if (selected && selected.userData.info.L === L && L.state !== 'on') clearSelectionBox();
+}
+const layersEl = $('#layers');
+[...LAYERS].reverse().forEach(L => {
+  const row = document.createElement('div'); row.className = 'lrow';
+  row.innerHTML = `<div class="nm"><i class="sw" style="background:${L.sw}"></i><span>${L.n} · ${L.name}</span></div>
+    <div class="seg" role="group" aria-label="Capa ${L.n}">
+      <button data-s="on" aria-pressed="true">Visible</button><button data-s="ghost" aria-pressed="false">Fantasma</button><button data-s="off" aria-pressed="false">Oculta</button></div>`;
+  row.querySelectorAll('button').forEach(b => b.onclick = () => {
+    L.state = b.dataset.s; row.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); applyLayer(L);
+  });
+  layersEl.appendChild(row);
+});
+
+/* =====================================================================
+   10 · INTERFAZ ↔ SIMULACIÓN
+   ===================================================================== */
+let selectedInfo = null;
+function update(){
+  evaluate();
+  const now = performance.now();
+  for (const b of binds){
+    const v = b.fn();
+    if (v !== b.val){ if (b.val !== undefined) b.t0 = now; b.val = v; }
+  }
+  for (const k of ['A','B','Cin','S1','S0']){
+    const el = $('#b' + k); el.setAttribute('aria-pressed', IN[k] === 1); el.querySelector('.v').textContent = IN[k];
+  }
+  document.querySelectorAll('.op').forEach(b => b.setAttribute('aria-pressed', +b.dataset.sel === V.sel));
+  const op = OPS[V.sel];
+  $('#oR').classList.toggle('on', !!V.RES); $('#oR .v').textContent = V.RES; $('#oRx').textContent = op.expr.replace('R = ', '');
+  $('#oC').classList.toggle('on', !!V.COUT); $('#oC .v').textContent = V.COUT;
+  $('#ttop').textContent = op.k;
+  // etiquetas 3D
+  for (const [id, g] of Object.entries(GATES)){
+    const v = V[g.out];
+    gateLabels[id].element.innerHTML = id === 'MUX'
+      ? `MUX 4:1 <i>S1S0=${V.S1}${V.S0} → ${op.k}</i> R=<b>${v}</b>`
+      : `${g.short} <i>${g.ex} =</i> ${v ? '<b>1</b>' : '0'}`;
+  }
+  for (const p of PINS){ const v = V[p.s]; p.lbl.element.innerHTML = `${p.nm || p.s} = ${v}`; p.lbl.element.classList.toggle('on', !!v); }
+  blockLabel.element.innerHTML = `ALU · ${op.k}<small>R = ${V.RES} · Cout = ${V.COUT}</small>`;
+  renderTT();
+  if (selectedInfo) showInfo(selectedInfo);
+}
+function renderTT(){
+  const op = OPS[V.sel], t = $('#tt');
+  let h = '';
+  if (op.k === 'ADD'){
+    h = '<tr><th>A</th><th>B</th><th>Cin</th><th class="sep">Suma</th><th>Cout</th></tr>';
+    for (let i = 0; i < 8; i++){
+      const A = i>>2 & 1, B = i>>1 & 1, Ci = i & 1, S = A^B^Ci, Co = (A&B)|(Ci&(A^B));
+      const cur = A===V.A && B===V.B && Ci===V.Cin;
+      h += `<tr class="row${cur?' cur':''}" data-a="${A}" data-b="${B}" data-c="${Ci}"><td>${A}</td><td>${B}</td><td>${Ci}</td><td class="sep${S?' one':''}">${S}</td><td class="${Co?'one':''}">${Co}</td></tr>`;
+    }
+  } else {
+    const f = { AND:(a,b)=>a&b, OR:(a,b)=>a|b, XOR:(a,b)=>a^b }[op.k];
+    h = `<tr><th>A</th><th>B</th><th class="sep">R = ${op.expr.slice(4)}</th></tr>`;
+    for (let i = 0; i < 4; i++){
+      const A = i>>1 & 1, B = i & 1, R = f(A,B), cur = A===V.A && B===V.B;
+      h += `<tr class="row${cur?' cur':''}" data-a="${A}" data-b="${B}"><td>${A}</td><td>${B}</td><td class="sep${R?' one':''}">${R}</td></tr>`;
+    }
+  }
+  t.innerHTML = h;
+  t.querySelectorAll('tr.row').forEach(r => r.onclick = () => {
+    IN.A = +r.dataset.a; IN.B = +r.dataset.b; if (r.dataset.c !== undefined) IN.Cin = +r.dataset.c; update();
+  });
+}
+document.querySelectorAll('.bit').forEach(b => b.onclick = () => { const k = b.dataset.k; IN[k] ^= 1; update(); });
+document.querySelectorAll('.op').forEach(b => b.onclick = () => { const s = +b.dataset.sel; IN.S1 = s >> 1; IN.S0 = s & 1; update(); });
+$('#explode').addEventListener('input', e => setExplode(e.target.value / 100));
+$('#lbls').addEventListener('change', e => labelR.domElement.classList.toggle('off', !e.target.checked));
+
+/* ---------- ficha técnica ---------- */
+const infoEl = $('#info');
+const esc = s => String(s).replace(/[&<>]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[c]));
+function showInfo(info){
+  selectedInfo = info;
+  const L = info.L;
+  const sigs = (info.sigs || []).filter((s, i, a) => a.indexOf(s) === i);
+  infoEl.innerHTML = `
+    <div><div class="lay">Capa ${L.n} · ${L.name}</div><h2>${esc(info.title)}</h2></div>
+    <div><h3>Expresión booleana</h3><div class="expr">${esc(typeof info.expr === 'function' ? info.expr() : info.expr)}</div></div>
+    ${info.state ? `<div><h3>Estado ahora</h3><span class="state ${info.stateOn() ? 'on' : 'off'}">${info.state()}</span></div>` : ''}
+    <div><h3>Realización física</h3><p class="phys">${esc(info.phys)}</p></div>
+    ${sigs.length ? `<div><h3>Señales con las entradas actuales</h3><div class="sigs">${sigs.map(s =>
+      `<div class="sig${V[s] ? ' on' : ''}"><span class="nm">${esc(SIG[s] || s)}</span><span class="vv">${V[s]}</span></div>`).join('')}</div></div>` : ''}
+    <p class="where"><b>Dónde vive el Álgebra de Boole.</b> En la capa 3 es notación; en la capa 2 es topología (serie = AND, paralelo = OR, red dual = negación); en la capa 1 es geometría: un transistor existe donde el polisilicio cruza una difusión.</p>`;
+}
+
+/* ---------- selección con raycaster ---------- */
+const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), tip = $('#tip');
+let selected = null, selBox = null, downAt = null, hoverReq = null;
+function hit(ev){
+  const r = renderer.domElement.getBoundingClientRect();
+  ptr.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ptr, camera);
+  const list = pickables.filter(m => m.userData.info.L.state === 'on');
+  return ray.intersectObjects(list, false)[0]?.object || null;
+}
+function clearSelectionBox(){ if (selBox){ scene.remove(selBox); selBox.geometry.dispose(); selBox = null; } }
+function select(obj){
+  clearSelectionBox(); selected = obj;
+  if (!obj) return;
+  selBox = new THREE.BoxHelper(obj.userData.target, 0xffffff); selBox.material.transparent = true; selBox.material.opacity = 0.9; scene.add(selBox);
+  showInfo(obj.userData.info);
+}
+const cv = renderer.domElement;
+cv.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
+cv.addEventListener('pointerup', e => {
+  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5 || e.button !== 0) return;
+  const o = hit(e); if (o) select(o);
+});
+cv.addEventListener('pointermove', e => {
+  if (e.buttons) { tip.hidden = true; return; }
+  if (hoverReq) return;
+  hoverReq = requestAnimationFrame(() => {
+    hoverReq = null;
+    const o = hit(e), r = vp.getBoundingClientRect();
+    cv.style.cursor = o ? 'pointer' : 'grab';
+    if (o){ tip.hidden = false; tip.textContent = `Capa ${o.userData.info.L.n} · ${o.userData.info.title}`; tip.style.left = (e.clientX - r.left) + 'px'; tip.style.top = (e.clientY - r.top) + 'px'; }
+    else tip.hidden = true;
+  });
+});
+cv.addEventListener('pointerleave', () => { tip.hidden = true; });
+
+/* ---------- cámara ---------- */
+let camAnim = null;
+function flyTo(pos, target){
+  if (reduceMotion){ camera.position.copy(pos); controls.target.copy(target); return; }
+  camAnim = { p0:camera.position.clone(), t0:controls.target.clone(), p1:pos, t1:target, s:performance.now() };
+}
+const mid = () => 1.5 * spacing;
+const homePos = () => new THREE.Vector3(15.5, mid() + 12, 20.5), homeTgt = () => new THREE.Vector3(-0.3, mid() - 0.6, 0.3);
+const viewReset = () => flyTo(homePos(), homeTgt());
+$('#vReset').onclick = viewReset;
+$('#vTop').onclick = () => flyTo(new THREE.Vector3(0.3, mid() + 24, 0.31), new THREE.Vector3(0.3, mid(), 0.3));
+$('#vSi').onclick = () => {
+  if (explodeT < 1){ $('#explode').value = 100; setExplode(1); }
+  flyTo(new THREE.Vector3(SI.x + 4.6, 2.9, SI.z + 6.0), new THREE.Vector3(SI.x, 0.15, SI.z));
+};
+
+/* ---------- tamaño ---------- */
+function resize(){
+  const w = vp.clientWidth, h = vp.clientHeight; if (!w || !h) return;
+  renderer.setSize(w, h); labelR.setSize(w, h); camera.aspect = w / h;
+  camera.fov = w / h < 0.9 ? 52 : 38; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(vp);
+
+/* ---------- bucle ---------- */
+function frame(now){
+  if (camAnim){
+    const k = Math.min(1, (now - camAnim.s) / 750), e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2) / 2;
+    camera.position.lerpVectors(camAnim.p0, camAnim.p1, e); controls.target.lerpVectors(camAnim.t0, camAnim.t1, e);
+    if (k >= 1) camAnim = null;
+  }
+  controls.update();
+  for (const b of binds){ const p = reduceMotion ? 0 : Math.max(0, 1 - (now - b.t0) / 650); b.style(b.m, b.val, p); }
+  if (selBox) selBox.update();
+  renderer.render(scene, camera); labelR.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+
+/* ---------- arranque ---------- */
+setExplode(explodeT);
+camera.position.copy(homePos()); controls.target.copy(homeTgt());
+if (vp.clientWidth < 640){ $('#lbls').checked = false; labelR.domElement.classList.add('off'); camera.position.set(20, mid() + 16, 27); }
+LAYERS.forEach(applyLayer);
+resize(); update();
+select(pickables.find(m => m.userData.info.title === GINFO.AND1.title));
+$('#msg').hidden = true;
+window.__aluReady = true;
+window.__alu = { IN, V, update, GATES, stagesFor, spConducts, evaluate };
+requestAnimationFrame(frame);
+</script>
+
 </body></html>
