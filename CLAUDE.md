@@ -58,7 +58,7 @@ herramientas de retos (paso 2) y Fase 1 del estudio cerrada (2026-11-23; sigue F
 3. **Paso 4 · Sitio en línea:** F4 y F5 hechas el 2026-11-23 (P-25, P-26); F6 el 2026-11-24 (P-27, imagen
    `sitio:1bc84ee`). F7: publicado el 2026-11-24 (`sitio-00001-mzc`, imagen `e829479`); invitación de admin creada (P-28), tester pendiente. Los comandos de `gcloud` llevan siempre `--project=chomsky-godel`: el
    proyecto activo del `gcloud` del estudiante es otro y no debe tocarse. Claude corre los comandos con el
-   visto bueno del estudiante en el chat (P-26). **Siguiente al retomar:** confirmar que el estudiante activó su cuenta admin; luego F8 (contenido real). Cada
+   visto bueno del estudiante en el chat (P-26). **Siguiente al retomar:** F8 (contenido real); cuenta admin activada el 2026-11-24. Cada
    despliegue nuevo: `construir` (la etiqueta es HEAD) y luego `publicar`, con visto bueno, y anotarlo en el registro.
    P-21 decidida: B (a mano).
 4. **Paso 5 · Agente de contenido:** atender `estudio/pendientes-contenido.md` (Mapa CPU, ALU 3D) en ramas
