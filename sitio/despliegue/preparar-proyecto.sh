@@ -40,8 +40,12 @@ echo "Proyecto: $PROYECTO · Región: $REGION · Presupuesto: $PRESUPUESTO"
 echo "Cuenta activa de gcloud: $(gcloud config get-value account 2>/dev/null)"
 
 # 1. Proyecto y facturación
-paso "Crear el proyecto (si el ID está tomado, sal con q y corre con PROYECTO=otro-id)" \
-  gcloud projects create "$PROYECTO" --name="chomsky-godel"
+if gcloud projects describe "$PROYECTO" --format="value(projectId)" >/dev/null 2>&1; then
+  echo; echo "── El proyecto $PROYECTO ya existe y tienes acceso: no se crea otra vez."
+else
+  paso "Crear el proyecto (si el ID está tomado, sal con q y corre con PROYECTO=otro-id)" \
+    gcloud projects create "$PROYECTO" --name="chomsky-godel"
+fi
 echo; echo "Cuentas de facturación disponibles:"
 gcloud billing accounts list --format="table(name,displayName,open)"
 read -r -p "ID de la cuenta de facturación a usar (formato XXXXXX-XXXXXX-XXXXXX): " CUENTA
@@ -55,8 +59,10 @@ paso "Habilitar Cloud Run, Cloud Build, Artifact Registry, Firestore y Presupues
   artifactregistry.googleapis.com firestore.googleapis.com billingbudgets.googleapis.com $P
 
 # 3. Presupuesto con alertas al 50 %, 90 % y 100 % (la moneda debe ser la de la cuenta)
+#    --billing-project: la cuota de la API de presupuestos se cobra a ESTE proyecto, no al activo de gcloud.
 paso "Crear el presupuesto de $PRESUPUESTO para este proyecto" \
-  gcloud billing budgets create --billing-account="$CUENTA" --display-name="chomsky-godel" \
+  gcloud billing budgets create --billing-project="$PROYECTO" \
+  --billing-account="$CUENTA" --display-name="chomsky-godel" \
   --budget-amount="$PRESUPUESTO" --filter-projects="projects/$PROYECTO" \
   --threshold-rule=percent=0.5 --threshold-rule=percent=0.9 --threshold-rule=percent=1.0
 
