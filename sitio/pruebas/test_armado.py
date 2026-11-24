@@ -1,10 +1,11 @@
-"""armar_contenido (spec 05 §1). armar_imagen llega en F6."""
+"""armar_contenido y armar_imagen (spec 05 §1, 04 §4)."""
 import json
 import subprocess
 
 import pytest
 
 from armar_contenido import ErrorArmado, armar
+from armar_imagen import armar_imagen
 
 
 def git(raiz, *args):
@@ -68,3 +69,59 @@ def test_grupo_se_copia_y_se_valida(repo):
     (repo / "sitio" / "temas.json").write_text(json.dumps(datos), "utf-8")
     with pytest.raises(ErrorArmado):
         armar(repo, repo / "salida", permitir_sucio=True)
+
+
+@pytest.fixture
+def repo_sitio(repo):
+    s = repo / "sitio"
+    for d in ("servidor", "web/estaticos", "despliegue", "pruebas", ".venv/bin"):
+        (s / d).mkdir(parents=True)
+    (s / "servidor" / "app.py").write_text("x = 1\n", "utf-8")
+    (s / "web" / "login.html").write_text("<p>login</p>", "utf-8")
+    (s / "web" / "estaticos" / "base.css").write_text("body{}", "utf-8")
+    (s / "despliegue" / "Dockerfile").write_text("FROM python:3.12-slim\n", "utf-8")
+    (s / "despliegue" / "cloudbuild.yaml").write_text("steps: []\n", "utf-8")
+    (s / "despliegue" / "preparar-proyecto.sh").write_text("#!/bin/sh\n", "utf-8")
+    (s / "requirements.txt").write_text("fastapi\n", "utf-8")
+    (s / "pruebas" / "test_x.py").write_text("", "utf-8")
+    (s / ".gitignore").write_text(".env\n.invitaciones.txt\n.venv/\n__pycache__/\n", "utf-8")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-q", "-m", "sitio")
+    (s / ".env").write_text("ADMIN_CORREO=secreto@ejemplo.org\n", "utf-8")
+    (s / ".invitaciones.txt").write_text("admin: https://x/activar#ficha\n", "utf-8")
+    (s / ".venv" / "bin" / "python").write_text("", "utf-8")
+    (s / "servidor" / "__pycache__").mkdir()
+    (s / "servidor" / "__pycache__" / "app.cpython-312.pyc").write_bytes(b"\0")
+    return repo
+
+
+def test_imagen_es_lista_cerrada(repo_sitio):
+    salida = repo_sitio / "build" / "sitio-imagen"
+    m = armar_imagen(repo_sitio, salida)
+    assert not m["commit"].endswith("-sucio")
+    archivos = sorted(str(p.relative_to(salida)) for p in salida.rglob("*") if p.is_file())
+    assert archivos == ["Dockerfile", "cloudbuild.yaml", "contenido/a-p.html",
+                        "contenido/manifiesto.json", "requirements.txt", "servidor/app.py",
+                        "web/estaticos/base.css", "web/login.html"]
+
+
+def test_imagen_se_niega_con_sitio_sucio(repo_sitio):
+    salida = repo_sitio / "build" / "sitio-imagen"
+    (repo_sitio / "sitio" / "servidor" / "app.py").write_text("x = 2\n", "utf-8")
+    with pytest.raises(ErrorArmado):
+        armar_imagen(repo_sitio, salida)
+    assert not salida.exists()
+    assert armar_imagen(repo_sitio, salida, permitir_sucio=True)["commit"].endswith("-sucio")
+
+
+def test_imagen_se_niega_con_contenido_sucio(repo_sitio):
+    (repo_sitio / "temas" / "a" / "p.html").write_text("<p>cambio</p>", "utf-8")
+    with pytest.raises(ErrorArmado):
+        armar_imagen(repo_sitio, repo_sitio / "build" / "sitio-imagen")
+
+
+def test_imagen_no_borra_salidas_peligrosas(repo_sitio):
+    for peligrosa in (repo_sitio, repo_sitio.parent, repo_sitio / "sitio" / "algo"):
+        with pytest.raises(ErrorArmado):
+            armar_imagen(repo_sitio, peligrosa)
+    assert (repo_sitio / "sitio" / "servidor" / "app.py").exists()
