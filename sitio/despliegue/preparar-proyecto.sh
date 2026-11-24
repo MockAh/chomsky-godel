@@ -31,6 +31,11 @@ paso() {  # paso "qué hace" comando...
   esac
 }
 
+if [[ ! -t 0 ]]; then
+  echo "Este script pide confirmación en cada paso: córrelo en tu propia terminal (no con «!» desde Claude)." >&2
+  exit 2
+fi
+
 echo "Proyecto: $PROYECTO · Región: $REGION · Presupuesto: $PRESUPUESTO"
 echo "Cuenta activa de gcloud: $(gcloud config get-value account 2>/dev/null)"
 
@@ -40,6 +45,7 @@ paso "Crear el proyecto (si el ID está tomado, sal con q y corre con PROYECTO=o
 echo; echo "Cuentas de facturación disponibles:"
 gcloud billing accounts list --format="table(name,displayName,open)"
 read -r -p "ID de la cuenta de facturación a usar (formato XXXXXX-XXXXXX-XXXXXX): " CUENTA
+[[ $CUENTA =~ ^[0-9A-F]{6}-[0-9A-F]{6}-[0-9A-F]{6}$ ]] || { echo "Cuenta no válida; detenido." >&2; exit 1; }
 paso "Ligar el proyecto a la facturación" \
   gcloud billing projects link "$PROYECTO" --billing-account="$CUENTA"
 
@@ -58,7 +64,7 @@ paso "Crear el presupuesto de $PRESUPUESTO para este proyecto" \
 paso "Crear la base de Firestore en $REGION" \
   gcloud firestore databases create --location="$REGION" --delete-protection $P
 for c in sesiones invitaciones intentos; do
-  paso "TTL: borrar $c vencidas (campo borrar_en)" \
+  paso "TTL: borrar lo vencido en $c (campo borrar_en)" \
     gcloud firestore fields ttls update borrar_en --collection-group="$c" --enable-ttl --async $P
 done
 
