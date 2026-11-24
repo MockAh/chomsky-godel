@@ -32,7 +32,8 @@ SECCION_IMPLICITA = {"id": "general", "nombre": "General"}
 
 CSP_SITIO = ("default-src 'self'; frame-src 'self'; base-uri 'none'; "
              "form-action 'self'; frame-ancestors 'none'")
-CSP_CONTENIDO = ("default-src 'none'; script-src 'unsafe-inline'; "
+# script-src 'self': las lecciones 3D cargan Three.js de /estaticos/vendor (P-7).
+CSP_CONTENIDO = ("default-src 'none'; script-src 'self' 'unsafe-inline'; "
                  "style-src 'unsafe-inline' https://fonts.googleapis.com; "
                  "font-src https://fonts.gstatic.com; img-src data: blob:; "
                  "base-uri 'none'; form-action 'none'; frame-ancestors 'self'")

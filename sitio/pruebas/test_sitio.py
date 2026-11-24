@@ -55,3 +55,16 @@ def test_paginas_solo_cargan_recursos_propios(cliente):
             assert url.startswith("/"), (pagina.name, url)
             if url.startswith("/estaticos/"):
                 assert cliente.get(url).status_code == 200, url
+
+
+def test_contenido_puede_cargar_three_del_propio_sitio(cliente):
+    """P-7: solo scripts del propio sitio, nunca de un CDN."""
+    directivas = dict(d.strip().split(" ", 1) for d in CSP_CONTENIDO.split(";"))
+    assert directivas["script-src"].split() == ["'self'", "'unsafe-inline'"]
+    assert "http" not in directivas["script-src"]
+    base = "/estaticos/vendor/three-0.160.0/"
+    for archivo in ("three.module.min.js", "addons/controls/OrbitControls.js",
+                    "addons/renderers/CSS2DRenderer.js", "addons/environments/RoomEnvironment.js"):
+        r = cliente.get(base + archivo)
+        assert r.status_code == 200, archivo
+        assert "javascript" in r.headers["content-type"], archivo
