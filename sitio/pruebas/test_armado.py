@@ -71,6 +71,12 @@ def test_grupo_se_copia_y_se_valida(repo):
         armar(repo, repo / "salida", permitir_sucio=True)
 
 
+def test_armar_se_niega_con_html_que_no_cumple(repo):
+    (repo / "temas" / "a" / "p.html").write_text('<script src="https://cdn.x/y.js"></script>', "utf-8")
+    with pytest.raises(ErrorArmado, match="instrucciones-html"):
+        armar(repo, repo / "salida", permitir_sucio=True)
+
+
 @pytest.fixture
 def repo_sitio(repo):
     s = repo / "sitio"

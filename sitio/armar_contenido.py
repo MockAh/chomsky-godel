@@ -5,6 +5,7 @@
 Copia cada archivo declarado como {tema}-{pestana}.html, calcula su sha256 y
 escribe manifiesto.json (sin la ruta interna `archivo`). Solo lee las fuentes.
 Sin --permitir-sucio se niega si algún archivo tiene cambios sin commit.
+Siempre se niega si algún HTML no cumple temas/instrucciones-html.md (revisar_html).
 """
 from __future__ import annotations
 
@@ -16,6 +17,8 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+from revisar_html import revisar
 
 RAIZ = Path(__file__).resolve().parent.parent
 ID_VALIDO = re.compile(r"^[a-z0-9-]+$")
@@ -61,6 +64,11 @@ def armar(raiz: Path, salida: Path, permitir_sucio: bool = False) -> dict:
     raiz = raiz.resolve()
     temas = leer_temas(raiz)
     archivos = ["sitio/temas.json"] + [p["archivo"] for t in temas for p in t["pestanas"]]
+    problemas = [f"{a}: {x}" for a in archivos[1:]
+                 for x in revisar((raiz / a).read_text("utf-8"), raiz)]
+    if problemas:
+        raise ErrorArmado("hay HTML que no cumplen temas/instrucciones-html.md:\n  - "
+                          + "\n  - ".join(problemas))
     sucio = bool(_git(raiz, "status", "--porcelain", "--", *archivos).strip())
     if sucio and not permitir_sucio:
         raise ErrorArmado("hay cambios sin commit en el contenido; haz commit o usa --permitir-sucio")
