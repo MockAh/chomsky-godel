@@ -31,7 +31,7 @@ Formato por defecto en sesiones de estudio: respuestas cortas, aptas para pantal
 - Pruebas: `cd sitio && .venv/bin/python -m pytest -q`.
 - Probar en local: `sitio/.venv/bin/python sitio/local.py --puerto 8090` (el 8080 lo usa otro proyecto).
 - Orden de trabajo: fases F0–F8 de `docs/plantilla-sitio-estudio/05-pruebas-y-orden-de-trabajo.md`.
-  F0–F6 hechas (F4: Firestore + emulador, P-25; F5: proyecto GCP `chomsky-godel`, P-26; F6: imagen construida, P-27; F7: publicado e invitación de admin, P-28); sigue F8.
+  F0–F6 hechas (F4: Firestore + emulador, P-25; F5: proyecto GCP `chomsky-godel`, P-26; F6: imagen construida, P-27; F7: publicado e invitación de admin, P-28; F8: contenido real publicado el 2026-11-25, P-30–P-33).
 - Toda decisión nueva se anota en `docs/sitio/decisiones.md` con su clave P-n.
 - **Publicar = desplegar, y solo con visto bueno explícito del estudiante.** Nunca despliegues por tu cuenta.
 - Para editar o crear HTML de `temas/`: reglas en `temas/instrucciones-html.md` (P-31); se comprueban con
@@ -45,7 +45,7 @@ Formato por defecto en sesiones de estudio: respuestas cortas, aptas para pantal
 - `docs/bitacoras-estudio/` y `docs/notas-altas/` son material en bruto, **fuera de git** (P-8).
 - En archivos versionados, el estudiante es «Guillermo»: nunca su nombre completo ni sus correos.
 
-## Estado y próximos pasos (al 2026-11-24)
+## Estado y próximos pasos (al 2026-11-25)
 
 Hecho: sitio F0–F6 (servidor, front con login 3D, anotaciones), capa de estudio (`estudio/`, skills),
 herramientas de retos (paso 2) y Fase 1 del estudio cerrada (2026-11-23; sigue Fase 2, C). Plan acordado con el estudiante, en orden:
@@ -59,7 +59,7 @@ herramientas de retos (paso 2) y Fase 1 del estudio cerrada (2026-11-23; sigue F
 3. **Paso 4 · Sitio en línea:** F4 y F5 hechas el 2026-11-23 (P-25, P-26); F6 el 2026-11-24 (P-27, imagen
    `sitio:1bc84ee`). F7: publicado el 2026-11-24 (`sitio-00001-mzc`, imagen `e829479`); invitación de admin creada (P-28), tester pendiente. Los comandos de `gcloud` llevan siempre `--project=chomsky-godel`: el
    proyecto activo del `gcloud` del estudiante es otro y no debe tocarse. Claude corre los comandos con el
-   visto bueno del estudiante en el chat (P-26). **Siguiente al retomar:** F8 (contenido real); cuenta admin activada el 2026-11-24. Cada
+   visto bueno del estudiante en el chat (P-26). F8 publicada el 2026-11-25 (`sitio-00002-h8h`, imagen `153809b`); cuenta admin activada el 2026-11-24. Cada
    despliegue nuevo: `construir` (la etiqueta es HEAD) y luego `publicar`, con visto bueno, y anotarlo en el registro.
    P-21 decidida: B (a mano).
 4. **Paso 5 · Agente de contenido:** atender `estudio/pendientes-contenido.md` (Mapa CPU, ALU 3D) en ramas
