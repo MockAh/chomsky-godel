@@ -2,6 +2,7 @@
 // Clic en la esfera → diálogo de credenciales → POST /api/login.
 // En el museo (/m/<clave>, P-34) el clic se salta el diálogo y vuela directo a los temas.
 import * as THREE from '/estaticos/vendor/three-0.160.0/three.module.min.js';
+import { MUSEO, BASE, t, traducirPagina, enlaceIdioma, idiomaRecordado } from '/estaticos/comun.js';
 
 const dialogo = document.getElementById('credenciales');
 const form = document.getElementById('form-login');
@@ -11,8 +12,8 @@ const mensaje = document.getElementById('mensaje');
 const botonEntrar = document.getElementById('entrar');
 const reducirMovimiento = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const museo = location.pathname.match(/^\/m\/[^/]+/);
-const destino = museo ? `${museo[0]}/temas` : '/';
+const museo = MUSEO;
+const destino = museo ? `${BASE}/temas` : '/';
 let alEntrar = () => { location.replace(destino); };  // la escena 3D lo reemplaza por un vuelo
 
 function abrirDialogo() {
@@ -24,7 +25,13 @@ function abrirDialogo() {
 }
 
 document.getElementById('abrir').addEventListener('click', abrirDialogo);
-if (museo) document.getElementById('abrir').textContent = 'Entrar';  // el diálogo nunca se abre
+if (museo) {  // el diálogo nunca se abre
+  idiomaRecordado();
+  traducirPagina();
+  document.title = `chomsky-godel · ${t('Entrar')}`;
+  document.getElementById('abrir').textContent = t('Entrar');
+  document.body.append(enlaceIdioma('boton boton-texto idioma-esfera'));
+}
 document.getElementById('cancelar').addEventListener('click', () => dialogo.close());
 
 form.addEventListener('submit', async (e) => {
@@ -82,7 +89,7 @@ if (!renderer) {
 
 function iniciarEscena(renderer) {
   if (matchMedia('(pointer: coarse)').matches) {
-    document.querySelector('#hud .hud-sec').textContent = 'ARRASTRAR: MIRAR · FLECHAS: MOVER';
+    document.querySelector('#hud .hud-sec').textContent = t('ARRASTRAR: MIRAR · FLECHAS: MOVER');
   }
   const contenedor = document.getElementById('escena');
   const lienzo = renderer.domElement;

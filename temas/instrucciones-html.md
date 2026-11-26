@@ -104,7 +104,26 @@ Si el archivo viene de fuera, al copiarlo a `temas/` Claude:
 
 ---
 
-## 5. Opcional: anotaciones por ejercicio
+## 5. Versión en inglés (solo en el museo, P-35)
+
+El museo (`/m/<clave>/`) tiene botón **English / Español**. Cada pestaña puede tener su versión en inglés:
+
+1. Copia el archivo con `.en` antes de `.html`: `temas/alu/practica.html` → `temas/alu/practica.en.html`.
+2. Traduce los textos (también los que están dentro del JavaScript: etiquetas, tooltips, mensajes),
+   pon `<html lang="en">` y deja igual todo lo demás. Términos técnicos en su forma estándar en inglés.
+3. Cumple las mismas reglas de §2 (`revisar_html.py` también revisa el `.en.html`).
+4. Claude lo declara en `sitio/temas.json`, dentro de la pestaña:
+   ```json
+   "en": {"etiqueta": "Practice", "archivo": "temas/alu/practica.en.html"}
+   ```
+   Si la pestaña aún no tiene `archivo` en inglés, el museo en inglés muestra la de español con la etiqueta
+   «Spanish only».
+
+Si cambias la versión en español, conviene cambiar también la inglesa (las dos comparten `version`).
+
+---
+
+## 6. Opcional: anotaciones por ejercicio
 
 Si quieres que el sitio ofrezca «Anotar este ejercicio» en un punto concreto de la lección, el HTML
 puede avisarle con `postMessage` (detalle en `docs/plantilla-sitio-estudio/03-contenido-y-temas.md` §3):

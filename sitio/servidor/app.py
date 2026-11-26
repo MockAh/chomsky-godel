@@ -116,7 +116,9 @@ def cargar_manifiesto(dir_contenido: Path) -> dict:
             "pestanas": [{
                 "id": p["id"], "etiqueta": p["etiqueta"], "anotable": bool(p["anotable"]),
                 "version": p["version"], "sha256": p["sha256"], "aviso": p.get("aviso", ""),
+                "en": p.get("en") or {},
             } for p in t["pestanas"]],
+            "en": t.get("en") or {},
         })
     return {"commit": datos.get("commit", ""), "temas": temas}
 
@@ -208,11 +210,13 @@ def crear_app(almacen, dir_contenido, reloj: Callable[[], float] = time.time,
             return _error(404, "Ese tema no existe.")
         return pagina("tema.html")
 
-    def servir_contenido(tema: str, pestana: str):
+    def servir_contenido(tema: str, pestana: str, idioma: str = "es"):
         t = temas.get(tema)
-        if not t or pestana not in {p["id"] for p in t["pestanas"]}:
+        p = next((p for p in t["pestanas"] if p["id"] == pestana), None) if t else None
+        if not p:
             return _error(404, "Ese contenido no existe.")
-        return FileResponse(dir_contenido / f"{tema}-{pestana}.html", media_type="text/html",
+        sufijo = ".en" if idioma == "en" and p["en"].get("sha256") else ""
+        return FileResponse(dir_contenido / f"{tema}-{pestana}{sufijo}.html", media_type="text/html",
                             headers={"Content-Security-Policy": CSP_CONTENIDO})
 
     @app.get("/contenido/{tema}/{pestana}")
@@ -229,33 +233,49 @@ def crear_app(almacen, dir_contenido, reloj: Callable[[], float] = time.time,
         return bool(huella_museo) and len(clave) <= 128 and hmac.compare_digest(
             seguridad.huella(clave), huella_museo)
 
-    temas_museo = [{
-        "id": t["id"], "corto": t["corto"], "nombre": t["nombre"], "grupo": t["grupo"],
-        "pestanas": [{"id": p["id"], "etiqueta": p["etiqueta"], "version": p["version"],
-                      "aviso": p["aviso"], "anotable": False} for p in t["pestanas"]],
-    } for t in manifiesto["temas"]]
+    def temas_museo(idioma: str) -> list[dict]:
+        """La lista para el museo, sin huellas ni secciones. En inglés (P-35) usa los nombres
+        en inglés si los hay y marca `solo_es` las pestañas que aún no tienen traducción."""
+        def texto(d: dict, campo: str) -> str:
+            return (d["en"].get(campo) or d[campo]) if idioma == "en" else d[campo]
+        return [{
+            "id": t["id"], "corto": texto(t, "corto"), "nombre": texto(t, "nombre"), "grupo": t["grupo"],
+            "pestanas": [{"id": p["id"], "etiqueta": texto(p, "etiqueta"), "version": p["version"],
+                          "aviso": texto(p, "aviso") if p["aviso"] else "", "anotable": False,
+                          "solo_es": idioma == "en" and not p["en"].get("sha256")}
+                         for p in t["pestanas"]],
+        } for t in manifiesto["temas"]]
 
-    @app.get("/m/{clave}")
-    def museo_entrada(clave: str):
-        return pagina("login.html") if es_museo(clave) else _error(404, MSG_NO_EXISTE)
+    listas_museo = {"es": temas_museo("es"), "en": temas_museo("en")}
 
-    @app.get("/m/{clave}/temas")
-    def museo_temas(clave: str):
-        return pagina("temas.html") if es_museo(clave) else _error(404, MSG_NO_EXISTE)
+    def rutas_museo(prefijo: str, idioma: str) -> None:
+        @app.get(f"/m/{{clave}}{prefijo}", name=f"museo_entrada_{idioma}")
+        def entrada(clave: str):
+            return pagina("login.html") if es_museo(clave) else _error(404, MSG_NO_EXISTE)
 
-    @app.get("/m/{clave}/t/{tema}")
-    def museo_tema(clave: str, tema: str):
-        if not es_museo(clave) or tema not in temas:
-            return _error(404, MSG_NO_EXISTE)
-        return pagina("tema.html")
+        @app.get(f"/m/{{clave}}{prefijo}/temas", name=f"museo_temas_{idioma}")
+        def lista(clave: str):
+            return pagina("temas.html") if es_museo(clave) else _error(404, MSG_NO_EXISTE)
 
-    @app.get("/m/{clave}/contenido/{tema}/{pestana}")
-    def museo_contenido(clave: str, tema: str, pestana: str):
-        return servir_contenido(tema, pestana) if es_museo(clave) else _error(404, MSG_NO_EXISTE)
+        @app.get(f"/m/{{clave}}{prefijo}/t/{{tema}}", name=f"museo_tema_{idioma}")
+        def tema(clave: str, tema: str):
+            if not es_museo(clave) or tema not in temas:
+                return _error(404, MSG_NO_EXISTE)
+            return pagina("tema.html")
 
-    @app.get("/m/{clave}/api/temas")
-    def museo_api_temas(clave: str):
-        return {"temas": temas_museo} if es_museo(clave) else _error(404, MSG_NO_EXISTE)
+        @app.get(f"/m/{{clave}}{prefijo}/contenido/{{tema}}/{{pestana}}", name=f"museo_contenido_{idioma}")
+        def contenido(clave: str, tema: str, pestana: str):
+            if not es_museo(clave):
+                return _error(404, MSG_NO_EXISTE)
+            return servir_contenido(tema, pestana, idioma)
+
+        @app.get(f"/m/{{clave}}{prefijo}/api/temas", name=f"museo_api_temas_{idioma}")
+        def api_temas(clave: str):
+            return {"temas": listas_museo[idioma]} if es_museo(clave) else _error(404, MSG_NO_EXISTE)
+
+    # Español en /m/<clave>/…, inglés en /m/<clave>/en/… (P-35)
+    rutas_museo("", "es")
+    rutas_museo("/en", "en")
 
     @app.get("/salud", status_code=204)
     def salud():

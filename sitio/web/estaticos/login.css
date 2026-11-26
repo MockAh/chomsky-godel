@@ -25,6 +25,8 @@ body { overflow: hidden; }
 }
 #coords { left: 20px; }
 #titulo { right: 20px; letter-spacing: 4px; color: rgba(120, 200, 255, 0.55); }
+/* Museo (P-35): cambio de idioma bajo el título */
+.idioma-esfera { position: fixed; top: 44px; right: 12px; z-index: 6; font-size: 11px; letter-spacing: 2px; }
 
 #flechas {
   position: fixed; bottom: 96px; right: 24px; z-index: 5;
