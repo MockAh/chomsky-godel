@@ -54,3 +54,4 @@ Registro de decisiones tomadas al construir el sitio desde las specs v0.2
 | 2026-11-24 | `sitio-00001-mzc` (primera; URL `https://sitio-541993059289.us-central1.run.app`) | `sitio:e829479` | Guillermo, en el chat |
 | 2026-11-25 | `sitio-00002-h8h` (F8: P-7, ALU, CPU, Lógica booleana v0.2) | `sitio:153809b` | Guillermo, en el chat |
 | 2026-11-26 | `sitio-00003-x4p` (museo, P-34) y `sitio-00004-sbt` (solo `MUSEO_HUELLA`, con `museo.py abrir`) | `sitio:86c2734` | Guillermo, en el chat |
+| 2026-11-26 | `sitio-00005-bxz` (museo en inglés, P-35; `MUSEO_HUELLA` se conservó al desplegar) | `sitio:28e83b8` | Guillermo, en el chat |
