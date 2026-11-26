@@ -16,10 +16,10 @@
       "pestanas": [
         {"id": "practica", "etiqueta": "Práctica", "anotable": true,
          "archivo": "temas/logica-booleana/practica.html", "version": "v0.1",
-         "en": {"etiqueta": "Practice"}},
+         "en": {"etiqueta": "Practice", "archivo": "temas/logica-booleana/practica.en.html"}},
         {"id": "mapa", "etiqueta": "Mapa", "anotable": false,
          "archivo": "temas/logica-booleana/mapa.html", "version": "v0.2",
-         "en": {"etiqueta": "Map"}}
+         "en": {"etiqueta": "Map", "archivo": "temas/logica-booleana/mapa.en.html"}}
       ]
     },
     {
@@ -88,10 +88,10 @@
       "pestanas": [
         {"id": "lecciones", "etiqueta": "Lecciones", "anotable": true,
          "archivo": "temas/fase-0/lecciones.html", "version": "v0.1",
-         "en": {"etiqueta": "Lessons"}},
+         "en": {"etiqueta": "Lessons", "archivo": "temas/fase-0/lecciones.en.html"}},
         {"id": "ejercicios", "etiqueta": "Ejercicios", "anotable": true,
          "archivo": "temas/fase-0/ejercicios.html", "version": "v0.1",
-         "en": {"etiqueta": "Exercises"}}
+         "en": {"etiqueta": "Exercises", "archivo": "temas/fase-0/ejercicios.en.html"}}
       ]
     },
     {
@@ -117,10 +117,10 @@
       "pestanas": [
         {"id": "lecciones", "etiqueta": "Lecciones", "anotable": true,
          "archivo": "temas/fase-1/lecciones.html", "version": "v0.1",
-         "en": {"etiqueta": "Lessons"}},
+         "en": {"etiqueta": "Lessons", "archivo": "temas/fase-1/lecciones.en.html"}},
         {"id": "reto", "etiqueta": "Reto de cierre", "anotable": true,
          "archivo": "temas/fase-1/reto.html", "version": "v0.1",
-         "en": {"etiqueta": "Final challenge"}}
+         "en": {"etiqueta": "Final challenge", "archivo": "temas/fase-1/reto.en.html"}}
       ]
     },
     {
@@ -137,7 +137,7 @@
       "pestanas": [
         {"id": "leccion", "etiqueta": "Lección", "anotable": true,
          "archivo": "temas/fase-2/leccion.html", "version": "v0.1",
-         "en": {"etiqueta": "Lesson"}}
+         "en": {"etiqueta": "Lesson", "archivo": "temas/fase-2/leccion.en.html"}}
       ]
     }
   ]

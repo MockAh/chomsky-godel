@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 1 · Lessons — Lessons by Claude</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,800&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f3ece0;
+    --paper-deep: #ebe2d2;
+    --ink: #1c1610;
+    --ink-soft: #3d342a;
+    --ink-faint: #7a6f5e;
+    --rule: #c9bda7;
+    --accent: #8b1e1e;
+    --accent-soft: #b14a3a;
+    --gold: #a8862a;
+    --grid: rgba(139, 30, 30, 0.06);
+    --ok: #2f6b3a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    background-color: var(--paper);
+    background-image:
+      radial-gradient(at 20% 10%, rgba(139, 30, 30, 0.04) 0%, transparent 50%),
+      radial-gradient(at 80% 90%, rgba(168, 134, 42, 0.05) 0%, transparent 50%),
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: auto, auto, 28px 28px, 28px 28px;
+    color: var(--ink);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.65;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.05 0 0 0 0.15 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.4;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    z-index: 1;
+  }
+
+  .wrap { position: relative; z-index: 2; max-width: 780px; margin: 0 auto; padding: 28px 22px 80px; }
+
+  /* HEADER */
+  header { border-bottom: 1px solid var(--rule); padding-bottom: 22px; margin-bottom: 28px; }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  }
+  .eyebrow::after { content: ""; height: 1px; background: var(--accent); flex: 1; opacity: 0.5; }
+  h1.title {
+    font-family: 'Fraunces', serif; font-weight: 300; font-size: clamp(34px, 9vw, 54px);
+    line-height: 1.02; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 8px; font-variation-settings: "opsz" 144;
+  }
+  h1.title em { font-style: italic; font-weight: 600; color: var(--accent); }
+  .subtitle { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 15px; color: var(--ink-faint); margin-top: 6px; }
+  .colophon { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 0.18em; color: var(--ink-faint); margin-top: 14px; text-transform: uppercase; }
+
+  /* TABS */
+  .tabs { display: flex; flex-direction: column; gap: 0; margin-bottom: 32px; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); }
+  .tab-btn {
+    background: transparent; border: none; border-bottom: 1px solid var(--rule); text-align: left;
+    padding: 15px 4px 13px; font-family: 'Fraunces', serif; font-size: 17px; font-weight: 400; color: var(--ink);
+    cursor: pointer; display: flex; align-items: baseline; gap: 12px; transition: all 0.2s ease; position: relative;
+  }
+  .tab-btn:last-child { border-bottom: none; }
+  .tab-btn .num { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: var(--accent); font-weight: 500; min-width: 30px; }
+  .tab-btn .name { flex: 1; font-style: italic; }
+  .tab-btn .marker { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); opacity: 0; transition: opacity 0.2s; }
+  .tab-btn:hover { background: var(--paper-deep); padding-left: 12px; }
+  .tab-btn:hover .marker { opacity: 1; }
+  .tab-btn.active { background: var(--ink); color: var(--paper); padding-left: 12px; }
+  .tab-btn.active .num { color: var(--gold); }
+  .tab-btn.active .marker { opacity: 1; color: var(--gold); }
+
+  /* PANELS */
+  .panel { display: none; animation: fadeIn 0.5s ease-out; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* CONTENT */
+  h2 {
+    font-family: 'Fraunces', serif; font-weight: 400; font-size: clamp(25px, 6vw, 31px); line-height: 1.15;
+    letter-spacing: -0.01em; margin: 38px 0 10px; color: var(--ink); font-variation-settings: "opsz" 100;
+  }
+  h2:first-child { margin-top: 0; }
+  h2 .marker { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); display: block; letter-spacing: 0.2em; margin-bottom: 6px; font-weight: 500; }
+  h3 { font-family: 'Fraunces', serif; font-weight: 600; font-style: italic; font-size: 19px; margin: 26px 0 8px; color: var(--ink-soft); letter-spacing: -0.005em; }
+  p { margin: 0 0 14px; }
+  p + p { text-indent: 1.4em; }
+  strong { font-weight: 600; color: var(--accent); }
+  em { font-style: italic; color: var(--ink-soft); }
+
+  .math, code {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.88em; background: var(--paper-deep);
+    padding: 1px 6px; border-radius: 2px; color: var(--ink); white-space: nowrap;
+  }
+  .display-math {
+    display: block; font-family: 'JetBrains Mono', monospace; font-size: 15px; text-align: center; margin: 18px 0;
+    padding: 16px 12px; background: var(--paper-deep); border-left: 2px solid var(--accent); overflow-x: auto; line-height: 1.5; color: var(--ink); white-space: pre;
+  }
+
+  .aside { border-left: 2px solid var(--accent); padding: 4px 0 4px 16px; margin: 22px 0; font-style: italic; color: var(--ink-soft); font-size: 16px; line-height: 1.55; }
+  .aside .label { display: block; font-family: 'JetBrains Mono', monospace; font-style: normal; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+
+  ul.props { list-style: none; margin: 14px 0; padding: 0; }
+  ul.props li { padding: 8px 0 8px 22px; position: relative; border-bottom: 1px dashed var(--rule); font-size: 16px; }
+  ul.props li:last-child { border-bottom: none; }
+  ul.props li::before { content: "§"; position: absolute; left: 0; top: 8px; color: var(--accent); font-family: 'Fraunces', serif; font-weight: 600; }
+  ul.props li strong { display: inline-block; min-width: 120px; }
+
+  .derivation {
+    margin: 18px 0; padding: 14px 16px; background: linear-gradient(to bottom, var(--paper-deep), var(--paper));
+    border: 1px solid var(--rule); border-left: 3px solid var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.85; overflow-x: auto;
+  }
+  .derivation .step { display: block; color: var(--ink); }
+  .derivation .comment { color: var(--ink-faint); font-style: italic; font-size: 12px; }
+  .derivation .key { color: var(--accent); font-weight: 700; }
+
+  /* TABLES */
+  .truth-table { width: 100%; max-width: 420px; margin: 18px auto; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 14px; }
+  .truth-table caption { font-family: 'Fraunces', serif; font-style: italic; font-size: 14px; color: var(--ink-faint); margin-bottom: 8px; caption-side: top; text-align: center; }
+  .truth-table th, .truth-table td { padding: 7px 10px; text-align: center; border-bottom: 1px solid var(--rule); }
+  .truth-table th { font-weight: 700; color: var(--accent); border-bottom: 2px solid var(--ink); font-size: 13px; }
+  .truth-table tr:last-child td { border-bottom: none; }
+  .truth-table td:not(:last-child), .truth-table th:not(:last-child) { border-right: 1px solid var(--rule); }
+
+  /* DIAGRAM FIGURE */
+  .diagram-fig { margin: 26px 0; padding: 20px 14px 14px; background: var(--paper-deep); border: 1px solid var(--rule); }
+  .diagram-fig svg { width: 100%; height: auto; display: block; }
+  .diagram-fig figcaption { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 14px; color: var(--ink-faint); text-align: center; margin-top: 12px; line-height: 1.4; }
+  .diagram-fig .fig-num { font-family: 'JetBrains Mono', monospace; font-style: normal; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 4px; }
+
+  /* NIBBLE REFERENCE GRID */
+  .nibble-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 18px 0; }
+  .nibble-grid .cell { background: var(--paper-deep); border: 1px solid var(--rule); padding: 7px 4px; text-align: center; font-family: 'JetBrains Mono', monospace; }
+  .nibble-grid .cell .hx { font-size: 16px; font-weight: 700; color: var(--accent); }
+  .nibble-grid .cell .bn { font-size: 11px; color: var(--ink-faint); display: block; margin-top: 2px; }
+
+  /* THEOREM */
+  .theorem { margin: 26px 0; padding: 18px 18px 16px; background: var(--ink); color: var(--paper); position: relative; overflow: hidden; }
+  .theorem::before { content: ""; position: absolute; inset: 4px; border: 1px solid rgba(243, 236, 224, 0.18); pointer-events: none; }
+  .theorem .th-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  .theorem .th-title { font-family: 'Fraunces', serif; font-style: italic; font-size: 22px; margin-bottom: 8px; color: var(--paper); }
+  .theorem p { color: var(--paper); margin-bottom: 0; font-size: 15.5px; }
+  .theorem p + p { margin-top: 10px; text-indent: 0; }
+  .theorem strong { color: var(--gold); }
+  .theorem .math { background: rgba(243,236,224,0.12); color: var(--paper); }
+
+  .divider { text-align: center; margin: 34px 0; color: var(--rule); font-family: 'Fraunces', serif; font-size: 22px; letter-spacing: 1em; line-height: 1; }
+  .footnote { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--rule); font-size: 13.5px; font-style: italic; color: var(--ink-faint); text-align: center; }
+
+  /* DESKTOP TABS */
+  @media (min-width: 640px) {
+    .wrap { padding: 44px 36px 100px; }
+    body { font-size: 18px; }
+    .tabs { flex-direction: row; }
+    .tab-btn { flex: 1; flex-direction: column; align-items: flex-start; gap: 6px; padding: 14px 14px; border-bottom: none; border-right: 1px solid var(--rule); }
+    .tab-btn:last-child { border-right: none; }
+    .tab-btn:hover { padding-left: 14px; }
+    .tab-btn.active { padding-left: 14px; }
+    .tab-btn .name { font-size: 17px; }
+  }
+
+  ::selection { background: var(--accent); color: var(--paper); }
+
+  /* ===== LECCIONES DE CLAUDE ===== */
+  .estado { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; padding: 3px 8px; border: 1px solid var(--accent); color: var(--accent); margin: 0 6px 16px 0; }
+  .estado.ok { border-color: var(--ok); color: var(--ok); }
+  .estado.curso { border-color: var(--gold); color: var(--gold); }
+  pre.code { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; background: var(--ink); color: var(--paper); padding: 14px 16px; margin: 16px 0; border-left: 3px solid var(--gold); overflow-x: auto; white-space: pre; }
+  pre.code .c { color: #b9ab8f; font-style: italic; }
+  pre.code .k { color: #f0c96a; font-weight: 700; }
+  .ejercicio { margin: 24px 0; border: 1px solid var(--rule); background: var(--paper-deep); }
+  .ejercicio .ej-cabeza { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); padding: 12px 14px 0; }
+  .ejercicio .ej-titulo { font-family: 'Fraunces', serif; font-style: italic; font-size: 19px; padding: 2px 14px 6px; color: var(--ink); }
+  .ejercicio .ej-cuerpo { padding: 0 14px 6px; }
+  .ejercicio .ej-cuerpo p + p { text-indent: 0; }
+  details.solucion { border-top: 1px dashed var(--rule); padding: 10px 14px; }
+  details.solucion summary { cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); }
+  details.solucion[open] summary { margin-bottom: 10px; }
+  .respuesta, .correccion { padding: 10px 14px; margin: 16px 0; font-size: 16px; }
+  .respuesta { border-left: 3px solid var(--ok); background: rgba(47, 107, 58, 0.07); }
+  .correccion { border-left: 3px solid var(--accent-soft); background: rgba(139, 30, 30, 0.05); }
+  .respuesta .label, .correccion .label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 4px; }
+  .respuesta .label { color: var(--ok); }
+  .correccion .label { color: var(--accent); }
+  .respuesta p + p, .correccion p + p { text-indent: 0; }
+  dl.qa { margin: 14px 0; }
+  dl.qa dt { font-weight: 600; margin-top: 14px; }
+  dl.qa dd { margin: 4px 0 0; padding-left: 14px; border-left: 1px solid var(--rule); color: var(--ink-soft); }
+  .tabla { overflow-x: auto; margin: 16px 0; }
+  table.datos { width: 100%; border-collapse: collapse; font-size: 15px; }
+  table.datos th, table.datos td { padding: 6px 8px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+  table.datos th { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); border-bottom: 2px solid var(--ink); }
+  table.datos td code, table.datos td .math { white-space: nowrap; }
+  ol.pasos { margin: 10px 0 14px 22px; }
+  ol.pasos li, ul.lista li { margin: 4px 0; }
+  ul.lista { margin: 10px 0 14px 22px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Lessons by Claude · Phase 1</div>
+  <h1 class="title">The <em>naked</em> machine</h1>
+  <div class="subtitle">CPU · von Neumann · cache · fetch-decode-execute · jumps · stack and indirection · x86 Assembly</div>
+  <div class="colophon">Guillermo · Exit criterion met on 2026-10-04 · Phase closed</div>
+</header>
+
+<div class="aside">
+  <span class="label">The conceptual leap of the phase</span> <strong>Finiteness.</strong> The CPU's real workspace is finite, named and very small: 16 slots. Every operation costs cycles, every piece of data has to travel, and the distance at which data lives determines the cost of using it. This is what has no analogue in abstract mathematics.
+</div>
+
+<nav class="tabs" role="tablist">
+  <button class="tab-btn active" role="tab" data-target="t1" data-seccion="l1" data-titulo="Fase 1 · La CPU y la mesa"><span class="num">I.</span><span class="name">The CPU</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t2" data-seccion="l2" data-titulo="Fase 1 · Von Neumann y la hoja"><span class="num">II.</span><span class="name">The sheet</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t3" data-seccion="l3" data-titulo="Fase 1 · Jerarquía de memoria y caché"><span class="num">III.</span><span class="name">Cache</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t4" data-seccion="l4" data-titulo="Fase 1 · El ciclo fetch-decode-execute"><span class="num">IV.</span><span class="name">The cycle</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t5" data-seccion="l5" data-titulo="Fase 1 · Saltos y banderas"><span class="num">V.</span><span class="name">Jumps</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t6" data-seccion="l6" data-titulo="Fase 1 · Pila e indirección"><span class="num">VI.</span><span class="name">Stack and pointers</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t7" data-seccion="l7" data-titulo="Fase 1 · Assembly y el taller"><span class="num">VII.</span><span class="name">Assembly</span><span class="marker">→</span></button>
+</nav>
+
+<!-- ===== I. LA CPU ===== -->
+<section class="panel active" id="t1" role="tabpanel">
+  <h2><span class="marker">§ 1.1</span>Three units and a clock</h2>
+  <p>A CPU is a small set of units coordinated by a clock. The three that matter:</p>
+  <ul class="props">
+    <li><strong>ALU</strong> executes arithmetic and Boolean operations. It is binary by construction: two operands, one result.</li>
+    <li><strong>Registers</strong> internal memory, fixed in number and in size. The only thing the ALU operates on directly.</li>
+    <li><strong>Control Unit</strong> reads each instruction from memory, decodes it and activates the control lines.</li>
+  </ul>
+  <div class="aside">
+    <span class="label">In the workshop</span> The <em>Master Builder</em> (Control Unit) does not touch the wood: it reads the order, deciphers it and shouts to the craftsman what to do. The <em>Carpenter</em> (ALU) is pure transforming force: it takes the two planks on the bench, performs the operation it was ordered to and leaves the result on the bench. Together they are «the carpenter» in the simple version; the whole workshop is the CPU.
+  </div>
+
+  <div class="theorem">
+    <div class="th-label">Structural point</div>
+    <div class="th-title">The Control Unit is not programmable</div>
+    <p>It stores no instructions and runs no program of its own: it is a <strong>circuit</strong>, a finite automaton made from the gates of Phase 0. Given a bit pattern it activates some lines or others. Reprogramming it would mean redesigning the chip.</p>
+    <p>It is the transition function <span class="math">δ</span> of the Turing Machine made into hardware. Universality is obtained by changing the tape, not the machine.</p>
+  </div>
+
+  <h2><span class="marker">§ 1.2</span>The bench and the shelves</h2>
+  <p>A register is exactly one word: 8 bytes on 64 bits. x86-64 has 16 general-purpose ones (<code>rax</code>, <code>rbx</code>, <code>rcx</code>, <code>rdx</code>, <code>rsi</code>, <code>rdi</code>, <code>rbp</code>, <code>rsp</code>, <code>r8</code>…<code>r15</code>): <span class="math">16 × 8 = 128</span> bytes of truly immediate workspace.</p>
+  <div class="tabla"><table class="datos">
+    <tr><th></th><th>Register (the bench)</th><th>Memory (the shelves)</th></tr>
+    <tr><td>Count</td><td>16, fixed</td><td>Billions of cells</td></tr>
+    <tr><td>Cell</td><td>8 bytes (1 word)</td><td>1 byte</td></tr>
+    <tr><td>Referred to by</td><td>Name (<code>rax</code>…)</td><td>Address (a number)</td></tr>
+    <tr><td>The ALU</td><td>Operates directly</td><td>Cannot reach it: must fetch first</td></tr>
+  </table></div>
+  <p>Word width varies with the architecture: x86-32 had 8 registers of 32 bits; ARMv8 has 31 of 64; an AVR microcontroller, 32 of 1 byte. Word width = register width = address width: the three move together by design.</p>
+
+  <h3>A register and a variable are not the same</h3>
+  <p>The register is the container: fixed, one word. The variable can be smaller: a 1-byte character takes an 8-byte register and leaves 7 unused. If it is larger than the word, it does not fit: the operation is split into several instructions that propagate the carry by hand (the atomicity of Phase 0).</p>
+
+  <h2><span class="marker">§ 1.3</span>Exercises</h2>
+  <div class="ejercicio">
+    <div class="ej-cabeza">Exercise 1.1 · capacity</div>
+    <div class="ej-titulo">What happens with a program that has 200 variables live at the same time?</div>
+    <details class="solucion"><summary>See answer</summary>
+      <p>16 fit in the registers. The remaining 184 live in memory, and the program alternates loads and stores to keep at hand the ones it needs at each moment. The pressure to free registers is the direct consequence of finiteness.</p>
+    </details>
+  </div>
+  <div class="ejercicio">
+    <div class="ej-cabeza">Exercise 1.2 · fetch, operate, return</div>
+    <div class="ej-titulo">You want a + b, with a and b on the shelves. Order the steps: which one can you skip?</div>
+    <div class="ej-cuerpo"><p>Add in the ALU · bring b to the bench · bring a to the bench · return the result to a shelf.</p></div>
+    <details class="solucion"><summary>See answer</summary>
+      <div class="respuesta"><span class="label">Your answer</span>The order was right: bring a, bring b, add, return.</div>
+      <p><strong>Return</strong> can be skipped. After adding, the result is already on the bench. It is only returned if it must persist or if the slot needs to be freed, and that happens often because the bench has only 16 places. Fetching and operating are mandatory: the ALU cannot reach the shelves.</p>
+    </details>
+  </div>
+
+  <h2><span class="marker">§ 1.4</span>Registers that are not on the bench</h2>
+  <div class="tabla"><table class="datos">
+    <tr><th>Register</th><th>What it holds</th><th>Does the programmer touch it?</th></tr>
+    <tr><td><code>rip</code></td><td>The address of the next instruction (the finger)</td><td>Indirectly, with jumps</td></tr>
+    <tr><td><code>rflags</code></td><td>The ALU's last verdict (the notebook)</td><td>Indirectly, with conditional jumps</td></tr>
+    <tr><td><code>rsp</code></td><td>The top of the stack</td><td>Yes</td></tr>
+    <tr><td>IR</td><td>The instruction being decoded (the hand)</td><td>No: no instruction reads or writes it</td></tr>
+  </table></div>
+</section>
+
+<!-- ===== II. LA HOJA ===== -->
+<section class="panel" id="t2" role="tabpanel">
+  <h2><span class="marker">§ 2.1</span>Instructions and data share memory</h2>
+  <p>Instructions do not live in the CPU: they live in memory, in the same addressable space as data. Everything is bytes; the difference between «instruction» and «data» is one of <em>interpretation</em>, not location. That is the <strong>von Neumann</strong> architecture, and it is that of practically every PC, phone or server.</p>
+  <p>The alternative, Harvard, separates memories for code and data; it survives in microcontrollers. Inside the CPU, the L1 cache is indeed split into L1i and L1d: <em>von Neumann on the outside, Harvard on the inside</em>.</p>
+  <div class="theorem">
+    <div class="th-label">Structural consequence</div>
+    <div class="th-title">Everything depends on where the finger lands</div>
+    <p>If nothing in the bytes distinguishes code from data, a program's correctness depends on the flow never landing where it should not. Almost all binary exploitation is making <code>rip</code> land somewhere unforeseen.</p>
+  </div>
+
+  <h2><span class="marker">§ 2.2</span>Who writes the sheet?</h2>
+  <dl class="qa">
+    <dt>Scenario 1: you write a program (a password manager)</dt>
+    <dd>What you write in C or Python is not yet the sheet: it is a draft in a language the carpenter does not read. The <em>compiler</em> translates it into machine bytes; that is the sheet. In Python there is no ahead-of-time compilation: the sheet is the interpreter, and your script is just one more piece the interpreter reads.</dd>
+    <dt>Scenario 2: you open Spotify and play a song</dt>
+    <dd>The sheet already exists: the executable, stored on disk. When you open it, the operating system copies it from disk to RAM and puts the finger on its first line. The song is not a sheet: it is a piece. The disk is a <em>distant warehouse</em>: nothing runs from there.</dd>
+  </dl>
+  <p>What they have in common: the carpenter always reads machine bytes in RAM. All that changes is who wrote the sheet and when. And the operating system is a sheet too: the one that decides which other sheets get read (Phase 3).</p>
+
+  <h2><span class="marker">§ 2.3</span>Where does each thing live?</h2>
+  <ul class="props">
+    <li><strong>Storeroom (RAM)</strong> sheet and pieces mixed together, indistinguishable. The Lego analogy: the sheet is the manual, the pieces are the bricks.</li>
+    <li><strong>Ledge (cache)</strong> both; L1 separates them (L1i for the sheet, L1d for the pieces); L2 and L3 are mixed.</li>
+    <li><strong>Bench (registers)</strong> only pieces. The sheet is never put on the bench.</li>
+  </ul>
+  <div class="correccion">
+    <span class="label">Careful with rip</span> <code>rip</code> does not hold the instruction: it holds its <em>address</em>. It is the finger, not the line. The line being executed is held by the carpenter's <em>hand</em> (the IR), private circuitry that is not one of the 16 slots.
+  </div>
+  <div class="correccion">
+    <span class="label">Correction to your synthesis</span> The carpenter <em>is not</em> the pointer. The carpenter is the working CPU (CU + ALU); the pointer is its finger on the sheet, <code>rip</code>. The carpenter uses the finger; it is not the finger.
+  </div>
+</section>
+
+<!-- ===== III. CACHÉ ===== -->
+<section class="panel" id="t3" role="tabpanel">
+  <h2><span class="marker">§ 3.1</span>The physical tension</h2>
+  <p>Small-and-fast and large-and-slow are in irreducible tension. An instantaneous memory has to be tiny; one that holds billions of cells takes up space and is therefore far away.</p>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Exercise 3.1 · no jargon</div>
+    <div class="ej-titulo">Tiny bench, shelves in another room: what trick comes to mind?</div>
+    <details class="solucion"><summary>See your ideas and the answer</summary>
+      <div class="respuesta"><span class="label">Your two ideas</span>
+        <p>1. A dedicated carrier. It exists: it separates the one who operates from the one who carries. But it does not shorten the distance; it <em>hides</em> the wait, it does not eliminate it.</p>
+        <p>2. A single room. It clashes with physics, and you saw the limit yourself: what is within arm's reach has to be small.</p>
+      </div>
+      <p>The missing piece: <strong>don't choose, stack levels</strong>. Bench → ledge next to the bench → shelving in the room → storeroom. Each level keeps <em>copies</em> of what was used recently. That is the cache.</p>
+    </details>
+  </div>
+
+  <div class="tabla"><table class="datos">
+    <tr><th>Level</th><th>In the workshop</th><th>Capacity</th><th>Contents</th></tr>
+    <tr><td>Registers</td><td>The bench</td><td>128 bytes</td><td>Only data in use</td></tr>
+    <tr><td>L1</td><td>The ledge</td><td>Tens of KB</td><td>Split: L1i and L1d</td></tr>
+    <tr><td>L2 / L3</td><td>The shelving</td><td>KB to tens of MB</td><td>Mixed</td></tr>
+    <tr><td>RAM</td><td>The storeroom</td><td>Gigabytes</td><td>Code, data, stack, heap</td></tr>
+    <tr><td>Disk</td><td>The distant warehouse</td><td>Terabytes</td><td>Nothing runs there</td></tr>
+  </table></div>
+
+  <h2><span class="marker">§ 3.2</span>Locality: the bet</h2>
+  <ul class="props">
+    <li><strong>Temporal</strong> what was used recently will be used again soon. Passive: the data stays on the ledge.</li>
+    <li><strong>Spatial</strong> what is next to what was used will be used soon. Active and speculative: data nobody asked for is brought up.</li>
+  </ul>
+  <p><strong>Loops</strong> justify the bet: ten instructions repeated a million times are fetched once and stay. It is not a law, it is an empirical regularity: a program that jumps at random is legal and ruins the cache.</p>
+
+  <h2><span class="marker">§ 3.3</span>The trip to the storeroom</h2>
+  <p>The cache never fetches a single byte: it fetches a contiguous block of <strong>64 bytes</strong>, the <em>cache line</em>. The expensive part is going, not carrying: if you already walked all the way there, fill your arms.</p>
+  <ol class="pasos">
+    <li><strong>Bring the neighbours</strong> (cache line): happens on every trip. Automatic and blind. It is not prediction: the block is the minimum unit of transport.</li>
+    <li><strong>Get ahead</strong> (prefetch): the CPU notices you are reading in order and has the next stretches fetched before they are needed. This is prediction, and it can fail.</li>
+  </ol>
+  <div class="ejercicio">
+    <div class="ej-cabeza">Exercise 3.2</div>
+    <div class="ej-titulo">What does the cache bring when it goes to memory, and why?</div>
+    <details class="solucion"><summary>See answer</summary>
+      <p>A contiguous block of 64 bytes, not the requested byte. The dominant cost is the trip, not the volume; and spatial locality bets that the neighbours will be requested soon.</p>
+    </details>
+  </div>
+  <div class="aside">
+    <span class="label">Practical consequence</span> An array traversed in order makes use of each line several times; traversed in large strides, it causes one trip per access. Same algorithm, same number of operations, up to 10 times slower. Asymptotic cost does not see it. <em>Security seed:</em> if timing depends on what was in the cache, timing leaks information (side channels).
+  </div>
+</section>
+
+<!-- ===== IV. EL CICLO ===== -->
+<section class="panel" id="t4" role="tabpanel">
+  <h2><span class="marker">§ 4.1</span>The four steps, in the workshop</h2>
+  <ol class="pasos">
+    <li><strong>Fetch.</strong> The carpenter looks at where its finger points (<code>rip</code>) and brings that line, almost always from the L1i ledge; if not, a trip to the storeroom and back with 64 bytes. It holds it in its hand (IR).</li>
+    <li><strong>Decode, read.</strong> The Master understands two things at once: which verb it is and how long the line is.</li>
+    <li><strong>Execute, do.</strong> One place is modified: <code>mov</code> → a piece on the bench; <code>cmp</code> → the notebook; <code>jmp</code>/<code>je</code> → the finger.</li>
+    <li><strong>Advance.</strong> The length of the line is added to the finger, unless the verb already moved it: that is where the jump is.</li>
+  </ol>
+  <p>And back to 1, billions of times per second. The CPU does not see the program: it sees one instruction, executes it and looks at the next.</p>
+
+  <h2><span class="marker">§ 4.2</span>The Turing Machine, materialized</h2>
+  <p>It is not a teaching analogy: it is the same formal structure.</p>
+  <div class="tabla"><table class="datos">
+    <tr><th>Turing Machine</th><th>Real CPU</th></tr>
+    <tr><td>Tape</td><td>Addressable memory</td></tr>
+    <tr><td>Head position</td><td><code>rip</code></td></tr>
+    <tr><td>Internal state</td><td>Registers + <code>rflags</code></td></tr>
+    <tr><td>Transition function δ</td><td>Control Unit (circuit)</td></tr>
+    <tr><td>One computation step</td><td>One fetch-decode-execute cycle</td></tr>
+  </table></div>
+  <p>The two differences that define the phase: <span class="math">δ</span> is abstract and the CU is a finite circuit; the tape is infinite and memory is not.</p>
+
+  <h2><span class="marker">§ 4.3</span>Variable length: a prefix code</h2>
+  <p>In x86 instructions are 1 to 15 bytes long, with no separators. The length is implicit in the opcode: after decoding the first bytes, the circuit already knows how many more belong to it.</p>
+  <div class="aside">
+    <span class="label">In your language</span> It is a <em>prefix code</em>: no valid opcode is a prefix of another, so the bit stream is parsed unambiguously and without delimiters, as long as you enter at a correct starting point.
+  </div>
+</section>
+
+<!-- ===== V. SALTOS ===== -->
+<section class="panel" id="t5" role="tabpanel">
+  <h2><span class="marker">§ 5.1</span>The unconditional jump</h2>
+  <p>A jump writes an address directly into <code>rip</code> instead of letting the length be added to it. The destination is encoded in the instruction itself.</p>
+  <div class="theorem">
+    <div class="th-label">There are no loops in hardware</div>
+    <div class="th-title">Just a finger that goes backwards</div>
+    <p>A loop is just a <code>rip</code> that had an earlier address written into it. The structure is seen by the programmer; the carpenter only knows that sometimes the finger goes back.</p>
+  </div>
+
+  <h2><span class="marker">§ 5.2</span>The notebook and the conditional jump</h2>
+  <p>The ALU leaves marks in <code>rflags</code> about its last calculation: was it zero? (ZF), carry? (CF), negative? (SF), signed overflow? (OF).</p>
+  <ul class="props">
+    <li><strong>cmp a, b</strong> subtracts <span class="math">a − b</span> and discards the result: it only leaves the marks. Equal ⇒ result is zero ⇒ ZF = 1.</li>
+    <li><strong>je target</strong> looks at the notebook. If ZF = 1, it writes the target into <code>rip</code>; if ZF = 0, it does nothing and the finger moves down.</li>
+  </ul>
+  <div class="correccion">
+    <span class="label">Where the confusion concentrated</span> They are three different pieces: <code>je</code> is the <em>order</em>; the target is a <em>line</em> written in the instruction; ZF is the <em>condition</em>, which lives in the notebook and is not a target. There are two possible targets —the written one and the next line— and a single question that decides.
+  </div>
+  <p>The division of labour: <strong>the ALU judges, <code>rflags</code> remembers the verdict, the jump obeys it.</strong></p>
+
+  <h2><span class="marker">§ 5.3</span>Misaligned instructions</h2>
+  <p>Since the length is only known when decoding and there is no start marker, the CPU cannot detect that it is reading from the middle of an instruction.</p>
+  <div class="ejercicio">
+    <div class="ej-cabeza">Exercise 5.1</div>
+    <div class="ej-titulo">What happens if rip lands in the middle of an instruction?</div>
+    <details class="solucion"><summary>See answer</summary>
+      <div class="correccion"><span class="label">Your initial answer</span>That the processor would detect the misalignment and recover. It is the natural intuition, and it is exactly the one the hardware does not fulfil.</div>
+      <p>It does not stop or warn. It decodes that byte as an opcode, executes whatever it means, advances by that length and carries on: a different program, made of instructions nobody wrote. <strong>The instruction is not a property of the bytes, but of the bytes plus the point where reading started.</strong></p>
+      <p>It is a real offensive technique: hiding instructions inside others. On fixed-length architectures (ARM, RISC-V: 4 bytes) it is impossible, because there is only one valid alignment.</p>
+    </details>
+  </div>
+</section>
+
+<!-- ===== VI. PILA Y PUNTEROS ===== -->
+<section class="panel" id="t6" role="tabpanel">
+  <h2><span class="marker">§ 6.1</span>The regions of a program</h2>
+  <div class="tabla"><table class="datos">
+    <tr><th>Region</th><th>What it contains</th><th>Discipline</th></tr>
+    <tr><td>Code</td><td>The instructions</td><td>Read-only</td></tr>
+    <tr><td>Static data</td><td>What exists from startup</td><td>Fixed size and position</td></tr>
+    <tr><td>Stack</td><td>Return addresses, local variables</td><td>LIFO, automatic</td></tr>
+    <tr><td>Heap</td><td>Explicitly requested memory</td><td>No order, manual management</td></tr>
+  </table></div>
+  <p>The stack is a region of RAM, not a piece of hardware (its top in fact lives in cache, because it is touched all the time). It has its own finger: <code>rsp</code> marks the top. <code>rip</code> marks where execution is; <code>rsp</code>, where the stack is.</p>
+
+  <h2><span class="marker">§ 6.2</span>Why LIFO?</h2>
+  <div class="ejercicio">
+    <div class="ej-cabeza">Exercise 6.1</div>
+    <div class="ej-titulo">Which computing process demands the «last in, first out» discipline?</div>
+    <details class="solucion"><summary>See your answers and the answer</summary>
+      <div class="correccion"><span class="label">Your three answers, calibrated</span>
+        <p><em>The clipboard</em>: good instinct about order, but it only holds one: there is replacement, not a stack.</p>
+        <p><em>The notebook</em>: no; the marks are overwritten on every operation, they do not stack up.</p>
+        <p><em>A linear order with a first element</em>: formally correct, but what generates it is missing.</p>
+      </div>
+      <p><strong>Nesting.</strong> If to finish A you have to suspend it, do B and come back exactly where A was left —and B in turn suspends to do C—, then C finishes before B, and B before A. The return order is necessarily the reverse of the entry order.</p>
+      <ul class="lista">
+        <li>Nested parentheses: a context-free grammar, recognized by a <em>pushdown automaton</em>.</li>
+        <li>Proofs that suspend a theorem to prove a lemma.</li>
+        <li>Recursion.</li>
+      </ul>
+      <p>In the CPU: <strong>calling a function</strong>. The stack keeps the return addresses. In the workshop: the carpenter leaves the current sheet face down on a pile, takes the new one and, when done, uncovers the one on top, which is necessarily the last one it left.</p>
+    </details>
+  </div>
+  <div class="theorem">
+    <div class="th-label">Seed of Phase 2</div>
+    <div class="th-title">The return address is not verified</div>
+    <p>It sits on the stack, mixed with data the program writes. If badly measured data is written beyond its space and on top of it, the likely outcome is an invalid jump and the end of the program. If instead of garbage a chosen address is written, the program returns wherever the attacker decided: <strong>buffer overflow</strong>.</p>
+  </div>
+
+  <h2><span class="marker">§ 6.3</span>The address is a number</h2>
+  <p>Memory is a sequence of 1-byte cells; an address is the number of the cell. Formally:</p>
+  <div class="display-math">f : D → {0,1}⁸, D ⊂ ℕ finite</div>
+  <p>The critical part: an address is a natural number, so it <strong>fits in a register</strong> like any data. You can put the number of a cell on the bench instead of its contents.</p>
+
+  <h2><span class="marker">§ 6.4</span>Indirection: F(F(x))</h2>
+  <p>A 64-bit address does not fit in a byte, so a whole word is read:</p>
+  <div class="display-math">F(x) = ⟨ f(x), f(x+1), …, f(x+7) ⟩ as a natural number, F : D → ℕ</div>
+  <p>Now the types match and <span class="math">F(F(x))</span> is well defined: two chained reads. If cell 200 contains 7000 and cell 7000 contains 42, then <span class="math">F(200) = 7000</span> and <span class="math">F(F(200)) = 42</span>. Cell 200 does not hold the data: it holds <em>where</em> it is.</p>
+  <p>Nothing in the bytes distinguishes a data number from an address number: the interpretation is supplied by the program. <strong>A pointer is a number someone decided to use as an index instead of as a value.</strong></p>
+  <div class="ejercicio">
+    <div class="ej-cabeza">Exercise 6.2</div>
+    <div class="ej-titulo">What do you gain by keeping the address of some data in a register instead of the data itself?</div>
+    <details class="solucion"><summary>See answer</summary>
+      <ul class="lista">
+        <li>The reference fits even if the object does not: an address takes one word, whatever the size of what it points to.</li>
+        <li>Sharing without copying: two parts with the same address see the same data.</li>
+        <li>Linked structures: if each element keeps the address of the next, you get lists, trees and graphs. What mathematics defines through relations, here is built with addresses.</li>
+      </ul>
+    </details>
+  </div>
+</section>
+
+<!-- ===== VII. ASSEMBLY ===== -->
+<section class="panel" id="t7" role="tabpanel">
+  <h2><span class="marker">§ 7.1</span>Syntax and brackets</h2>
+  <div class="display-math">verb destination, source</div>
+  <p>The first operand is where the result goes: <code>mov rax, 5</code> puts 5 in <code>rax</code>; <code>sub rax, rbx</code> computes <span class="math">rax = rax − rbx</span>.</p>
+  <ul class="props">
+    <li><strong>rax</strong> the register; its contents are used as a value.</li>
+    <li><strong>[rax]</strong> the cell whose address is in <code>rax</code>: the composition <span class="math">F(F(x))</span> turned into notation.</li>
+  </ul>
+  <p>The side of the bracket decides the direction: <code>mov rbx, [rax]</code> <em>reads</em> from memory; <code>mov [rax], rbx</code> <em>writes</em>. Same verb, inverse operation.</p>
+
+  <div class="tabla"><table class="datos">
+    <tr><th>Instruction</th><th>What it does</th><th>What it modifies</th><th>In the workshop</th></tr>
+    <tr><td><code>mov d, s</code></td><td>Copies s into d</td><td>Register or cell</td><td>Bring or return a piece</td></tr>
+    <tr><td><code>add d, s</code></td><td>d = d + s</td><td>d and rflags</td><td>Carpenter's calculation</td></tr>
+    <tr><td><code>sub d, s</code></td><td>d = d − s</td><td>d and rflags</td><td>Carpenter's calculation</td></tr>
+    <tr><td><code>dec d</code></td><td>d = d − 1</td><td>d and rflags</td><td>Carpenter's calculation</td></tr>
+    <tr><td><code>cmp a, b</code></td><td>a − b, discards</td><td>Only rflags</td><td>Measure without cutting</td></tr>
+    <tr><td><code>jmp x</code></td><td>Always jumps</td><td>rip</td><td>Move the finger</td></tr>
+    <tr><td><code>je x</code></td><td>Jumps if ZF = 1</td><td>rip, sometimes</td><td>Look at the notebook and maybe move the finger</td></tr>
+    <tr><td><code>hlt</code></td><td>Halts</td><td>—</td><td>—</td></tr>
+  </table></div>
+
+  <h2><span class="marker">§ 7.2</span>Worked traces</h2>
+  <div class="ejercicio">
+    <div class="ej-cabeza">Trace A.1 · arithmetic with a jump</div>
+    <div class="ej-titulo">Registers after each instruction, ZF and whether the jump is taken</div>
+    <div class="ej-cuerpo"><pre class="code">mov  rax, 10
+mov  rbx, 3
+sub  rax, rbx
+cmp  rax, 7
+je   equal</pre></div>
+    <details class="solucion"><summary>See solution</summary>
+      <pre class="code">mov  rax, 10    <span class="c">→ rax = 10</span>
+mov  rbx, 3     <span class="c">→ rax = 10, rbx = 3</span>
+sub  rax, rbx   <span class="c">→ rax = 7</span>
+cmp  rax, 7     <span class="c">→ 7 − 7 = 0 → ZF = 1 (result discarded)</span>
+je   equal      <span class="c">→ ZF = 1 → JUMPS</span></pre>
+      <p><code>cmp</code> does not modify <code>rax</code>; its only effect is ZF = 1. <code>je</code> reads it and writes the address of <code>equal</code> into <code>rip</code>.</p>
+    </details>
+  </div>
+  <div class="ejercicio">
+    <div class="ej-cabeza">Trace A.2 · indirection</div>
+    <div class="ej-titulo">Cell 200 contains 41. Trace:</div>
+    <div class="ej-cuerpo"><pre class="code">mov  rax, 200
+mov  rbx, [rax]
+add  rbx, 1
+mov  [rax], rbx</pre></div>
+    <details class="solucion"><summary>See solution</summary>
+      <pre class="code">mov  rax, 200     <span class="c">→ rax = 200 (an address, not data)</span>
+mov  rbx, [rax]   <span class="c">→ reads cell 200 → rbx = 41</span>
+add  rbx, 1       <span class="c">→ rbx = 42</span>
+mov  [rax], rbx   <span class="c">→ writes 42 into cell 200</span></pre>
+      <p>Fetch–operate–return in four instructions. The asymmetry of the brackets reverses the direction between the second and the fourth.</p>
+    </details>
+  </div>
+  <div class="ejercicio">
+    <div class="ej-cabeza">Construction A.3 · a loop</div>
+    <div class="ej-titulo">With rcx = 3, repeat until the counter reaches zero</div>
+    <details class="solucion"><summary>See solution</summary>
+      <pre class="code">top:    dec  rcx
+        cmp  rcx, 0
+        je   done
+        jmp  top
+done:   hlt</pre>
+      <pre class="code">pass 1:  dec → rcx = 2   ZF = 0   je no jump   jmp → top
+pass 2:  dec → rcx = 1   ZF = 0   je no jump   jmp → top
+pass 3:  dec → rcx = 0   ZF = 1   je JUMPS → done</pre>
+      <p>The whole loop fits in one cache line: it is fetched once and runs from L1 on the remaining passes. (<code>dec</code> already sets ZF: the <code>cmp</code> is redundant, and it was left here to separate judging from obeying. You checked this in mini-task 5.)</p>
+    </details>
+  </div>
+
+  <h2><span class="marker">§ 7.3</span>The whole workshop</h2>
+  <div class="tabla"><table class="datos">
+    <tr><th>In the workshop</th><th>In the machine</th></tr>
+    <tr><td>The Master Builder</td><td>Control Unit</td></tr>
+    <tr><td>The Carpenter</td><td>ALU</td></tr>
+    <tr><td>The whole workshop</td><td>CPU</td></tr>
+    <tr><td>The instruction sheet</td><td>The code, in memory</td></tr>
+    <tr><td>The finger on the line</td><td><code>rip</code></td></tr>
+    <tr><td>The hand that holds the line</td><td>IR</td></tr>
+    <tr><td>The 16 slots on the bench</td><td>Registers</td></tr>
+    <tr><td>The notebook in the margin</td><td><code>rflags</code></td></tr>
+    <tr><td>The ledge / the shelving</td><td>L1 cache / L2–L3</td></tr>
+    <tr><td>The storeroom / the distant warehouse</td><td>RAM / disk</td></tr>
+    <tr><td>The pile of sheets face down</td><td>Stack, with <code>rsp</code> on the top one</td></tr>
+    <tr><td>The workshop bell</td><td>Clock</td></tr>
+    <tr><td>The owner of the workshop</td><td>Operating system</td></tr>
+  </table></div>
+  <div class="theorem">
+    <div class="th-label">In one line</div>
+    <div class="th-title">The carpenter and its finger</div>
+    <p>The carpenter reads the sheet with a finger (<code>rip</code>), works on the bench (registers), jots in the notebook (<code>rflags</code>), keeps copies on the ledge (cache), and everything —sheet, pieces and stack— lives in the storeroom (RAM).</p>
+  </div>
+</section>
+
+<div class="footnote">Source: Phase 1 closing report (§ 1–10, Appendix A) and the phase's session notes. The closing challenge is in the «Final challenge» tab.</div>
+
+</div>
+
+<script>
+  // Pestañas, y aviso al sitio de qué parte se está viendo (contrato postMessage, spec 03 §3).
+  const buttons = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.panel');
+  function avisar(btn) {
+    if (window.parent === window) return;
+    parent.postMessage({ tipo: 'elemento', seccion: btn.dataset.seccion, titulo: btn.dataset.titulo,
+                         clase: 'lectura' }, location.origin);
+  }
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+      panels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      document.getElementById(btn.dataset.target).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      avisar(btn);
+    });
+  });
+  const inicial = document.querySelector('.tab-btn.active');
+  if (inicial) { inicial.setAttribute('aria-selected', 'true'); avisar(inicial); }
+</script>
+
+</body>
+</html>
