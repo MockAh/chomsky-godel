@@ -59,10 +59,10 @@
       "pestanas": [
         {"id": "practica", "etiqueta": "Práctica", "anotable": true,
          "archivo": "temas/cpu/practica.html", "version": "v0.2",
-         "en": {"etiqueta": "Practice"}},
+         "en": {"etiqueta": "Practice", "archivo": "temas/cpu/practica.en.html"}},
         {"id": "mapa", "etiqueta": "Mapa", "anotable": false,
          "archivo": "temas/cpu/mapa.html", "version": "v0.2",
-         "en": {"etiqueta": "Map"}}
+         "en": {"etiqueta": "Map", "archivo": "temas/cpu/mapa.en.html"}}
       ]
     },
     {
