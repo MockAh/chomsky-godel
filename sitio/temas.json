@@ -37,10 +37,10 @@
       "pestanas": [
         {"id": "practica", "etiqueta": "Práctica", "anotable": true,
          "archivo": "temas/alu/practica.html", "version": "v0.2",
-         "en": {"etiqueta": "Practice"}},
+         "en": {"etiqueta": "Practice", "archivo": "temas/alu/practica.en.html"}},
         {"id": "mapa", "etiqueta": "Mapa", "anotable": false,
          "archivo": "temas/alu/mapa.html", "version": "v0.2",
-         "en": {"etiqueta": "Map"}}
+         "en": {"etiqueta": "Map", "archivo": "temas/alu/mapa.en.html"}}
       ]
     },
     {
