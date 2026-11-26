@@ -1,6 +1,7 @@
 # Secretos y entorno local (02 §5)
 sitio/.env
 sitio/.invitaciones.txt
+sitio/.museo.txt
 sitio/.venv/
 build/
 

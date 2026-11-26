@@ -5,6 +5,7 @@ memoria y contra Firestore, y se puede simular el paso del tiempo.
 """
 from __future__ import annotations
 
+import hmac
 import json
 import re
 import time
@@ -49,6 +50,8 @@ MSG_CREDENCIALES = "Usuario o contraseña incorrectos."
 MSG_DEMASIADOS = "Demasiados intentos. Espera 15 minutos."
 MSG_ENLACE = "Este enlace ya se usó o venció."
 MSG_SIN_SESION = "Sin sesión."
+MSG_NO_EXISTE = "No existe."
+HUELLA_VALIDA = re.compile(r"^[0-9a-f]{64}$")
 
 
 # ---------- cuerpos de las peticiones ----------
@@ -124,8 +127,12 @@ def _error(estado: int, detalle: str, **extra) -> JSONResponse:
 
 # ---------- la aplicación ----------
 
-def crear_app(almacen, dir_contenido, reloj: Callable[[], float] = time.time) -> FastAPI:
+def crear_app(almacen, dir_contenido, reloj: Callable[[], float] = time.time,
+              huella_museo: str | None = None) -> FastAPI:
+    """`huella_museo`: sha256 de la clave del enlace de solo lectura (P-34); sin ella no hay museo."""
     dir_contenido = Path(dir_contenido)
+    if huella_museo and not HUELLA_VALIDA.match(huella_museo):
+        huella_museo = None  # mal configurada: el museo queda cerrado
     manifiesto = cargar_manifiesto(dir_contenido)
     temas = {t["id"]: t for t in manifiesto["temas"]}
 
@@ -201,15 +208,54 @@ def crear_app(almacen, dir_contenido, reloj: Callable[[], float] = time.time) ->
             return _error(404, "Ese tema no existe.")
         return pagina("tema.html")
 
-    @app.get("/contenido/{tema}/{pestana}")
-    def ver_contenido(tema: str, pestana: str, request: Request):
-        if not sesion_actual(request):
-            return _error(401, MSG_SIN_SESION)
+    def servir_contenido(tema: str, pestana: str):
         t = temas.get(tema)
         if not t or pestana not in {p["id"] for p in t["pestanas"]}:
             return _error(404, "Ese contenido no existe.")
         return FileResponse(dir_contenido / f"{tema}-{pestana}.html", media_type="text/html",
                             headers={"Content-Security-Policy": CSP_CONTENIDO})
+
+    @app.get("/contenido/{tema}/{pestana}")
+    def ver_contenido(tema: str, pestana: str, request: Request):
+        if not sesion_actual(request):
+            return _error(401, MSG_SIN_SESION)
+        return servir_contenido(tema, pestana)
+
+    # --- museo: solo lectura con enlace secreto (P-34) ---
+    # Solo GET, sin cookies y sin tocar el almacén. Clave equivocada = 404, igual que una ruta
+    # que no existe, para no confirmar que el museo existe.
+
+    def es_museo(clave: str) -> bool:
+        return bool(huella_museo) and len(clave) <= 128 and hmac.compare_digest(
+            seguridad.huella(clave), huella_museo)
+
+    temas_museo = [{
+        "id": t["id"], "corto": t["corto"], "nombre": t["nombre"], "grupo": t["grupo"],
+        "pestanas": [{"id": p["id"], "etiqueta": p["etiqueta"], "version": p["version"],
+                      "aviso": p["aviso"], "anotable": False} for p in t["pestanas"]],
+    } for t in manifiesto["temas"]]
+
+    @app.get("/m/{clave}")
+    def museo_entrada(clave: str):
+        return pagina("login.html") if es_museo(clave) else _error(404, MSG_NO_EXISTE)
+
+    @app.get("/m/{clave}/temas")
+    def museo_temas(clave: str):
+        return pagina("temas.html") if es_museo(clave) else _error(404, MSG_NO_EXISTE)
+
+    @app.get("/m/{clave}/t/{tema}")
+    def museo_tema(clave: str, tema: str):
+        if not es_museo(clave) or tema not in temas:
+            return _error(404, MSG_NO_EXISTE)
+        return pagina("tema.html")
+
+    @app.get("/m/{clave}/contenido/{tema}/{pestana}")
+    def museo_contenido(clave: str, tema: str, pestana: str):
+        return servir_contenido(tema, pestana) if es_museo(clave) else _error(404, MSG_NO_EXISTE)
+
+    @app.get("/m/{clave}/api/temas")
+    def museo_api_temas(clave: str):
+        return {"temas": temas_museo} if es_museo(clave) else _error(404, MSG_NO_EXISTE)
 
     @app.get("/salud", status_code=204)
     def salud():

@@ -1,18 +1,18 @@
 // Página de tema: pestañas (role=tablist) con un iframe por pestaña.
 // Los iframes se quedan montados al cambiar de pestaña para no perder el avance;
 // las que no son la inicial se cargan la primera vez que se abren.
-import { cargarSesion, iniciarCuenta, el } from '/estaticos/comun.js';
-import { iniciarAnotaciones } from '/estaticos/anotaciones.js';
+// En el museo (P-34) no se cargan las anotaciones.
+import { cargarSesion, iniciarCuenta, el, BASE, INICIO, MUSEO } from '/estaticos/comun.js';
 
 iniciarCuenta();
 const sesion = await cargarSesion();
-const idTema = decodeURIComponent(location.pathname.split('/')[2] || '');
+const idTema = decodeURIComponent(location.pathname.slice(BASE.length).split('/')[2] || '');
 const tema = sesion.temas.find((t) => t.id === idTema);
 const barra = document.getElementById('pestanas');
 const paneles = document.getElementById('paneles');
 
 if (!tema) {
-  location.replace('/');
+  location.replace(INICIO);
 } else {
   document.title = `chomsky-godel · ${tema.corto}`;
   document.getElementById('tema-nombre').textContent = tema.nombre;
@@ -39,7 +39,9 @@ async function montar(tema) {
   }
   const botones = [];
   const panelPor = new Map();
-  const notas = await iniciarAnotaciones({ tema, sesion, iframeDe: (pid) => panelPor.get(pid)?.iframe });
+  const notas = MUSEO ? { cambioPestana() {} }
+    : await (await import('/estaticos/anotaciones.js'))
+      .iniciarAnotaciones({ tema, sesion, iframeDe: (pid) => panelPor.get(pid)?.iframe });
 
   tema.pestanas.forEach((p) => {
     const boton = el('button', {
@@ -68,7 +70,7 @@ async function montar(tema) {
       info.panel.hidden = pid !== id;
       if (pid === id && !info.iframe) {
         const iframe = el('iframe', {
-          src: `/contenido/${encodeURIComponent(tema.id)}/${encodeURIComponent(pid)}`,
+          src: `${BASE}/contenido/${encodeURIComponent(tema.id)}/${encodeURIComponent(pid)}`,
           title: `${tema.corto} · ${info.pestana.etiqueta}`,
         });
         if (info.pestana.aviso) iframe.addEventListener('load', () => ponerAviso(iframe, info.pestana.aviso));

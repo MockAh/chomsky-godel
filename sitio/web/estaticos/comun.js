@@ -1,5 +1,11 @@
 // Lo que comparten «Elige un tema» y la página de tema: sesión, salir y cambiar contraseña.
 // Todo texto que viene del servidor se pone con textContent.
+// Museo (P-34): bajo /m/<clave>/ es la versión de solo lectura, sin cuenta ni anotaciones.
+
+const enMuseo = location.pathname.match(/^\/m\/([^/]+)/);
+export const MUSEO = Boolean(enMuseo);
+export const BASE = enMuseo ? `/m/${enMuseo[1]}` : '';
+export const INICIO = MUSEO ? `${BASE}/temas` : '/';
 
 export async function api(ruta, opciones = {}) {
   const r = await fetch(ruta, {
@@ -26,6 +32,11 @@ export function el(etiqueta, props = {}, ...hijos) {
 }
 
 export async function cargarSesion() {
+  if (MUSEO) {
+    const r = await fetch(`${BASE}/api/temas`);
+    if (!r.ok) { location.replace(BASE); throw new Error('museo cerrado'); }
+    return { correo: '', rol: 'lector', temas: (await r.json()).temas };
+  }
   const r = await api('/api/sesion');
   const sesion = await r.json();
   document.getElementById('cuenta-correo').textContent = sesion.correo;
@@ -94,6 +105,8 @@ function dialogoContrasena() {
 }
 
 export function iniciarCuenta() {
+  document.querySelectorAll('a.marca, a.volver').forEach((a) => { a.href = INICIO; });
+  if (MUSEO) { document.querySelector('.cuenta')?.remove(); return; }
   const abrir = dialogoContrasena();
   document.getElementById('cuenta-contrasena').addEventListener('click', abrir);
   document.getElementById('cuenta-salir').addEventListener('click', salir);

@@ -1,5 +1,6 @@
 // Pantalla de entrada: espacio 3D navegable con una esfera al centro.
 // Clic en la esfera → diálogo de credenciales → POST /api/login.
+// En el museo (/m/<clave>, P-34) el clic se salta el diálogo y vuela directo a los temas.
 import * as THREE from '/estaticos/vendor/three-0.160.0/three.module.min.js';
 
 const dialogo = document.getElementById('credenciales');
@@ -10,9 +11,12 @@ const mensaje = document.getElementById('mensaje');
 const botonEntrar = document.getElementById('entrar');
 const reducirMovimiento = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-let alEntrar = () => { location.replace('/'); };  // la escena 3D lo reemplaza por un vuelo
+const museo = location.pathname.match(/^\/m\/[^/]+/);
+const destino = museo ? `${museo[0]}/temas` : '/';
+let alEntrar = () => { location.replace(destino); };  // la escena 3D lo reemplaza por un vuelo
 
 function abrirDialogo() {
+  if (museo) { alEntrar(); return; }
   if (dialogo.open) return;
   mensaje.textContent = '';
   dialogo.showModal();
@@ -20,6 +24,7 @@ function abrirDialogo() {
 }
 
 document.getElementById('abrir').addEventListener('click', abrirDialogo);
+if (museo) document.getElementById('abrir').textContent = 'Entrar';  // el diálogo nunca se abre
 document.getElementById('cancelar').addEventListener('click', () => dialogo.close());
 
 form.addEventListener('submit', async (e) => {
@@ -223,9 +228,9 @@ function iniciarEscena(renderer) {
   // Al entrar: vuelo hacia la esfera y luego a «Elige un tema»
   let vuelo = null;
   alEntrar = () => {
-    if (reducirMovimiento) { location.replace('/'); return; }
+    if (reducirMovimiento) { location.replace(destino); return; }
     vuelo = { desde: camera.position.clone(), t0: performance.now() };
-    setTimeout(() => location.replace('/'), 900);
+    setTimeout(() => location.replace(destino), 900);
   };
 
   const posEl = document.getElementById('pos');

@@ -42,13 +42,15 @@ def main() -> int:
     contrasena = secrets.token_urlsafe(9) + "-Aa1"
     almacen.guardar_usuario(admin, seguridad.hashear(contrasena), "admin")
     ficha = emitir_invitacion(almacen, tester, "tester", time.time())
+    clave_museo = secrets.token_urlsafe(24)
 
     print(f"\n  chomsky-godel en local · contenido {m['commit']}\n")
     print(f"  {url}")
     print(f"  admin:  {admin}  /  {contrasena}")
-    print(f"  tester: {url}/activar#{ficha}  (crea su contraseña; correo {tester})\n", flush=True)
+    print(f"  tester: {url}/activar#{ficha}  (crea su contraseña; correo {tester})")
+    print(f"  museo:  {url}/m/{clave_museo}  (solo lectura, sin cuenta)\n", flush=True)
 
-    app = crear_app(almacen, AQUI / "contenido")
+    app = crear_app(almacen, AQUI / "contenido", huella_museo=seguridad.huella(clave_museo))
     uvicorn.run(app, host="127.0.0.1", port=puerto, log_level="warning",
                 server_header=False, access_log=False)
     return 0

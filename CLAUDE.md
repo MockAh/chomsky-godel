@@ -34,6 +34,8 @@ Formato por defecto en sesiones de estudio: respuestas cortas, aptas para pantal
   F0–F6 hechas (F4: Firestore + emulador, P-25; F5: proyecto GCP `chomsky-godel`, P-26; F6: imagen construida, P-27; F7: publicado e invitación de admin, P-28; F8: contenido real publicado el 2026-11-25, P-30–P-33).
 - Toda decisión nueva se anota en `docs/sitio/decisiones.md` con su clave P-n.
 - **Publicar = desplegar, y solo con visto bueno explícito del estudiante.** Nunca despliegues por tu cuenta.
+- Versión de solo lectura («museo», P-34): `/m/<clave>/`, sin login ni anotaciones; la clave se crea o cambia con
+  `sitio/museo.py abrir URL` (enlace en `sitio/.museo.txt`, que no se imprime).
 - Para editar o crear HTML de `temas/`: reglas en `temas/instrucciones-html.md` (P-31); se comprueban con
   `sitio/revisar_html.py` y el armado se niega si no se cumplen.
 - Cambios al contenido de `temas/` (p. ej. lo que pida `estudio/pendientes-contenido.md`): en una rama,
