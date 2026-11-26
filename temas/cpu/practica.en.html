@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>X-ray · Control Unit</title>
+<style>
+:root{--bg:#0a0e16;--pn:#0f1522;--pn2:#131b2a;--ln:#24304a;--tx:#dbe4f3;--mu:#8a98b3;--hi:#ffc94a;--ok:#3ee89a;--bad:#ff5d6c;--ac:#62b4ff}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:13px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#app{display:flex;height:100vh;height:100dvh}
+#vp{position:relative;flex:1;min-width:0;overflow:hidden;touch-action:none}
+#vp canvas{display:block}
+#lbl{position:absolute;left:0;top:0;pointer-events:none}
+#hud{position:absolute;left:12px;top:10px;pointer-events:none;max-width:calc(100% - 24px);z-index:2}
+#hudI{font-weight:700;font-size:15px;color:var(--hi)}
+#hudB{font:12px ui-monospace,Menlo,Consolas,monospace;margin-top:2px}
+#hud .hint{font-size:11px;color:var(--mu);margin-top:4px}
+#side{width:420px;display:flex;flex-direction:column;background:var(--pn);border-left:1px solid var(--ln);min-height:0}
+#side header{padding:12px 14px 6px}
+h1{font-size:15px;margin:0}
+.sub{color:var(--mu);font-size:11.5px}
+#ctl{padding:6px 14px 10px;border-bottom:1px solid var(--ln)}
+.btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+button{font:inherit;color:var(--tx);background:var(--pn2);border:1px solid var(--ln);border-radius:7px;padding:6px 8px;cursor:pointer}
+button:hover{border-color:#3b4d72}
+button.on{background:#2a2410;border-color:var(--hi);color:var(--hi)}
+.ib b{display:block;font-size:13px}.ib span{font:10.5px ui-monospace,Menlo,monospace;color:var(--mu)}
+.bits{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-top:8px}
+.bits button{padding:4px 0;font:13px ui-monospace,Menlo,monospace;text-align:center}
+.bits button small{display:block;color:var(--mu);font-size:9.5px}
+.bits button.one{background:#2b2208;border-color:#a8801f;color:var(--hi)}
+#cur{margin-top:8px;font:12px ui-monospace,Menlo,monospace;color:var(--mu)}
+#cur b{color:var(--tx)}
+.tabs{display:flex;gap:2px;padding:6px 10px 0;border-bottom:1px solid var(--ln)}
+.tabs button{border-radius:7px 7px 0 0;border-bottom:0;background:transparent;flex:1;padding:6px 4px;color:var(--mu)}
+.tabs button.on{background:var(--pn2);color:var(--hi);border-color:var(--ln)}
+.scroll{flex:1;overflow:auto;min-height:0;padding:10px 14px 28px;background:var(--pn2)}
+.tab{display:none}.tab.on{display:block}
+h2{font-size:14px;margin:0 0 6px;color:var(--hi)}
+h3{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ac);margin:12px 0 4px}
+p{margin:4px 0}
+.kv{font-size:12px;color:var(--mu)}.kv b{color:var(--tx);font-weight:600}
+.f{font:12px/1.75 ui-monospace,Menlo,Consolas,monospace;background:#0b111c;border:1px solid var(--ln);border-radius:6px;padding:6px 8px;overflow-x:auto}
+.ov{text-decoration:overline}
+.onv{color:var(--hi);font-weight:700}.offv{color:var(--mu);font-weight:700}
+.mut{color:var(--mu);font-size:11.5px}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+table{border-collapse:collapse;font:11px ui-monospace,Menlo,Consolas,monospace}
+.tt td,.tt th{border:1px solid var(--ln);padding:2px 4px;text-align:center}
+th.v{writing-mode:vertical-rl;transform:rotate(180deg);font-weight:500;color:var(--mu);padding:4px 1px;white-space:nowrap}
+.tt tr[data-m]{cursor:pointer}
+.tt tr.act td{background:#2b2208;color:var(--hi)}
+.tt td.one{color:#fff}.tt td.x{color:var(--mu)}
+.ml{font:11.5px/1.7 ui-monospace,Menlo,monospace;overflow-x:auto}
+.ml div{padding:1px 4px;border-radius:4px;white-space:nowrap}
+.ml .act{background:#2b2208;color:var(--hi)}
+.plawrap{overflow-x:auto}
+.pla td,.pla th{padding:0;text-align:center}
+.pla td.c{width:20px;height:22px;border:1px solid #1d2840;cursor:pointer}
+.pla td.e{cursor:default}
+.pla td.ok{color:var(--ok)}.pla td.bad{color:var(--bad)}
+.pla td.hot{color:var(--hi);background:#2b2208}.pla td.cold{color:#56627a}
+.pla td.sep,.pla th.sep{width:8px;border:0}
+.pla tr.act th{color:var(--hi)}
+.pla tbody th{padding:0 6px 0 0;font-weight:500;text-align:right;white-space:nowrap}
+.pla td.note{font-size:10px;color:var(--mu);text-align:left;padding-left:4px}
+.lrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0}
+.lrow .ln{font-size:12px}
+.seg{display:flex}
+.seg button{border-radius:0;padding:4px 7px;font-size:11.5px}
+.seg button:first-child{border-radius:6px 0 0 6px}.seg button:last-child{border-radius:0 6px 6px 0}
+input[type=range]{width:100%;accent-color:var(--hi)}
+label.ck{display:flex;align-items:center;gap:6px;margin:5px 0;font-size:12px}
+.lg{display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;font-size:11.5px}
+.lg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.back{font-size:11.5px;padding:3px 8px;margin-bottom:8px}
+.lbl{font:10px/1.2 ui-monospace,Menlo,Consolas,monospace;color:#cfe0ff;background:rgba(8,12,20,.75);border:1px solid rgba(120,150,200,.28);padding:1px 4px;border-radius:3px;white-space:nowrap}
+.lbl.hot{color:var(--hi);border-color:var(--hi)}
+.lbl.big{font:600 11px system-ui,sans-serif;color:#e8d3a0;letter-spacing:.08em}
+.lbl.ttl,.lbl.rot{background:none;border:0;padding:0}
+.lbl.ttl .in{display:inline-block;transform:translateX(50%);font:600 12px system-ui,sans-serif;color:var(--hi);background:rgba(8,12,20,.82);border:1px solid rgba(255,201,74,.45);padding:2px 6px;border-radius:4px}
+.lbl.rot .r{display:inline-block;transform:rotate(-55deg);background:rgba(8,12,20,.75);border:1px solid rgba(120,150,200,.28);padding:1px 4px;border-radius:3px}
+.lbl.rot.hot .r{color:var(--hi);border-color:var(--hi)}
+@media (max-width:860px){
+ #app{flex-direction:column}
+ #vp{flex:none;height:50vh;height:50dvh}
+ #side{width:auto;flex:1;border-left:0;border-top:1px solid var(--ln)}
+ #side header{display:none}
+ .lbl{font-size:9px}
+}
+</style>
+<script type="importmap">
+{"imports":{
+ "three":"/estaticos/vendor/three-0.160.0/three.module.min.js",
+ "three/addons/":"/estaticos/vendor/three-0.160.0/addons/"
+}}
+</script>
+</head>
+<body>
+<div id="app">
+ <div id="vp">
+  <div id="hud"><div id="hudI"></div><div id="hudB"></div><div class="hint">Drag: orbit · wheel/pinch: zoom · tap: inspect · tap an IR bit: toggle it</div></div>
+ </div>
+ <aside id="side">
+  <header><h1>Control Unit X-ray</h1><div class="sub">Single-cycle MIPS · two-level PLA · pseudo-NMOS</div></header>
+  <div id="ctl"><div class="btns" id="ib"></div><div class="bits" id="bits"></div><div id="cur"></div></div>
+  <nav class="tabs"><button data-t="insp" class="on">Inspect</button><button data-t="tt">Truth</button><button data-t="pla">PLA</button><button data-t="cap">Layers</button></nav>
+  <div class="scroll" id="scroll">
+   <section class="tab on" id="tab-insp"></section>
+   <section class="tab" id="tab-tt"></section>
+   <section class="tab" id="tab-pla"></section>
+   <section class="tab" id="tab-cap"></section>
+  </div>
+ </aside>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+/* ================= MODELO LÓGICO ================= */
+const INSTR=[
+ {id:'R',  name:'R-format',ex:'add/sub/and/or/slt',op:[0,0,0,0,0,0]},
+ {id:'lw', name:'lw',      ex:'lw $rt, off($rs)', op:[1,0,0,0,1,1]},
+ {id:'sw', name:'sw',      ex:'sw $rt, off($rs)', op:[1,0,1,0,1,1]},
+ {id:'beq',name:'beq',     ex:'beq $rs, $rt, off',op:[0,0,0,1,0,0]}];
+const SIGNALS=[
+ {id:'RegDst',  terms:['R'],      desc:'Selects rd (IR[15:11]) instead of rt (IR[20:16]) as the destination register.'},
+ {id:'ALUSrc',  terms:['lw','sw'],desc:'Second ALU operand = sign-extended immediate, not register rt.'},
+ {id:'MemtoReg',terms:['lw'],     desc:'The value written to the register file comes from data memory, not from the ALU.'},
+ {id:'RegWrite',terms:['R','lw'], desc:'Enables writing to the register file.'},
+ {id:'MemRead', terms:['lw'],     desc:'Enables reading from data memory.'},
+ {id:'MemWrite',terms:['sw'],     desc:'Enables writing to data memory.'},
+ {id:'Branch',  terms:['beq'],    desc:'Together with the ALU Zero flag, selects PC ← PC+4+(off≪2).'},
+ {id:'ALUOp1',  terms:['R'],      desc:'ALUOp=10: the ALU control must decode the funct field.'},
+ {id:'ALUOp0',  terms:['beq'],    desc:'ALUOp=01: the ALU subtracts (comparison for beq).'}];
+const XC={sw:['RegDst','MemtoReg'],beq:['RegDst','MemtoReg']};
+const iOf=id=>INSTR.findIndex(I=>I.id===id);
+function compute(bits){
+ const lit=[];for(let i=0;i<6;i++){lit[2*i]=bits[i];lit[2*i+1]=1-bits[i];}
+ const m=INSTR.map(I=>I.op.every((b,i)=>b===bits[i])?1:0);
+ const sig=SIGNALS.map(s=>s.terms.some(t=>m[iOf(t)])?1:0);
+ return {bits:[...bits],lit,m,sig,instr:m.indexOf(1)};
+}
+let S=compute(INSTR[1].op);
+
+/* ================= GEOMETRÍA COMÚN (alineada entre capas) ================= */
+const SX=0.8;
+const litX=k=>-10+k*SX;               // 12 columnas: Op5,¬Op5,…,Op0,¬Op0
+const litK=(i,neg)=>2*i+(neg?1:0);
+const pairX=i=>litX(2*i)+SX/2;
+const rowZ=m=>-2.4+m*1.6;             // 4 renglones de producto
+const outX=j=>1+j;                    // 9 columnas de salida
+const AND_X0=-10.6,AND_X1=-0.6,OR_X0=0.3,OR_X1=9.6;
+const HI=0xffc94a;
+
+/* ================= ESCENA ================= */
+const $=s=>document.querySelector(s);
+const vp=$('#vp');
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
+vp.appendChild(renderer.domElement);
+const lr=new CSS2DRenderer();lr.domElement.id='lbl';vp.appendChild(lr.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x0a0e16);
+scene.fog=new THREE.Fog(0x0a0e16,70,140);
+const camera=new THREE.PerspectiveCamera(42,1,0.1,400);
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;controls.dampingFactor=0.08;controls.autoRotateSpeed=0.6;
+scene.add(new THREE.HemisphereLight(0xbcd3ff,0x1a1020,1.1));
+const dl=new THREE.DirectionalLight(0xffffff,1.6);dl.position.set(10,40,18);scene.add(dl);
+const dl2=new THREE.DirectionalLight(0x88aaff,0.6);dl2.position.set(-25,12,-12);scene.add(dl2);
+
+const LAY={
+ 4:{name:'Layer 4 · Functional block and decoder',short:'Block / decoder'},
+ 3:{name:'Layer 3 · Combinational logic (PLA)',short:'PLA (algebra)'},
+ 2:{name:'Layer 2 · Pseudo-NMOS transistors',short:'Transistors'},
+ 1:{name:'Layer 1 · Silicon and VLSI layout',short:'Silicon / layout'}};
+for(const n of [1,2,3,4]){const g=new THREE.Group();scene.add(g);LAY[n].g=g;LAY[n].mode='visible';}
+let gap=4.5,gapCur=4.5;
+
+/* ================= HELPERS ================= */
+function mat(c,o={}){const op=o.op??1;return new THREE.MeshStandardMaterial({color:c,metalness:o.m??0.35,roughness:o.r??0.5,transparent:op<1,opacity:op,depthWrite:op>=1,emissive:o.e??0x000000,emissiveIntensity:o.ei??1});}
+function mesh(geo,p,x,y,z,c,o={}){const me=new THREE.Mesh(geo,mat(c,o));me.position.set(x,y,z);me.userData.c0=c;me.userData.e0=o.e??0;me.userData.ei0=o.ei??1;p.add(me);return me;}
+const B=(p,w,h,d,x,y,z,c,o)=>mesh(new THREE.BoxGeometry(w,h,d),p,x,y,z,c,o);
+const WX=(p,x0,x1,y,z,t,c,o)=>B(p,Math.abs(x1-x0),t,t,(x0+x1)/2,y,z,c,o);
+const WZ=(p,x,y,z0,z1,t,c,o)=>B(p,t,t,Math.abs(z1-z0),x,y,(z0+z1)/2,c,o);
+const SP=(p,r,x,y,z,c,o)=>mesh(new THREE.SphereGeometry(r,16,12),p,x,y,z,c,o);
+const CY=(p,r,h,x,y,z,c,o)=>mesh(new THREE.CylinderGeometry(r,r,h,12),p,x,y,z,c,o);
+function CONE(p,x,y,z,c,r=0.16,h=0.36){const me=mesh(new THREE.ConeGeometry(r,h,14),p,x,y,z,c);me.rotation.x=Math.PI/2;return me;}
+const PID={};
+function tag(o,pid){o.userData.pid=pid;if(!PID[pid])PID[pid]=o;return o;}
+function lvl(me,on,hi=HI,ei=1.1){const m=me.material;if(on){m.color.set(hi);m.emissive.set(hi);m.emissiveIntensity=ei;}else{m.color.set(me.userData.c0);m.emissive.set(me.userData.e0);m.emissiveIntensity=me.userData.ei0;}}
+function setC(me,c,ei){me.material.color.set(c);me.material.emissive.set(c);me.material.emissiveIntensity=ei;}
+const LBL=[];let showLabels=!matchMedia('(max-width:860px)').matches;
+function L(n,p,html,x,y,z,cls=''){const d=document.createElement('div');d.className='lbl '+cls;const t=cls.includes('ttl');d.innerHTML=t?`<span class="in">${html}</span>`:html;const o=new CSS2DObject(d);o.position.set(x,y,z);p.add(o);LBL.push({o,n,ttl:t});return d;}
+const UPD=[];function U(stage,fn){UPD.push({stage,fn,g:-1});}
+
+/* transistor estilizado: cuerpo (canal) + compuerta (+ burbuja si pMOS) */
+function makeT(p,x,y,z,kind,along,sc=1){
+ const g=new THREE.Group();g.position.set(x,y,z);g.scale.setScalar(sc);p.add(g);
+ const body=B(g,0.3,0.12,0.3,0,0,0,kind==='n'?0x27324a:0x4a3424,{m:.3,r:.6});
+ const gate=along==='z'?B(g,0.1,0.05,0.44,0,0.09,0,0x5a2632,{m:.4,r:.5}):B(g,0.44,0.05,0.1,0,0.09,0,0x5a2632,{m:.4,r:.5});
+ if(kind==='p')SP(g,0.05,0,0.14,0,0xe0e0e0);
+ return {g,body,gate};
+}
+function tSt(t,on,gate,weak=false){
+ const m=t.body.material;
+ if(on){const c=weak?0x8a5212:0xff7a1a;m.color.set(c);m.emissive.set(c);m.emissiveIntensity=weak?0.45:1.3;}
+ else{m.color.set(t.body.userData.c0);m.emissive.set(0);m.emissiveIntensity=0;}
+ lvl(t.gate,gate,0xff4d5a,0.9);
+}
+
+/* ================= CAPA 4 · BLOQUE ================= */
+function buildL4(){
+ const G=LAY[4].g,n=4;
+ L(n,G,LAY[4].name,-11.4,0.35,4.8,'ttl');
+ const cu=tag(B(G,21.4,0.7,8.4,-0.6,0.35,0,0x182338,{m:.85,r:.25,op:.42}),'L4:cu');
+ cu.add(new THREE.LineSegments(new THREE.EdgesGeometry(cu.geometry),new THREE.LineBasicMaterial({color:0xd6a84e,transparent:true,opacity:.9})));
+ L(n,G,'CONTROL UNIT · main decoder',-0.6,0.9,0,'big');
+ for(let i=0;i<6;i++){
+  const c=tag(B(G,0.7,0.4,0.9,pairX(i),0.3,-7.2,0x3a3320,{m:.6,r:.35}),'L4:ir:'+i);
+  const w=tag(WZ(G,pairX(i),0.3,-6.75,-4.45,0.07,0x5c4c22),'L4:pin:'+i);
+  const pin=tag(B(G,0.34,0.34,0.4,pairX(i),0.35,-4.25,0x9b7a2a,{m:.9,r:.3}),'L4:pin:'+i);
+  const lb=L(n,G,'',pairX(i),0.95,-7.2);
+  U(0,s=>{const b=s.bits[i];lvl(c,b,HI,1.0);lvl(w,b);lvl(pin,b);lb.innerHTML=`Op${5-i}=${b}`;lb.classList.toggle('hot',!!b);});
+ }
+ tag(B(G,10.2,0.4,0.9,4.7,0.3,-7.2,0x2a3142,{m:.5,r:.5}),'L4:irrest');
+ L(n,G,'IR[25:0] · rs | rt | rd | shamt | funct',4.7,0.85,-7.2);
+ L(n,G,'IR[31:26] · opcode',pairX(2)+0.4,0.3,-8.05);
+ SIGNALS.forEach((s,j)=>{
+  const x=outX(j);
+  const pin=tag(B(G,0.34,0.34,0.4,x,0.35,4.25,0x9b7a2a,{m:.9,r:.3}),'L4:out:'+j);
+  const w=tag(WZ(G,x,0.35,4.45,6.2,0.07,0x5c4c22),'L4:out:'+j);
+  const cn=tag(CONE(G,x,0.35,6.35,0x5c4c22,0.15,0.35),'L4:out:'+j);
+  const lb=L(n,G,'',x,0.35,7.05,'rot');
+  U(5,st=>{const v=st.sig[j];lvl(pin,v);lvl(w,v);lvl(cn,v);lb.innerHTML=`<span class="r">${s.id}=${v}</span>`;lb.classList.toggle('hot',!!v);});
+ });
+ L(n,G,'control bus → datapath',-0.9,0.35,6.3);
+}
+
+/* ================= CAPA 3 · PLA ================= */
+function buildL3(){
+ const G=LAY[3].g,n=3;
+ L(n,G,LAY[3].name,-11.4,0.1,4.8,'ttl');
+ tag(B(G,AND_X1-AND_X0,0.04,7.4,(AND_X0+AND_X1)/2,-0.03,-0.35,0x12385c,{op:.5,m:.2,r:.7}),'L3:andplane');
+ tag(B(G,OR_X1-OR_X0,0.04,7.4,(OR_X0+OR_X1)/2,-0.03,-0.35,0x3a1660,{op:.5,m:.2,r:.7}),'L3:orplane');
+ L(n,G,'AND PLANE · minterms',(AND_X0+AND_X1)/2,0.05,-3.45);
+ L(n,G,'OR PLANE · sum of products',(OR_X0+OR_X1)/2,0.05,-3.7);
+ for(let i=0;i<6;i++){
+  const xa=litX(2*i),xb=litX(2*i+1),xp=pairX(i),pid='L3:drv:'+i,c0=0x5c4c22;
+  const st=tag(WZ(G,xp,0.12,-5.6,-5.0,0.06,c0),pid);
+  const sp=tag(WX(G,xa,xb,0.12,-5.0,0.06,c0),pid);
+  const s1=tag(WZ(G,xa,0.12,-5.0,-4.78,0.06,c0),pid);
+  const s2=tag(WZ(G,xb,0.12,-5.0,-4.78,0.06,c0),pid);
+  const cb=tag(CONE(G,xa,0.12,-4.6,c0),pid);
+  const ci=tag(CONE(G,xb,0.12,-4.6,c0),pid);
+  const bub=tag(SP(G,0.06,xb,0.12,-4.36,0xbbbbbb),pid);
+  L(n,G,`Op${5-i}`,xp,0.12,-5.9);
+  U(1,s=>{const b=s.bits[i];[st,sp,s1,s2,cb].forEach(o=>lvl(o,b));lvl(ci,1-b);lvl(bub,1-b);});
+ }
+ for(let k=0;k<12;k++){
+  const i=k>>1,neg=k&1;
+  const w=tag(WZ(G,litX(k),0.12,-4.3,3.3,0.06,neg?0x6a3f8f:0x2f6f9f),'L3:lit:'+k);
+  const lb=L(n,G,`<span class="r">${neg?'¬':''}Op${5-i}</span>`,litX(k),0.12,3.75,'rot');
+  U(1,s=>{lvl(w,s.lit[k]);lb.classList.toggle('hot',!!s.lit[k]);});
+ }
+ INSTR.forEach((I,m)=>{
+  const z=rowZ(m);
+  const w=tag(WX(G,AND_X0+0.2,OR_X1-0.2,0.12,z,0.08,0x35506e),'L3:prod:'+m);
+  const lb=L(n,G,`M<sub>${I.id}</sub>`,AND_X0-0.4,0.12,z);
+  U(3,s=>{lvl(w,s.m[m]);lb.classList.toggle('hot',!!s.m[m]);});
+  I.op.forEach((b,i)=>{
+   const k=litK(i,b===0);
+   const nd=tag(SP(G,0.13,litX(k),0.13,z,0x5a606c,{m:.3,r:.4}),`L3:and:${m}:${i}`);
+   U(2,s=>{if(s.m[m])setC(nd,HI,1.4);else if(s.lit[k])setC(nd,0x2fd07f,0.55);else setC(nd,0xd03a4c,0.6);});
+  });
+ });
+ SIGNALS.forEach((s,j)=>{
+  const x=outX(j);
+  const w=tag(WZ(G,x,0.12,-3.3,4.3,0.07,0x5a3a7a),'L3:out:'+j);
+  const c=tag(CONE(G,x,0.12,4.5,0x5a3a7a),'L3:out:'+j);
+  const lb=L(n,G,`<span class="r">${s.id}</span>`,x,0.12,5.15,'rot');
+  U(5,st=>{lvl(w,st.sig[j]);lvl(c,st.sig[j]);lb.classList.toggle('hot',!!st.sig[j]);});
+  s.terms.forEach(t=>{const m=iOf(t);
+   const nd=tag(mesh(new THREE.OctahedronGeometry(0.17),G,x,0.13,rowZ(m),0x6a5a7c,{m:.3,r:.4}),`L3:or:${m}:${j}`);
+   U(4,st=>lvl(nd,st.m[m],HI,1.4));
+  });
+ });
+}
+
+/* ================= CAPA 2 · TRANSISTORES ================= */
+function buildL2(){
+ const G=LAY[2].g,n=2,GNDc=0x1f7a45,VDDc=0xc23b3b,Y0=0.04,YG=0.26,GL=0x4a2632,RED=0xff4d5a;
+ L(n,G,LAY[2].name,-11.4,0.1,4.8,'ttl');
+ tag(WZ(G,AND_X0-0.55,Y0,-3.3,3.3,0.09,VDDc),'L2:vdd');
+ L(n,G,'V<sub>DD</sub>',AND_X0-0.55,0.1,-3.65);
+ for(let k=0;k<12;k++){
+  const z0=(k&1)?-4.85:-5.17;
+  const w=tag(WZ(G,litX(k),YG,z0,3.2,0.06,GL),'L2:gl:'+k);
+  U(1,s=>lvl(w,s.lit[k],RED,0.9));
+ }
+ for(let i=0;i<6;i++){
+  const xa=litX(2*i),xb=litX(2*i+1),xp=pairX(i),pid='L2:iinv:'+i;
+  const f1=tag(WZ(G,xp,YG,-5.75,-5.17,0.06,GL),pid);
+  const f2=tag(WX(G,xa,xb,YG,-5.17,0.06,GL),pid);
+  const tp=makeT(G,xb,0.14,-5.34,'p','x',0.7),tn=makeT(G,xb,0.14,-5.02,'n','x',0.7);
+  tag(tp.g,pid);tag(tn.g,pid);
+  U(1,s=>{const b=s.bits[i];lvl(f1,b,RED,.9);lvl(f2,b,RED,.9);tSt(tp,!b,!!b);tSt(tn,!!b,!!b);});
+ }
+ INSTR.forEach((I,m)=>{
+  const z=rowZ(m);
+  tag(WX(G,AND_X0-0.55,AND_X0-0.15,Y0,z,0.05,0x777777),'L2:pu:'+m);
+  const pu=makeT(G,AND_X0,0.14,z,'p','z');tag(pu.g,'L2:pu:'+m);tSt(pu,true,false,true);
+  const a=tag(WX(G,AND_X0+0.15,-0.3,Y0,z,0.07,0x2c4560),'L2:prod:'+m);
+  const r=tag(B(G,0.07,0.29,0.07,-0.3,0.15,z,0x2c4560),'L2:prod:'+m);
+  const o=tag(WX(G,-0.3,OR_X1-0.1,YG,z,0.07,0x2c4560),'L2:prod:'+m);
+  U(3,s=>[a,r,o].forEach(w=>lvl(w,s.m[m],0xffd24a,1.1)));
+  tag(WX(G,AND_X0+0.15,AND_X1,Y0,z+0.42,0.06,GNDc),'L2:gnd');
+  I.op.forEach((b,i)=>{
+   const kp=litK(i,b===1),x=litX(kp),pid=`L2:tand:${m}:${i}`;
+   const t=makeT(G,x,0.14,z,'n','z');tag(t.g,pid);
+   tag(WZ(G,x+0.08,Y0,z+0.15,z+0.42,0.04,GNDc),pid);
+   U(2,s=>tSt(t,!!s.lit[kp],!!s.lit[kp]));
+  });
+ });
+ L(n,G,'GND',AND_X1+0.35,0.1,rowZ(3)+0.42);
+ L(n,G,'weak pMOS pull-ups',AND_X0-0.4,0.3,3.75);
+ tag(WX(G,OR_X0,OR_X1,Y0,-3.95,0.09,VDDc),'L2:vdd');
+ L(n,G,'V<sub>DD</sub>',OR_X1+0.5,0.1,-3.95);
+ SIGNALS.forEach((s,j)=>{
+  const x=outX(j);
+  tag(WZ(G,x,Y0,-3.95,-3.65,0.05,0x777777),'L2:puc:'+j);
+  const pu=makeT(G,x,0.14,-3.5,'p','x');tag(pu.g,'L2:puc:'+j);tSt(pu,true,false,true);
+  const col=tag(WZ(G,x,Y0,-3.35,3.95,0.07,0x2c4560),'L2:col:'+j);
+  U(4.5,st=>lvl(col,!st.sig[j],0xffd24a,1.1));
+  tag(WZ(G,x+0.42,Y0,-3.0,3.3,0.06,GNDc),'L2:gnd');
+  s.terms.forEach(tid=>{const m=iOf(tid),z=rowZ(m),pid=`L2:tor:${m}:${j}`;
+   const t=makeT(G,x,0.14,z,'n','x');tag(t.g,pid);
+   tag(WX(G,x+0.15,x+0.42,Y0,z,0.04,GNDc),pid);
+   U(4,st=>tSt(t,!!st.m[m],!!st.m[m]));
+  });
+  const ip=makeT(G,x,0.14,4.15,'p','x',0.8),inn=makeT(G,x,0.14,4.5,'n','x',0.8);
+  tag(ip.g,'L2:inv:'+j);tag(inn.g,'L2:inv:'+j);
+  const ow=tag(WZ(G,x,Y0,4.7,5.4,0.07,0x5c4c22),'L2:inv:'+j);
+  U(5,st=>{const v=st.sig[j];tSt(ip,!!v,!v);tSt(inn,!v,!v);lvl(ow,v);});
+ });
+ L(n,G,'CMOS inverters',OR_X1+1.6,0.1,4.3);
+ L(n,G,'GND',OR_X1+0.75,0.1,3.3);
+}
+
+/* ================= CAPA 1 · SILICIO ================= */
+function buildL1(){
+ const G=LAY[1].g,n=1;
+ const C={sub:0x2e2a42,nw:0x6e5530,nd:0x2c7d50,pd:0x9a6a25,po:0x9b2d24,m1:0x3a6fc0,m2:0x9d97c4,ct:0x0d0d10,via:0xcfd3dc};
+ const YD=0.02,YP=0.065,YM1=0.13,YM2=0.21;
+ const FL=(w,d,x,y,z,c,h,o)=>B(G,w,h,d,x,y,z,c,o);
+ const M1={m:.8,r:.3},PO={m:.2,r:.6},DF={m:.2,r:.7},NW={m:.05,r:.9};
+ L(n,G,LAY[1].name,-11.4,0.1,4.8,'ttl');
+ tag(B(G,23.6,0.4,12.8,-0.6,-0.2,-0.3,C.sub,{m:.55,r:.35}),'L1:sub');
+ tag(FL(1.1,7.4,AND_X0-0.3,0.006,0,C.nw,0.012,NW),'L1:nwell');
+ tag(FL(AND_X1-AND_X0,0.42,(AND_X0+AND_X1)/2,0.006,-5.34,C.nw,0.012,NW),'L1:nwell');
+ tag(FL(OR_X1-OR_X0+0.6,0.7,(OR_X0+OR_X1)/2,0.006,-3.55,C.nw,0.012,NW),'L1:nwell');
+ tag(FL(OR_X1-OR_X0+0.6,0.4,(OR_X0+OR_X1)/2,0.006,4.15,C.nw,0.012,NW),'L1:nwell');
+ // poly de literales (columnas del plano AND)
+ for(let k=0;k<12;k++){
+  const z0=(k&1)?-4.85:-5.6;
+  const p=tag(FL(0.09,3.2-z0,litX(k),YP,(z0+3.2)/2,C.po,0.03,PO),'L1:polyA:'+k);
+  U(1,s=>lvl(p,s.lit[k],0xff6a4a,1.0));
+ }
+ // inversores de entrada
+ for(let i=0;i<6;i++){
+  const xa=litX(2*i),xb=litX(2*i+1);
+  tag(FL(0.4,0.26,xb,YD,-5.34,C.pd,0.02,DF),'L1:pdiff');
+  tag(FL(0.4,0.26,xb,YD,-5.02,C.nd,0.02,DF),'L1:pdiff');
+  const f=tag(FL(xb-xa,0.07,(xa+xb)/2,YP,-5.17,C.po,0.03,PO),'L1:polyA:'+(2*i));
+  const g=tag(FL(0.07,0.6,xb,YP,-5.18,C.po,0.03,PO),'L1:polyA:'+(2*i));
+  U(1,s=>{lvl(f,s.bits[i],0xff6a4a,1.0);lvl(g,s.bits[i],0xff6a4a,1.0);});
+ }
+ tag(FL(0.12,7.0,AND_X0-0.55,YM1,0,C.m1,0.04,M1),'L1:m1');
+ INSTR.forEach((I,m)=>{
+  const z=rowZ(m);
+  // pull-up pMOS del renglón
+  tag(FL(0.5,0.4,AND_X0,YD,z,C.pd,0.02,DF),'L1:pdiff');
+  tag(FL(0.07,0.55,AND_X0,YP,z,C.po,0.03,PO),'L1:pdiff');
+  tag(FL(0.4,0.1,AND_X0-0.95,YM1,z,C.m1,0.04,M1),'L1:m1');
+  tag(CY(G,0.045,0.08,AND_X0-0.15,0.07,z,C.ct),'L1:ct');
+  tag(CY(G,0.045,0.08,AND_X0+0.15,0.07,z,C.ct),'L1:ct');
+  // línea de producto: metal1 en AND, poly en OR
+  const mp=tag(FL(-0.3-(AND_X0+0.05),0.11,(AND_X0+0.05-0.3)/2,YM1,z,C.m1,0.04,M1),'L1:m1p:'+m);
+  tag(CY(G,0.05,0.07,-0.3,0.095,z,C.ct),'L1:ctp');
+  const po=tag(FL(OR_X1+0.3,0.09,(OR_X1-0.3)/2,YP,z,C.po,0.03,PO),'L1:polyO:'+m);
+  U(3,s=>{lvl(mp,s.m[m],0xa8e0ff,1.0);lvl(po,s.m[m],0xff6a4a,1.0);});
+  tag(FL(AND_X1-AND_X0,0.09,(AND_X0+AND_X1)/2,YM1,z+0.42,C.m1,0.04,M1),'L1:m1');
+  I.op.forEach((b,i)=>{
+   const kp=litK(i,b===1),x=litX(kp);
+   const d=tag(FL(0.5,0.66,x,YD,z+0.2,C.nd,0.02,DF),`L1:diffA:${m}:${i}`);
+   tag(CY(G,0.045,0.08,x-0.17,0.07,z,C.ct),'L1:ct');
+   tag(CY(G,0.045,0.08,x+0.17,0.07,z+0.42,C.ct),'L1:ct');
+   U(2,s=>lvl(d,s.lit[kp],0x7dffb8,0.9));
+  });
+ });
+ tag(FL(OR_X1-OR_X0,0.12,(OR_X0+OR_X1)/2,YM1,-3.95,C.m1,0.04,M1),'L1:m1');
+ SIGNALS.forEach((s,j)=>{
+  const x=outX(j);
+  const m2=tag(FL(0.13,7.35,x,YM2,(-3.4+3.95)/2,C.m2,0.04,{m:.85,r:.25}),'L1:m2:'+j);
+  U(4.5,st=>lvl(m2,!st.sig[j],0xf0ecff,0.9));
+  tag(FL(0.09,6.3,x+0.42,YM1,0.15,C.m1,0.04,M1),'L1:m1');
+  s.terms.forEach(tid=>{const m=iOf(tid),z=rowZ(m);
+   const d=tag(FL(0.42,0.72,x,YD,z,C.nd,0.02,DF),`L1:diffO:${m}:${j}`);
+   tag(CY(G,0.045,0.08,x,0.07,z-0.25,C.ct),'L1:ct');
+   tag(FL(0.16,0.16,x,YM1,z-0.25,C.m1,0.04,M1),'L1:m1');
+   tag(CY(G,0.045,0.04,x,0.17,z-0.25,C.via),'L1:via');
+   tag(CY(G,0.045,0.08,x,0.07,z+0.25,C.ct),'L1:ct');
+   tag(FL(0.5,0.1,x+0.21,YM1,z+0.25,C.m1,0.04,M1),'L1:m1');
+   U(4,st=>lvl(d,st.m[m],0x7dffb8,0.9));
+  });
+  tag(FL(0.4,0.45,x,YD,-3.5,C.pd,0.02,DF),'L1:pdiff');
+  tag(CY(G,0.045,0.04,x,0.17,-3.38,C.via),'L1:via');
+  tag(FL(0.4,0.26,x,YD,4.15,C.pd,0.02,DF),'L1:pdiff');
+  tag(FL(0.4,0.26,x,YD,4.5,C.nd,0.02,DF),'L1:pdiff');
+ });
+ L(n,G,'p-Si substrate',-0.6,0.02,5.7);
+ L(n,G,'metal 2 · columns',OR_X1+1.3,0.25,0.4);
+ L(n,G,'metal 1 · products',AND_X1+0.1,0.15,-0.05);
+ L(n,G,'n-well',AND_X0-0.3,0.02,3.95);
+}
+
+buildL4();buildL3();buildL2();buildL1();
+
+/* ================= MODOS DE CAPA / ETIQUETAS ================= */
+function applyMode(n){
+ const Ly=LAY[n];Ly.g.visible=Ly.mode!=='hidden';
+ Ly.g.traverse(o=>{
+  if(!o.material)return;const m=o.material;
+  if(o.userData.bo===undefined){o.userData.bo=m.opacity;o.userData.bt=m.transparent;}
+  if(Ly.mode==='ghost'){m.transparent=true;m.opacity=o.userData.bo*0.13;m.depthWrite=false;}
+  else{m.transparent=o.userData.bt;m.opacity=o.userData.bo;m.depthWrite=!o.userData.bt;}
+  m.needsUpdate=true;
+ });
+ refreshLabels();
+}
+function refreshLabels(){for(const l of LBL){const md=LAY[l.n].mode;l.o.visible=md!=='hidden'&&(showLabels||l.ttl);l.o.element.style.opacity=md==='ghost'?0.35:1;}}
+[1,2,3,4].forEach(applyMode);
+
+/* ================= SELECCIÓN / PICKING ================= */
+const selBox=new THREE.BoxHelper(undefined,0xffe066);selBox.material.depthTest=false;selBox.renderOrder=999;selBox.visible=false;scene.add(selBox);
+let selPid=null,selObj=null;
+const ray=new THREE.Raycaster();ray.params.Line.threshold=0.05;
+let down=null;
+renderer.domElement.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY};});
+renderer.domElement.addEventListener('pointerup',e=>{
+ if(!down)return;const dx=e.clientX-down.x,dy=e.clientY-down.y;down=null;if(dx*dx+dy*dy>49)return;
+ const r=renderer.domElement.getBoundingClientRect();
+ const groups=[1,2,3,4].filter(n=>LAY[n].mode==='visible').map(n=>LAY[n].g);
+ if(!groups.length)return;
+ const hitAt=(px,py)=>{
+  ray.setFromCamera(new THREE.Vector2(((px-r.left)/r.width)*2-1,-((py-r.top)/r.height)*2+1),camera);
+  for(const h of ray.intersectObjects(groups,true)){let o=h.object;while(o&&!o.userData.pid)o=o.parent;if(o)return o;}
+  return null;
+ };
+ // tolerancia: las pistas son finas; si el centro cae en un fondo, probar un anillo de ±7 px
+ const BG=/^(L1:sub|L1:nwell|L3:andplane|L3:orplane|L4:cu)$/;
+ let o=hitAt(e.clientX,e.clientY);
+ if(!o||BG.test(o.userData.pid)){
+  for(const rad of [3,5,7]){let f=null;
+   for(let a=0;a<8&&!f;a++){const c=hitAt(e.clientX+rad*Math.cos(a*Math.PI/4),e.clientY+rad*Math.sin(a*Math.PI/4));if(c&&!BG.test(c.userData.pid))f=c;}
+   if(f){o=f;break;}}
+ }
+ if(!o)return;
+ const pid=o.userData.pid;
+ if(pid.startsWith('L4:ir:')){const i=+pid.split(':')[2];const nb=[...S.bits];nb[i]^=1;setBits(nb);}
+ select(pid,o);
+});
+function select(pid,obj){selPid=pid;selObj=obj||PID[pid]||null;selBox.visible=!!selObj;showTab('insp');renderInsp();$('#scroll').scrollTop=0;}
+
+/* ================= TEXTOS: FÓRMULAS Y FICHAS ================= */
+const lit=(i,neg)=>neg?`<span class="ov">Op<sub>${5-i}</sub></span>`:`Op<sub>${5-i}</sub>`;
+const litK2=k=>lit(k>>1,k&1);
+const mint=m=>INSTR[m].op.map((b,i)=>lit(i,b===0)).join('·');
+const mintC=m=>INSTR[m].op.map((b,i)=>lit(i,b===1)).join(' + ');
+const Mn=m=>`M<sub>${INSTR[m].id}</sub>`;
+const sop=j=>SIGNALS[j].terms.map(t=>Mn(iOf(t))).join(' + ');
+const sopF=j=>SIGNALS[j].terms.map(t=>'('+mint(iOf(t))+')').join(' + ');
+const hv=x=>x?'<span class="onv">1</span>':'<span class="offv">0</span>';
+const V=x=>x?'≈ V<sub>DD</sub>':'≈ 0 V';
+const opc=m=>INSTR[m].op.join('');
+const LT6='𝓛<sub>6</sub>';
+const vH=()=>`<span class="mono">v = ${S.bits.join('')}</span> → ${S.instr>=0?INSTR[S.instr].name:'unimplemented opcode'}`;
+const vec=()=>`(${S.sig.join(', ')})`;
+const evalM=m=>INSTR[m].op.map((b,i)=>S.lit[litK(i,b===0)]).join('·');
+
+function LTGEN(){return `<p>Let Φ be the propositional language over p<sub>5</sub>…p<sub>0</sub> (≙ Op<sub>5</sub>…Op<sub>0</sub>) and φ ~ ψ ⇔ ⊢ φ ↔ ψ. The quotient ${LT6} = Φ/~ is the Lindenbaum–Tarski algebra: the free Boolean algebra on 6 generators, ${LT6} ≅ 𝒫({0,1}<sup>6</sup>), with 2<sup>64</sup> elements and 2<sup>6</sup> = 64 atoms —the minterms— (the 𝓑<sub>2<sup>6</sup></sub>: an atomic lattice with 2<sup>6</sup> atoms).</p>
+<p>The opcode is a valuation v ∈ {0,1}<sup>6</sup>. By Stone duality: v ↔ atom a<sub>v</sub> = [M<sub>v</sub>] ↔ ultrafilter U<sub>v</sub> = ↑a<sub>v</sub> ↔ homomorphism h<sub>v</sub>: ${LT6} → 2. Each signal is a class [φ<sub>S</sub>] = ⋁{atoms ≤ [φ<sub>S</sub>]} (its canonical DNF) and the CU computes h<sub>v</sub>([φ<sub>S</sub>]) = 1 ⇔ a<sub>v</sub> ≤ [φ<sub>S</sub>] for the 9 signals.</p>
+<p class="mut">To be precise: what is homomorphic is the evaluation h<sub>v</sub> on ${LT6}. The map C: {0,1}<sup>6</sup> → {0,1}<sup>9</sup>, C(v) = (h<sub>v</sub>[φ<sub>S</sub>])<sub>S</sub>, is just a function: it preserves neither ∧ nor ∨.</p>`;}
+
+function outInfo(j,nivel,pin){
+ const s=SIGNALS[j],v=S.sig[j],x=Object.entries(XC).filter(([k,a])=>a.includes(s.id)).map(([k])=>k);
+ return {title:(pin?'Output pin · ':'OR column · ')+s.id,nivel,
+  formula:`${s.id} = ${sop(j)}<br>= ${sopF(j)}`,
+  lt:`[φ<sub>${s.id}</sub>] = ${s.terms.map(t=>'a<sub>'+t+'</sub>').join(' ∨ ')} ↔ the subset {${s.terms.map(t=>opc(iOf(t))).join(', ')}} ⊆ {0,1}<sup>6</sup>. h<sub>v</sub>([φ]) = 1 ⇔ a<sub>v</sub> ≤ [φ] ⇔ v belongs to that subset.${x.length?` For ${x.join(', ')} the signal is a don't-care: any representative of the class in the quotient by the don't-cares will do; the canonical PLA chooses 0.`:''}`,
+  fis:`${s.desc} ${pin?'Comes out of the column CMOS inverter':'NOR column + inverter'}: ${V(v)}.`,
+  estado:`${vH()} → ${s.id} = ${hv(v)}`};
+}
+
+function info(pid){
+ const [ly,ty,A,Bs]=pid.split(':');const a=+A,b=+Bs;
+ const nivel={L4:'Layer 4 · functional block / RTL',L3:'Layer 3 · combinational logic (PLA)',L2:'Layer 2 · transistors (pseudo-NMOS)',L1:'Layer 1 · silicon / VLSI layout'}[ly];
+ const key=ly+':'+ty;
+ switch(key){
+ case 'L4:cu':return {title:'Control Unit (main block)',nivel,
+  formula:SIGNALS.map((s,j)=>`${s.id} = ${sop(j)}`).join('<br>')+'<br><br>'+INSTR.map((I,m)=>`${Mn(m)} = ${mint(m)}`).join('<br>'),
+  lt:LTGEN(),
+  fis:'A stateless combinational block. In the single-cycle MIPS its output settles within the clock period; critical path ≈ input inverter + AND plane + OR plane + output inverter. The funct field is decoded at a second level (ALU control) using ALUOp: multilevel decoding.',
+  estado:`${vH()} → C(v) = ${vec()}`};
+ case 'L4:ir':return {title:`IR[${31-a}] · Op<sub>${5-a}</sub>`,nivel:nivel+' · instruction register',
+  formula:`Op<sub>${5-a}</sub> = v(p<sub>${5-a}</sub>) = ${S.bits[a]}`,
+  lt:`Coordinate ${5-a} of the valuation v. Since ${LT6} is free over {[p<sub>0</sub>],…,[p<sub>5</sub>]}, fixing the 6 coordinates determines a unique homomorphism h<sub>v</sub> (universal property). This bit decides whether U<sub>v</sub> contains [p<sub>${5-a}</sub>] or its complement.`,
+  fis:`Output of an IR flip-flop, loaded during fetch. Level ${V(S.bits[a])}. Tap the bit in 3D (or in the panel above) to toggle it.`,
+  estado:vH()};
+ case 'L4:irrest':return {title:'IR[25:0] · rs | rt | rd | shamt | funct',nivel,
+  formula:'— (its bits do not appear in any φ<sub>S</sub>)',
+  lt:`Outside the language Φ of this CU. funct[5:0] feeds a second decoder (ALU control), whose algebra is the free one on 8 generators {ALUOp<sub>1</sub>, ALUOp<sub>0</sub>, F<sub>5</sub>…F<sub>0</sub>}: the full decoding is the composition of two evaluations.`,
+  fis:'rs, rt, rd go to the register file; the immediate [15:0] to the sign extender; funct to the ALU control.'};
+ case 'L4:pin':return {title:`Input pin · Op<sub>${5-a}</sub>`,nivel,
+  formula:`Op<sub>${5-a}</sub> = ${S.bits[a]}`,
+  lt:`Generator [p<sub>${5-a}</sub>] of ${LT6} entering the CU; its image under h<sub>v</sub> is ${S.bits[a]}.`,
+  fis:`Connection IR[${31-a}] → CU. Level ${V(S.bits[a])}.`,estado:vH()};
+ case 'L4:out':return outInfo(a,nivel,true);
+ case 'L3:out':return outInfo(a,nivel,false);
+ case 'L3:andplane':return {title:'AND plane (minterm generation)',nivel,
+  formula:INSTR.map((I,m)=>`${Mn(m)} = ${mint(m)}`).join('<br>'),
+  lt:`Implements v ↦ (h<sub>v</sub>[M<sub>m</sub>])<sub>m</sub>: each row is an atom of ${LT6} (a singleton of {0,1}<sup>6</sup>). Only 4 of the 64 atoms are wired; for any other v they all give 0 (one-hot or null output).<br><br>Minimization = choosing a shorter representative in the quotient ${LT6}/↓[¬δ], with δ = ⋁ of the 4 atoms (≅ 𝒫(D), |D| = 4). There [M<sub>lw</sub>] = [Op<sub>5</sub>·<span class="ov">Op<sub>3</sub></span>], [M<sub>sw</sub>] = [Op<sub>5</sub>·Op<sub>3</sub>], [M<sub>beq</sub>] = [Op<sub>2</sub>], [M<sub>R</sub>] = [<span class="ov">Op<sub>5</sub></span>·<span class="ov">Op<sub>2</sub></span>]. This PLA uses the canonical form (6 literals).`,
+  fis:'12 columns (each Op<sub>k</sub> in both polarities) × 4 rows; 24 programmed crossings. In layer 2 it is a pseudo-NMOS NOR array: AND(ℓ) = NOR(¬ℓ).',
+  estado:S.instr>=0?`Active row: ${Mn(S.instr)}`:'No active row (unimplemented opcode).'};
+ case 'L3:orplane':return {title:'OR plane (sum of products)',nivel,
+  formula:SIGNALS.map((s,j)=>`${s.id} = ${sop(j)}`).join('<br>'),
+  lt:`Each column is a join of atoms: an element of ${LT6} written in canonical DNF. The 9 columns form the 9-tuple ([φ<sub>S</sub>])<sub>S</sub> ∈ ${LT6}<sup>9</sup>; reading it under h<sub>v</sub> gives the control vector.`,
+  fis:'4 rows × 9 columns; 11 programmed crossings. In layer 2: pseudo-NMOS NOR followed by an inverter = OR.',
+  estado:`C(v) = ${vec()}`};
+ case 'L3:drv':return {title:`Input driver · Op<sub>${5-a}</sub> / <span class="ov">Op<sub>${5-a}</sub></span>`,nivel,
+  formula:`Op<sub>${5-a}</sub> = ${S.bits[a]} ; <span class="ov">Op<sub>${5-a}</sub></span> = ${1-S.bits[a]}`,
+  lt:`Produces the generator and its complement, [p] and ¬[p]. Every Boolean algebra homomorphism preserves complement: h<sub>v</sub>(¬[p]) = 1 − h<sub>v</sub>([p]).`,
+  fis:'Buffer + CMOS inverter: each bit enters the PLA in both polarities (2n columns) and is re-amplified because each column is a long capacitive load.',estado:vH()};
+ case 'L3:lit':{const i=a>>1,neg=a&1;const users=INSTR.map((I,m)=>(I.op[i]===0)===(neg===1)?Mn(m):null).filter(Boolean);
+  return {title:`Literal line ${litK2(a)}`,nivel,
+  formula:`${litK2(a)} = ${S.lit[a]}<br>appears in: ${users.join(', ')||'—'}`,
+  lt:`${neg?'Complement of generator':'Generator'} [${neg?'¬':''}p<sub>${5-i}</sub>]. Each node on this line asserts atom ≤ literal.`,
+  fis:`Runs through the AND plane. In layer 2 the matching physical column drives the gates of the minterms that use the opposite literal.`,
+  estado:`h<sub>v</sub>(${litK2(a)}) = ${hv(S.lit[a])}`};}
+ case 'L3:prod':return {title:`Product line ${Mn(a)} (${INSTR[a].name})`,nivel,
+  formula:`${Mn(a)} = ${mint(a)}<br>= ${evalM(a)} = ${S.m[a]}`,
+  lt:`[${Mn(a)}] is an atom of ${LT6}: a minimal non-zero element, the singleton {${opc(a)}} ⊆ {0,1}<sup>6</sup>. h<sub>v</sub>([${Mn(a)}]) = 1 ⇔ v = ${opc(a)}: the AND plane is a one-hot detector of the valuation.`,
+  fis:'Crosses both planes: in AND it is the output (NOR node), in OR it is the input (gate of the column transistors).',
+  estado:`${Mn(a)} = ${hv(S.m[a])}`};
+ case 'L3:and':{const I=INSTR[a],neg=I.op[b]===0,k=litK(b,neg),l=lit(b,neg),v=S.lit[k];
+  return {title:`AND node · ${Mn(a)} ∩ ${l}`,nivel,
+  formula:`${Mn(a)} = ${mint(a)}<br>ℓ = ${l} = ${v}`,
+  lt:`Asserts [${Mn(a)}] ≤ ${l}: the atom lies below the literal. Contrapositive: h<sub>v</sub>(${l}) = 0 ⇒ h<sub>v</sub>([${Mn(a)}]) = 0. A single false literal is enough to kill the meet.`,
+  fis:`In layer 2 it is realized by an nMOS on the complementary column ${lit(b,!neg)}: it conducts exactly when ${l} = 0 and discharges P<sub>${I.id}</sub>.`,
+  estado:`${l} = ${hv(v)} → ${v?'literal satisfied':'this literal kills '+Mn(a)} · ${Mn(a)} = ${hv(S.m[a])}`};}
+ case 'L3:or':{const s=SIGNALS[b];return {title:`OR node · ${Mn(a)} → ${s.id}`,nivel,
+  formula:`${s.id} = ${sop(b)}`,
+  lt:`a<sub>${INSTR[a].id}</sub> ≤ [φ<sub>${s.id}</sub>]: the atom of ${opc(a)} belongs to the atomic decomposition of ${s.id}.`,
+  fis:`nMOS gated by P<sub>${INSTR[a].id}</sub> on column C<sub>${s.id}</sub> (layer 2).`,
+  estado:`${Mn(a)} = ${hv(S.m[a])} → contributes ${S.m[a]?'1':'0'} to ${s.id}`};}
+ case 'L2:tand':{const I=INSTR[a],l=lit(b,I.op[b]===0),lc=lit(b,I.op[b]===1),kp=litK(b,I.op[b]===1),g=S.lit[kp];
+  return {title:`nMOS pull-down · ${Mn(a)}, column ${lc}`,nivel,
+  formula:`P<sub>${I.id}</sub> = ¬(${mintC(a)})<br>= ${mint(a)}   [De Morgan]`,
+  lt:`Embodies the law [${Mn(a)}] ∧ ${lc} = 0 (because [${Mn(a)}] ≤ ${l}): if h<sub>v</sub>(${lc}) = 1, this transistor forces h<sub>v</sub>([${Mn(a)}]) = 0. The row is ¬⋁¬ℓ = ⋀ℓ: De Morgan turned into topology —6 pull-downs in parallel to GND.`,
+  fis:`Drain on P<sub>${I.id}</sub>, source on GND, gate on column ${lc}. Conducts ⇔ ${lc} = 1 ⇔ ${l} = 0; it then overpowers the weak pull-up and P drops to ≈ 0 V. If all 6 are off, P stays at V<sub>DD</sub>: NOR(¬ℓ…) = AND(ℓ…).`,
+  estado:`V<sub>G</sub> ${V(g)} → ${g?'<span class="onv">channel formed · CONDUCTS</span>':'off'} · P<sub>${I.id}</sub> ${V(S.m[a])}`};}
+ case 'L2:tor':{const s=SIGNALS[b],I=INSTR[a];return {title:`nMOS · column ${s.id} ← P<sub>${I.id}</sub>`,nivel,
+  formula:`C<sub>${s.id}</sub> = ¬(${sop(b)})<br>${s.id} = ¬C<sub>${s.id}</sub> = ${sop(b)}`,
+  lt:`Realizes a<sub>${I.id}</sub> ≤ [φ<sub>${s.id}</sub>] electrically: if h<sub>v</sub>(a) = 1 the column discharges and the signal rises. NOR + inverter = OR: the join is obtained as ¬¬⋁.`,
+  fis:`Gate = P<sub>${I.id}</sub> (in this plane the product line is a gate), drain on column C<sub>${s.id}</sub>, source to GND. Conducts ⇔ ${Mn(a)} = 1.`,
+  estado:`V<sub>G</sub> ${V(S.m[a])} → ${S.m[a]?'<span class="onv">CONDUCTS</span>':'off'} · C<sub>${s.id}</sub> ${V(!S.sig[b])}`};}
+ case 'L2:pu':return {title:`Pull-up pMOS · P<sub>${INSTR[a].id}</sub>`,nivel,
+  formula:`P<sub>${INSTR[a].id}</sub> = ¬⋁(active pull-downs)`,
+  lt:'Realizes ⊤ as the default state: with no witness against it, the atom is presumed true; each false literal is a witness that refutes it and pulls it down to ⊥.',
+  fis:'pMOS with its gate tied to GND: always on, weak (small W/L). Ratioed logic: the pull-down has to overpower it; V<sub>OL</sub> > 0 and there is static current V<sub>DD</sub>→GND while the line is low —the energy cost of pseudo-NMOS compared with full CMOS.',
+  estado:`P<sub>${INSTR[a].id}</sub> ${V(S.m[a])}${S.m[a]?'':' (static power draw active)'}`};
+ case 'L2:puc':{const s=SIGNALS[a];return {title:`Pull-up pMOS · column ${s.id}`,nivel,
+  formula:`C<sub>${s.id}</sub> = ¬(${sop(a)})`,
+  lt:`Default state ⊤ of the column before complementing: C = 1 ⇔ no atom of [φ<sub>${s.id}</sub>] is active.`,
+  fis:'Weak, always-on pMOS; it precharges the column (metal 2) to V<sub>DD</sub>.',
+  estado:`C<sub>${s.id}</sub> ${V(!S.sig[a])}`};}
+ case 'L2:inv':{const s=SIGNALS[a],v=S.sig[a];return {title:`Output CMOS inverter · ${s.id}`,nivel,
+  formula:`${s.id} = ¬C<sub>${s.id}</sub>`,
+  lt:'Complement: h<sub>v</sub>(¬x) = 1 − h<sub>v</sub>(x). Recovers the join after the NOR.',
+  fis:'2 transistors: pMOS to V<sub>DD</sub>, nMOS to GND, shared gates. Restores full levels (rail-to-rail) and drives output current to the datapath.',
+  estado:`C ${V(!v)} → pMOS ${v?'ON':'OFF'}, nMOS ${v?'OFF':'ON'} → ${s.id} ${V(v)}`};}
+ case 'L2:iinv':{const v=S.bits[a];return {title:`Input inverter · <span class="ov">Op<sub>${5-a}</sub></span>`,nivel,
+  formula:`<span class="ov">Op<sub>${5-a}</sub></span> = ¬Op<sub>${5-a}</sub> = ${1-v}`,
+  lt:'Builds the complement of the generator; together with the generator, these are the 12 literals from which the atoms are formed.',
+  fis:'2T CMOS: when Op = 1 the nMOS conducts and the complementary column drops to 0 V; when Op = 0 the pMOS conducts.',
+  estado:`Op ${V(v)} → pMOS ${v?'OFF':'ON'}, nMOS ${v?'ON':'OFF'}`};}
+ case 'L2:gl':{const i=a>>1,neg=a&1;const gated=INSTR.map((I,m)=>(I.op[i]===1)===(neg===1)?Mn(m):null).filter(Boolean);
+  return {title:`Gate line · ${litK2(a)}`,nivel,
+  formula:`${litK2(a)} = ${S.lit[a]}<br>gates of: ${gated.join(', ')||'—'}`,
+  lt:'Physically distributes the literal; the gates hanging off it are exactly the atoms that contradict it (the ones containing its complement).',
+  fis:'Poly/metal with capacitance = Σ C<sub>gate</sub> → RC delay; hence the input driver.',
+  estado:`${V(S.lit[a])}`};}
+ case 'L2:prod':return {title:`Product node P<sub>${INSTR[a].id}</sub>`,nivel,
+  formula:`P<sub>${INSTR[a].id}</sub> = ¬(${mintC(a)}) = ${mint(a)}`,
+  lt:`The atom [${Mn(a)}] as an electrical node: high ⇔ v = ${opc(a)}.`,
+  fis:'Dual role: NOR output in the AND plane (metal, below) and gate in the OR plane (poly, above); the vertical segment is the metal→poly contact.',
+  estado:`${V(S.m[a])}`};
+ case 'L2:col':{const s=SIGNALS[a];return {title:`OR column (pre-inverter) · ${s.id}`,nivel,
+  formula:`C<sub>${s.id}</sub> = NOR(${sop(a)})`,
+  lt:`¬[φ<sub>${s.id}</sub>] evaluated: the column holds the complement of the join.`,
+  fis:'Precharged by a weak pull-up; any active nMOS discharges it.',
+  estado:`C<sub>${s.id}</sub> ${V(!S.sig[a])}`};}
+ case 'L2:gnd':return {title:'GND rail',nivel,formula:'0 ≡ ⊥',lt:'The bottom ⊥ of the algebra: every pull-down is a path to ⊥.',fis:'Ground rail (0 V); where the charge of discharged lines ends up.'};
+ case 'L2:vdd':return {title:'V<sub>DD</sub> rail',nivel,formula:'1 ≡ ⊤',lt:'The top ⊤: source of the default state of every line.',fis:'Power supply (≈ 1 V in modern nodes); feeds the pMOS pull-ups.'};
+ case 'L1:sub':return {title:'p-Si substrate',nivel,formula:'—',lt:'The common support, at GND (⊥): every nMOS channel discharges into it.',fis:'Lightly doped p-type silicon wafer. Diffusions, wells, poly and metals are defined on it by photolithography.'};
+ case 'L1:nwell':return {title:'n-well',nivel,formula:'—',lt:'A region where the polarity flips: it houses the transistors that realize ⊤ and the CMOS complements.',fis:'An n-doped region, biased to V<sub>DD</sub>, that holds the pMOS (pull-ups, p halves of the inverters).'};
+ case 'L1:pdiff':return {title:'p+ / n+ diffusion (pull-ups and inverters)',nivel,formula:'—',lt:'Physical support of ⊤ (pull-ups) and ¬ (inverters).',fis:'Source/drain of the pMOS inside the n-well (amber) and of the inverter nMOS (green).'};
+ case 'L1:diffA':{const I=INSTR[a],kp=litK(b,I.op[b]===1),lc=lit(b,I.op[b]===1),g=S.lit[kp];
+  return {title:`n+ diffusion · transistor of ${Mn(a)} under ${lc}`,nivel,
+  formula:`channel ⇔ ${lc} = 1`,
+  lt:`A “1” etched into the array: the existence of this active region in the mask is the assertion [${Mn(a)}] ≤ ${lit(b,I.op[b]===0)}. Programming the PLA = choosing which crossings get diffusion.`,
+  fis:'n+ diffusion in a p substrate (source and drain). Where the poly crosses it the channel forms: with the poly at V<sub>DD</sub> an electron inversion layer is induced that joins both n+ regions. Left contact → product metal 1; right → GND rail.',
+  estado:`poly ${V(g)} → ${g?'<span class="onv">inversion layer · conducts</span>':'no channel'}`};}
+ case 'L1:diffO':{const s=SIGNALS[b];return {title:`n+ diffusion · crossing ${Mn(a)} × ${s.id}`,nivel,
+  formula:`channel ⇔ ${Mn(a)} = 1`,
+  lt:`Physical etching of a<sub>${INSTR[a].id}</sub> ≤ [φ<sub>${s.id}</sub>].`,
+  fis:'The product poly crosses it; drain → contact → metal 1 → via → metal 2 (column); source → metal 1 → GND.',
+  estado:`${S.m[a]?'<span class="onv">conducts</span>':'no channel'}`};}
+ case 'L1:polyA':return {title:`Polysilicon · column ${litK2(a)}`,nivel,
+  formula:`${litK2(a)} = ${S.lit[a]}`,
+  lt:'The literal as a geometric object: one continuous strip; each crossing with active diffusion is an occurrence of the (complemented) literal in some atom.',
+  fis:'Doped polysilicon; wherever it crosses active diffusion it is the self-aligned gate of a transistor.',estado:V(S.lit[a])};
+ case 'L1:polyO':return {title:`Polysilicon · product ${Mn(a)} (OR plane)`,nivel,
+  formula:`${Mn(a)} = ${S.m[a]}`,lt:'The atom as a gate: its strip touches the columns of the signals that contain it.',
+  fis:'Continues the product line in poly so it can act as a gate in the OR plane.',estado:V(S.m[a])};
+ case 'L1:m1p':return {title:`Metal 1 · product line ${Mn(a)}`,nivel,
+  formula:`P<sub>${INSTR[a].id}</sub> = ${mint(a)}`,lt:`Collects the 6 possible witnesses against [${Mn(a)}].`,
+  fis:'A metal 1 track (Cu/Al) that joins the drains of the row and the pull-up.',estado:V(S.m[a])};
+ case 'L1:m1':return {title:'Metal 1 · rails and bridges',nivel,formula:'—',lt:'Connectivity: it adds no logic, it only identifies nodes (the electrical equivalence relation).',fis:'V<sub>DD</sub>/GND rails, source bridges and drain pads.'};
+ case 'L1:m2':{const s=SIGNALS[a];return {title:`Metal 2 · column ${s.id}`,nivel,
+  formula:`C<sub>${s.id}</sub> = NOR(${sop(a)})`,lt:`The column of ¬[φ<sub>${s.id}</sub>]; each via is an atom of its decomposition.`,
+  fis:'Second metal level: it crosses over metal 1 without contact; it drops through vias only at the programmed crossings.',estado:`${V(!S.sig[a])} (pre-inverter)`};}
+ case 'L1:ct':return {title:'Contact',nivel,formula:'—',lt:'Identifies two physical nodes as a single one.',fis:'A tungsten plug that joins diffusion to metal 1.'};
+ case 'L1:ctp':return {title:'Metal 1 → poly contact',nivel,formula:'—',lt:'The point where the atom changes role: from output (AND) to input (OR).',fis:'Joins the product line in metal 1 to its continuation in polysilicon.'};
+ case 'L1:via':return {title:'Metal 1 → metal 2 via',nivel,formula:'—',lt:'Membership mark atom ∈ column.',fis:'Vertical connection between metal levels.'};
+ }
+ return {title:pid,nivel,formula:'—',lt:'—',fis:'—'};
+}
+function overview(){return {title:'Overview',nivel:'All layers',
+ formula:SIGNALS.map((s,j)=>`${s.id} = ${sop(j)} = ${S.sig[j]}`).join('<br>'),
+ lt:LTGEN()+`<p>Now: ${vH()}; a<sub>v</sub> = ${S.instr>=0?'['+Mn(S.instr)+']':'unwired atom'}; C(v) = ${vec()}.</p>`,
+ fis:'Layer 4: the block receives Op[5:0] from the IR. Layer 3: the PLA generates 4 minterms and 9 sums. Layer 2: each plane is a pseudo-NMOS NOR (weak pull-ups + pull-downs in parallel) and the outputs go through inverters. Layer 1: each transistor is a poly × diffusion crossing; metal 1/2 join the nodes. Tap any part for its sheet.',
+ estado:vH()};}
+function card(o){return `${selPid?'<button class="back" id="back">← overview</button>':''}<h2>${o.title}</h2><div class="kv">Abstraction level: <b>${o.nivel}</b></div><h3>Boolean formula</h3><div class="f">${o.formula}</div><h3>Lindenbaum–Tarski link</h3>${o.lt.trim().startsWith('<p')?o.lt:'<p>'+o.lt+'</p>'}<h3>Physical realization</h3><p>${o.fis}</p>${o.estado?`<h3>Current state</h3><p>${o.estado}</p>`:''}`;}
+function renderInsp(){const el=$('#tab-insp');el.innerHTML=card(selPid?info(selPid):overview());const bk=el.querySelector('#back');if(bk)bk.onclick=()=>{selPid=null;selObj=null;selBox.visible=false;renderInsp();};}
+
+/* ================= TABLA DE VERDAD / PLA ================= */
+function renderTT(){
+ let h='<div class="plawrap"><table class="tt"><thead><tr><th>Instr</th>'+['Op5','Op4','Op3','Op2','Op1','Op0'].map(b=>`<th class="v">${b}</th>`).join('')+SIGNALS.map(s=>`<th class="v">${s.id}</th>`).join('')+'</tr></thead><tbody>';
+ INSTR.forEach((I,m)=>{h+=`<tr class="${S.m[m]?'act':''}" data-m="${m}"><td>${I.name}</td>${I.op.map(b=>`<td>${b}</td>`).join('')}${SIGNALS.map(s=>{const x=(XC[I.id]||[]).includes(s.id),v=s.terms.includes(I.id)?1:0;return `<td class="${x?'x':v?'one':''}">${x?'X':v}</td>`;}).join('')}</tr>`;});
+ if(S.instr<0)h+=`<tr class="act"><td>other</td>${S.bits.map(b=>`<td>${b}</td>`).join('')}${SIGNALS.map(()=>'<td>0</td>').join('')}</tr>`;
+ h+='</tbody></table></div><p class="mut">X = don’t-care; the canonical PLA realizes it as 0. Tap a row to load that instruction.</p>';
+ h+=`<h3>Minterms under v = ${S.bits.join('')}</h3><div class="ml">`+INSTR.map((I,m)=>`<div class="${S.m[m]?'act':''}">${Mn(m)} = ${mint(m)} = ${evalM(m)} = ${S.m[m]}</div>`).join('')+'</div>';
+ h+='<h3>Signals (sum of products)</h3><div class="ml">'+SIGNALS.map((s,j)=>`<div class="${S.sig[j]?'act':''}">${s.id} = ${sop(j)} = ${s.terms.map(t=>S.m[iOf(t)]).join(' + ')} = ${S.sig[j]}</div>`).join('')+'</div>';
+ const el=$('#tab-tt');el.innerHTML=h;
+ el.querySelectorAll('tr[data-m]').forEach(tr=>tr.onclick=()=>setBits(INSTR[+tr.dataset.m].op));
+}
+function renderPLA(){
+ let h='<div class="plawrap"><table class="pla"><thead><tr><th></th>';
+ for(let k=0;k<12;k++)h+=`<th class="v">${k&1?'¬':''}Op${5-(k>>1)}</th>`;
+ h+='<th class="sep"></th>'+SIGNALS.map(s=>`<th class="v">${s.id}</th>`).join('')+'</tr></thead><tbody>';
+ INSTR.forEach((I,m)=>{
+  h+=`<tr class="${S.m[m]?'act':''}"><th>${Mn(m)}</th>`;
+  for(let k=0;k<12;k++){const i=k>>1,neg=k&1;
+   if((I.op[i]===0)===(neg===1))h+=`<td class="c ${S.m[m]?'hot':S.lit[k]?'ok':'bad'}" data-pid="L3:and:${m}:${i}">●</td>`;else h+='<td class="c e"></td>';}
+  h+='<td class="sep"></td>'+SIGNALS.map((s,j)=>s.terms.includes(I.id)?`<td class="c ${S.m[m]?'hot':'cold'}" data-pid="L3:or:${m}:${j}">◆</td>`:'<td class="c e"></td>').join('')+'</tr>';
+ });
+ h+=`<tr><th>S</th><td colspan="12" class="note">● minterm literal (green = true under v)</td><td class="sep"></td>`+SIGNALS.map((s,j)=>`<td class="c ${S.sig[j]?'hot':'cold'}" data-pid="L3:out:${j}">${S.sig[j]}</td>`).join('')+'</tr>';
+ h+='</tbody></table></div><p class="mut">AND plane (left) × OR plane (right). In layer 2, each ● is realized by an nMOS on the <i>complementary</i> column: it conducts when the literal is false (NOR of complements = AND). Tap a cell for its sheet.</p>';
+ const el=$('#tab-pla');el.innerHTML=h;
+ el.querySelectorAll('[data-pid]').forEach(td=>td.onclick=()=>select(td.dataset.pid));
+}
+
+/* ================= CONTROLES ================= */
+function showTab(t){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id==='tab-'+t));}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.t));
+$('#ib').innerHTML=INSTR.map((I,m)=>`<button class="ib" data-m="${m}"><b>${I.name}</b><span>${I.op.join('')}</span></button>`).join('');
+$('#ib').querySelectorAll('button').forEach(b=>b.onclick=()=>setBits(INSTR[+b.dataset.m].op));
+$('#bits').innerHTML=[0,1,2,3,4,5].map(i=>`<button data-i="${i}"><small>Op${5-i}</small><span></span></button>`).join('');
+$('#bits').querySelectorAll('button').forEach(b=>b.onclick=()=>{const nb=[...S.bits];nb[+b.dataset.i]^=1;setBits(nb);});
+
+let animOn=true,prop=99,gen=0;
+function setBits(b){S=compute(b);gen++;prop=animOn?0:99;refreshUI();}
+function refreshUI(){
+ const hex='0x'+parseInt(S.bits.join(''),2).toString(16).toUpperCase().padStart(2,'0');
+ $('#ib').querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.m===S.instr));
+ $('#bits').querySelectorAll('button').forEach(b=>{const v=S.bits[+b.dataset.i];b.querySelector('span').textContent=v;b.classList.toggle('one',!!v);});
+ $('#cur').innerHTML=`opcode <b>${S.bits.join('')}</b> · ${hex} · ${S.instr>=0?`<b>${INSTR[S.instr].name}</b> · ${INSTR[S.instr].ex}`:'<b>not decoded</b> (null vector)'}`;
+ $('#hudI').textContent=S.instr>=0?INSTR[S.instr].name:'unimplemented opcode';
+ $('#hudB').textContent=`Op[5:0] = ${S.bits.join('')} → ${SIGNALS.filter((s,j)=>S.sig[j]).map(s=>s.id).join(', ')||'no signal'}`;
+ renderTT();renderPLA();renderInsp();
+}
+
+function buildCapas(){
+ const ML={visible:'Visible',ghost:'Ghost',hidden:'Hidden'};
+ let h='<h3>Layers</h3>';
+ for(const n of [4,3,2,1])h+=`<div class="lrow"><div class="ln"><b>${n}</b> · ${LAY[n].short}</div><div class="seg" data-n="${n}">${Object.keys(ML).map(m=>`<button data-m="${m}">${ML[m]}</button>`).join('')}</div></div>`;
+ h+=`<div class="presets"><button data-p="all">All visible</button><button data-p="xray">X-ray</button><button data-p="logic">Algebra only (3)</button><button data-p="phys">Transistors + silicon</button></div>
+ <h3>Exploded view (Y axis) · <span id="gv">${gap.toFixed(1)}</span></h3><input type="range" id="gap" min="0.9" max="9" step="0.1" value="${gap}">
+ <h3>Options</h3>
+ <label class="ck"><input type="checkbox" id="cL"${showLabels?' checked':''}> Labels</label>
+ <label class="ck"><input type="checkbox" id="cA" checked> Animate propagation (IR → AND → OR → output)</label>
+ <label class="ck"><input type="checkbox" id="cR"> Auto-rotate</label>
+ <button id="rv">Reset view</button>
+ <h3>Legend</h3><div class="lg">
+ <div><i style="background:#ffc94a"></i>signal at 1 / V<sub>DD</sub></div><div><i style="background:#ff7a1a"></i>conducting channel</div>
+ <div><i style="background:#2fd07f"></i>satisfied literal</div><div><i style="background:#d03a4c"></i>killing literal</div>
+ <div><i style="background:#9b2d24"></i>polysilicon</div><div><i style="background:#2c7d50"></i>n+ diffusion</div>
+ <div><i style="background:#9a6a25"></i>p+ diffusion</div><div><i style="background:#6e5530"></i>n-well</div>
+ <div><i style="background:#3a6fc0"></i>metal 1</div><div><i style="background:#9d97c4"></i>metal 2</div>
+ <div><i style="background:#1f7a45"></i>GND</div><div><i style="background:#c23b3b"></i>V<sub>DD</sub></div></div>
+ <p class="mut" style="margin-top:10px">Only layers in Visible mode can be inspected: set a layer to Ghost to reach the ones below.</p>`;
+ const el=$('#tab-cap');el.innerHTML=h;
+ el.querySelectorAll('.seg').forEach(sg=>sg.querySelectorAll('button').forEach(b=>b.onclick=()=>setMode(+sg.dataset.n,b.dataset.m)));
+ const P={all:{4:'visible',3:'visible',2:'visible',1:'visible'},xray:{4:'ghost',3:'visible',2:'ghost',1:'visible'},logic:{4:'ghost',3:'visible',2:'hidden',1:'hidden'},phys:{4:'hidden',3:'ghost',2:'visible',1:'visible'}};
+ el.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{const p=P[b.dataset.p];for(const n in p)setMode(+n,p[n]);});
+ $('#gap').oninput=e=>{const ng=+e.target.value,d=(ng-gap)*1.5;gap=ng;controls.target.y+=d;camera.position.y+=d;$('#gv').textContent=ng.toFixed(1);};
+ $('#cL').onchange=e=>{showLabels=e.target.checked;refreshLabels();};
+ $('#cA').onchange=e=>{animOn=e.target.checked;};
+ $('#cR').onchange=e=>{controls.autoRotate=e.target.checked;};
+ $('#rv').onclick=resetView;
+ syncSeg();
+}
+function setMode(n,m){LAY[n].mode=m;applyMode(n);syncSeg();}
+function syncSeg(){document.querySelectorAll('.seg').forEach(sg=>sg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',LAY[+sg.dataset.n].mode===b.dataset.m)));}
+
+/* ================= VISTA / LOOP ================= */
+function resetView(){
+ controls.target.set(-0.5,gap*1.5,0);
+ const f=Math.max(1,1.4/camera.aspect);
+ camera.position.set(-0.5+15*f,gap*1.5+17*f,27*f);
+ controls.update();
+}
+function resize(){const w=vp.clientWidth,h=vp.clientHeight;if(!w||!h)return;renderer.setSize(w,h);lr.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(vp);resize();resetView();
+
+buildCapas();refreshUI();
+
+const clock=new THREE.Clock();
+function loop(){
+ requestAnimationFrame(loop);
+ const dt=Math.min(clock.getDelta(),0.05);
+ gapCur+=(gap-gapCur)*Math.min(1,dt*8);
+ for(const n of [1,2,3,4])LAY[n].g.position.y=(n-1)*gapCur;
+ if(prop<7)prop+=dt*4.4;
+ for(const u of UPD)if(u.g!==gen&&u.stage<=prop){u.fn(S);u.g=gen;}
+ controls.update();
+ if(selObj&&selBox.visible)selBox.setFromObject(selObj);
+ renderer.render(scene,camera);lr.render(scene,camera);
+}
+loop();
+</script>
+</body>
+</html>

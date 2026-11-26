@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 1 · Final challenge — Lessons by Claude</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,800&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f3ece0;
+    --paper-deep: #ebe2d2;
+    --ink: #1c1610;
+    --ink-soft: #3d342a;
+    --ink-faint: #7a6f5e;
+    --rule: #c9bda7;
+    --accent: #8b1e1e;
+    --accent-soft: #b14a3a;
+    --gold: #a8862a;
+    --grid: rgba(139, 30, 30, 0.06);
+    --ok: #2f6b3a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    background-color: var(--paper);
+    background-image:
+      radial-gradient(at 20% 10%, rgba(139, 30, 30, 0.04) 0%, transparent 50%),
+      radial-gradient(at 80% 90%, rgba(168, 134, 42, 0.05) 0%, transparent 50%),
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: auto, auto, 28px 28px, 28px 28px;
+    color: var(--ink);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.65;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.05 0 0 0 0.15 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.4;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    z-index: 1;
+  }
+
+  .wrap { position: relative; z-index: 2; max-width: 780px; margin: 0 auto; padding: 28px 22px 80px; }
+
+  /* HEADER */
+  header { border-bottom: 1px solid var(--rule); padding-bottom: 22px; margin-bottom: 28px; }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  }
+  .eyebrow::after { content: ""; height: 1px; background: var(--accent); flex: 1; opacity: 0.5; }
+  h1.title {
+    font-family: 'Fraunces', serif; font-weight: 300; font-size: clamp(34px, 9vw, 54px);
+    line-height: 1.02; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 8px; font-variation-settings: "opsz" 144;
+  }
+  h1.title em { font-style: italic; font-weight: 600; color: var(--accent); }
+  .subtitle { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 15px; color: var(--ink-faint); margin-top: 6px; }
+  .colophon { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 0.18em; color: var(--ink-faint); margin-top: 14px; text-transform: uppercase; }
+
+  /* TABS */
+  .tabs { display: flex; flex-direction: column; gap: 0; margin-bottom: 32px; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); }
+  .tab-btn {
+    background: transparent; border: none; border-bottom: 1px solid var(--rule); text-align: left;
+    padding: 15px 4px 13px; font-family: 'Fraunces', serif; font-size: 17px; font-weight: 400; color: var(--ink);
+    cursor: pointer; display: flex; align-items: baseline; gap: 12px; transition: all 0.2s ease; position: relative;
+  }
+  .tab-btn:last-child { border-bottom: none; }
+  .tab-btn .num { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: var(--accent); font-weight: 500; min-width: 30px; }
+  .tab-btn .name { flex: 1; font-style: italic; }
+  .tab-btn .marker { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); opacity: 0; transition: opacity 0.2s; }
+  .tab-btn:hover { background: var(--paper-deep); padding-left: 12px; }
+  .tab-btn:hover .marker { opacity: 1; }
+  .tab-btn.active { background: var(--ink); color: var(--paper); padding-left: 12px; }
+  .tab-btn.active .num { color: var(--gold); }
+  .tab-btn.active .marker { opacity: 1; color: var(--gold); }
+
+  /* PANELS */
+  .panel { display: none; animation: fadeIn 0.5s ease-out; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* CONTENT */
+  h2 {
+    font-family: 'Fraunces', serif; font-weight: 400; font-size: clamp(25px, 6vw, 31px); line-height: 1.15;
+    letter-spacing: -0.01em; margin: 38px 0 10px; color: var(--ink); font-variation-settings: "opsz" 100;
+  }
+  h2:first-child { margin-top: 0; }
+  h2 .marker { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); display: block; letter-spacing: 0.2em; margin-bottom: 6px; font-weight: 500; }
+  h3 { font-family: 'Fraunces', serif; font-weight: 600; font-style: italic; font-size: 19px; margin: 26px 0 8px; color: var(--ink-soft); letter-spacing: -0.005em; }
+  p { margin: 0 0 14px; }
+  p + p { text-indent: 1.4em; }
+  strong { font-weight: 600; color: var(--accent); }
+  em { font-style: italic; color: var(--ink-soft); }
+
+  .math, code {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.88em; background: var(--paper-deep);
+    padding: 1px 6px; border-radius: 2px; color: var(--ink); white-space: nowrap;
+  }
+  .display-math {
+    display: block; font-family: 'JetBrains Mono', monospace; font-size: 15px; text-align: center; margin: 18px 0;
+    padding: 16px 12px; background: var(--paper-deep); border-left: 2px solid var(--accent); overflow-x: auto; line-height: 1.5; color: var(--ink); white-space: pre;
+  }
+
+  .aside { border-left: 2px solid var(--accent); padding: 4px 0 4px 16px; margin: 22px 0; font-style: italic; color: var(--ink-soft); font-size: 16px; line-height: 1.55; }
+  .aside .label { display: block; font-family: 'JetBrains Mono', monospace; font-style: normal; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+
+  ul.props { list-style: none; margin: 14px 0; padding: 0; }
+  ul.props li { padding: 8px 0 8px 22px; position: relative; border-bottom: 1px dashed var(--rule); font-size: 16px; }
+  ul.props li:last-child { border-bottom: none; }
+  ul.props li::before { content: "§"; position: absolute; left: 0; top: 8px; color: var(--accent); font-family: 'Fraunces', serif; font-weight: 600; }
+  ul.props li strong { display: inline-block; min-width: 120px; }
+
+  .derivation {
+    margin: 18px 0; padding: 14px 16px; background: linear-gradient(to bottom, var(--paper-deep), var(--paper));
+    border: 1px solid var(--rule); border-left: 3px solid var(--gold); font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.85; overflow-x: auto;
+  }
+  .derivation .step { display: block; color: var(--ink); }
+  .derivation .comment { color: var(--ink-faint); font-style: italic; font-size: 12px; }
+  .derivation .key { color: var(--accent); font-weight: 700; }
+
+  /* TABLES */
+  .truth-table { width: 100%; max-width: 420px; margin: 18px auto; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 14px; }
+  .truth-table caption { font-family: 'Fraunces', serif; font-style: italic; font-size: 14px; color: var(--ink-faint); margin-bottom: 8px; caption-side: top; text-align: center; }
+  .truth-table th, .truth-table td { padding: 7px 10px; text-align: center; border-bottom: 1px solid var(--rule); }
+  .truth-table th { font-weight: 700; color: var(--accent); border-bottom: 2px solid var(--ink); font-size: 13px; }
+  .truth-table tr:last-child td { border-bottom: none; }
+  .truth-table td:not(:last-child), .truth-table th:not(:last-child) { border-right: 1px solid var(--rule); }
+
+  /* DIAGRAM FIGURE */
+  .diagram-fig { margin: 26px 0; padding: 20px 14px 14px; background: var(--paper-deep); border: 1px solid var(--rule); }
+  .diagram-fig svg { width: 100%; height: auto; display: block; }
+  .diagram-fig figcaption { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 14px; color: var(--ink-faint); text-align: center; margin-top: 12px; line-height: 1.4; }
+  .diagram-fig .fig-num { font-family: 'JetBrains Mono', monospace; font-style: normal; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 4px; }
+
+  /* NIBBLE REFERENCE GRID */
+  .nibble-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 18px 0; }
+  .nibble-grid .cell { background: var(--paper-deep); border: 1px solid var(--rule); padding: 7px 4px; text-align: center; font-family: 'JetBrains Mono', monospace; }
+  .nibble-grid .cell .hx { font-size: 16px; font-weight: 700; color: var(--accent); }
+  .nibble-grid .cell .bn { font-size: 11px; color: var(--ink-faint); display: block; margin-top: 2px; }
+
+  /* THEOREM */
+  .theorem { margin: 26px 0; padding: 18px 18px 16px; background: var(--ink); color: var(--paper); position: relative; overflow: hidden; }
+  .theorem::before { content: ""; position: absolute; inset: 4px; border: 1px solid rgba(243, 236, 224, 0.18); pointer-events: none; }
+  .theorem .th-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  .theorem .th-title { font-family: 'Fraunces', serif; font-style: italic; font-size: 22px; margin-bottom: 8px; color: var(--paper); }
+  .theorem p { color: var(--paper); margin-bottom: 0; font-size: 15.5px; }
+  .theorem p + p { margin-top: 10px; text-indent: 0; }
+  .theorem strong { color: var(--gold); }
+  .theorem .math { background: rgba(243,236,224,0.12); color: var(--paper); }
+
+  .divider { text-align: center; margin: 34px 0; color: var(--rule); font-family: 'Fraunces', serif; font-size: 22px; letter-spacing: 1em; line-height: 1; }
+  .footnote { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--rule); font-size: 13.5px; font-style: italic; color: var(--ink-faint); text-align: center; }
+
+  /* DESKTOP TABS */
+  @media (min-width: 640px) {
+    .wrap { padding: 44px 36px 100px; }
+    body { font-size: 18px; }
+    .tabs { flex-direction: row; }
+    .tab-btn { flex: 1; flex-direction: column; align-items: flex-start; gap: 6px; padding: 14px 14px; border-bottom: none; border-right: 1px solid var(--rule); }
+    .tab-btn:last-child { border-right: none; }
+    .tab-btn:hover { padding-left: 14px; }
+    .tab-btn.active { padding-left: 14px; }
+    .tab-btn .name { font-size: 17px; }
+  }
+
+  ::selection { background: var(--accent); color: var(--paper); }
+
+  /* ===== LECCIONES DE CLAUDE ===== */
+  .estado { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; padding: 3px 8px; border: 1px solid var(--accent); color: var(--accent); margin: 0 6px 16px 0; }
+  .estado.ok { border-color: var(--ok); color: var(--ok); }
+  .estado.curso { border-color: var(--gold); color: var(--gold); }
+  pre.code { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; background: var(--ink); color: var(--paper); padding: 14px 16px; margin: 16px 0; border-left: 3px solid var(--gold); overflow-x: auto; white-space: pre; }
+  pre.code .c { color: #b9ab8f; font-style: italic; }
+  pre.code .k { color: #f0c96a; font-weight: 700; }
+  .ejercicio { margin: 24px 0; border: 1px solid var(--rule); background: var(--paper-deep); }
+  .ejercicio .ej-cabeza { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); padding: 12px 14px 0; }
+  .ejercicio .ej-titulo { font-family: 'Fraunces', serif; font-style: italic; font-size: 19px; padding: 2px 14px 6px; color: var(--ink); }
+  .ejercicio .ej-cuerpo { padding: 0 14px 6px; }
+  .ejercicio .ej-cuerpo p + p { text-indent: 0; }
+  details.solucion { border-top: 1px dashed var(--rule); padding: 10px 14px; }
+  details.solucion summary { cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); }
+  details.solucion[open] summary { margin-bottom: 10px; }
+  .respuesta, .correccion { padding: 10px 14px; margin: 16px 0; font-size: 16px; }
+  .respuesta { border-left: 3px solid var(--ok); background: rgba(47, 107, 58, 0.07); }
+  .correccion { border-left: 3px solid var(--accent-soft); background: rgba(139, 30, 30, 0.05); }
+  .respuesta .label, .correccion .label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 4px; }
+  .respuesta .label { color: var(--ok); }
+  .correccion .label { color: var(--accent); }
+  .respuesta p + p, .correccion p + p { text-indent: 0; }
+  dl.qa { margin: 14px 0; }
+  dl.qa dt { font-weight: 600; margin-top: 14px; }
+  dl.qa dd { margin: 4px 0 0; padding-left: 14px; border-left: 1px solid var(--rule); color: var(--ink-soft); }
+  .tabla { overflow-x: auto; margin: 16px 0; }
+  table.datos { width: 100%; border-collapse: collapse; font-size: 15px; }
+  table.datos th, table.datos td { padding: 6px 8px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+  table.datos th { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); border-bottom: 2px solid var(--ink); }
+  table.datos td code, table.datos td .math { white-space: nowrap; }
+  ol.pasos { margin: 10px 0 14px 22px; }
+  ol.pasos li, ul.lista li { margin: 4px 0; }
+  ul.lista { margin: 10px 0 14px 22px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Lessons by Claude · Phase 1</div>
+  <h1 class="title">The <em>naked</em> machine</h1>
+  <div class="subtitle">Final challenge: from tracing to execution · five mini-tasks in x86-64 Assembly</div>
+  <div class="colophon">Guillermo · WSL · 2026-11-20 → 2026-11-23 · Phase closed</div>
+</header>
+
+<div class="aside">
+  <span class="label">The arc of the challenge</span>
+  (1) set up the workshop → (2) first verifiable program → (3) translate trace A.1 → (4) watch the CPU step by step in gdb → (5) loop with indirection. Rule for the whole challenge: <strong>predict first, verify afterwards</strong>.
+</div>
+
+<nav class="tabs" role="tablist">
+  <button class="tab-btn active" role="tab" data-target="t1" data-seccion="mt1" data-titulo="Mini-tarea 1 · Preparar el taller"><span class="num">I.</span><span class="name">The workshop</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t2" data-seccion="mt2" data-titulo="Mini-tarea 2 · Primer programa verificable"><span class="num">II.</span><span class="name">First program</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t3" data-seccion="mt3" data-titulo="Mini-tarea 3 · Traducir el trazado A.1"><span class="num">III.</span><span class="name">Branches</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t4" data-seccion="mt4" data-titulo="Mini-tarea 4 · Paso a paso en gdb"><span class="num">IV.</span><span class="name">gdb</span><span class="marker">→</span></button>
+  <button class="tab-btn" role="tab" data-target="t5" data-seccion="mt5" data-titulo="Mini-tarea 5 · Bucle con indirección"><span class="num">V.</span><span class="name">Loop</span><span class="marker">→</span></button>
+</nav>
+
+<!-- ===== I. PREPARAR EL TALLER ===== -->
+<section class="panel active" id="t1" role="tabpanel">
+  <span class="estado ok">Done · 2026-11-20</span>
+
+  <h2><span class="marker">§ 1.1</span>The three tools</h2>
+  <p>Going from paper to the machine takes three pieces, plus checking that the processor really is x86-64, the architecture that was studied.</p>
+  <ul class="props">
+    <li><strong>nasm</strong> the assembler: translates the sheet written in words (<code>mov rax, 60</code>) into machine bytes.</li>
+    <li><strong>ld</strong> the linker (it comes in <code>binutils</code>): packs those bytes into an executable.</li>
+    <li><strong>gdb</strong> the debugger: stops the CPU between one line and the next to look at the registers.</li>
+  </ul>
+  <pre class="code">uname -m                 <span class="c"># should print x86_64</span>
+sudo apt install -y nasm binutils gdb
+nasm -v ; ld -v ; gdb --version</pre>
+
+  <div class="respuesta">
+    <span class="label">Your result</span>
+    You installed everything yourself and checked:
+  </div>
+  <pre class="code">x86_64
+NASM version 2.16.01
+GNU ld (GNU Binutils for Ubuntu) 2.42
+GNU gdb (Ubuntu 15.1-1ubuntu1~24.04.1) 15.1</pre>
+
+  <h2><span class="marker">§ 1.2</span>Notes</h2>
+  <div class="correccion">
+    <span class="label">What failed at first</span>
+    The first attempt was <code>! sudo apt update &amp;&amp; sudo apt install …</code> typed in bash. In bash, <code>!</code> <em>negates</em> the exit code: <code>apt update</code> succeeded (0), <code>!</code> turned it into 1 and <code>&amp;&amp;</code> did not run the installation. That <code>!</code> only works at the Claude Code prompt. The mistake was the Tutor's, for giving you the command that way.
+  </div>
+  <p>The challenge work lives in <code>retos/fase-1/</code> in the repository. The scripts <code>ensamblar.sh</code> and <code>trazar.sh</code> are in <code>retos/herramientas/</code>, and their paths are relative to the repo root.</p>
+</section>
+
+<!-- ===== II. PRIMER PROGRAMA ===== -->
+<section class="panel" id="t2" role="tabpanel">
+  <span class="estado ok">Done · 2026-11-20</span>
+
+  <h2><span class="marker">§ 2.1</span>Ending a program</h2>
+  <p>On paper the sheet «ended» by itself. On a real machine there is no end of sheet: if the finger (<code>rip</code>) keeps going down, it reads garbage and the CPU stops with <code>SIGSEGV</code>. <strong>The hardware does not recover by itself.</strong></p>
+  <p>To finish, the workshop <em>knocks on the owner's door</em> (the operating system) with <code>syscall</code>. The owner reads two pieces from the bench:</p>
+  <ul class="props">
+    <li><strong>rax</strong> the request number. <code>60</code> = «close the workshop». It is not free to choose.</li>
+    <li><strong>rdi</strong> the request's data: the exit code. It is free; by convention, <code>0</code> = all good.</li>
+  </ul>
+  <div class="aside">
+    <span class="label">In your language</span>
+    <code>syscall</code> is evaluating a function that is not in your sheet but in the kernel; the registers are its arguments.
+  </div>
+
+  <h2><span class="marker">§ 2.2</span>Sheet, bench, notebook, finger</h2>
+  <p>The central confusion of that session was where each thing happens. They are four separate objects:</p>
+  <div class="tabla"><table class="datos">
+    <tr><th>Object</th><th>What it contains</th><th>In the machine</th></tr>
+    <tr><td>The sheet</td><td>Only orders, line by line. Nothing is written on it.</td><td><code>.text</code>, in the storeroom</td></tr>
+    <tr><td>The bench</td><td>Where the Carpenter does the calculations</td><td>Registers (<code>rax</code>, <code>rdi</code>…)</td></tr>
+    <tr><td>The notebook</td><td>Only marks about the last calculation</td><td><code>rflags</code> (ZF…)</td></tr>
+    <tr><td>The finger</td><td>Which line we are on</td><td><code>rip</code></td></tr>
+  </table></div>
+
+  <h3>Questions you asked</h3>
+  <dl class="qa">
+    <dt>What is <code>section .text</code>?</dt>
+    <dd>The area of the storeroom where the instruction sheet goes. <code>.data</code> = pieces with an initial value (used in mini-task 5). Sheet and pieces in the same storeroom, on different shelves: von Neumann.</dd>
+    <dt>What are <code>_start:</code> and <code>global _start</code>?</dt>
+    <dd><code>_start:</code> is a label, a note in the margin: «it starts here». <code>global</code> makes it visible so that <code>ld</code> knows where to put the finger at startup.</dd>
+    <dt>Is the OS the Carpenter?</dt>
+    <dd>No. Carpenter + Master Builder = CPU. The OS is the <em>owner of the workshop</em>: it decides which sheet comes in, assigns shelves, puts the finger on <code>_start</code> and, with <code>syscall</code>, closes the workshop.</dd>
+    <dt>Does the notebook store the result?</dt>
+    <dd>No: the result stays on the bench (<code>sub rax, rbx</code> leaves the 7 in <code>rax</code>); the notebook only keeps marks about it: ZF (was it zero?), SF (negative?), CF (carry?), OF (signed overflow?).</dd>
+  </dl>
+
+  <h2><span class="marker">§ 2.3</span>Example and your program</h2>
+  <p>The Tutor's example:</p>
+  <pre class="code"><span class="k">global</span> _start
+<span class="k">section</span> .text
+_start:
+    mov rax, 60     <span class="c">; request: exit</span>
+    mov rdi, 68     <span class="c">; exit code</span>
+    syscall         <span class="c">; knock on the door</span></pre>
+  <div class="respuesta">
+    <span class="label">Your answer · retos/fase-1/mt2.asm</span>
+    The same skeleton with <code>rdi = 42</code>, right the first time. Verified in the terminal: <code>42</code>.
+  </div>
+
+  <h2><span class="marker">§ 2.4</span>Exercises</h2>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Exercise 2.1 · finiteness</div>
+    <div class="ej-titulo">What exit code does the program return if <code>rdi = 300</code>?</div>
+    <div class="ej-cuerpo"><p>Predict before opening the answer. Then: what about 256? and 511?</p></div>
+    <details class="solucion"><summary>See answer</summary>
+      <div class="correccion"><span class="label">Your first prediction</span>«300». It came out <strong>44</strong>.</div>
+      <div class="derivation">
+        <span class="step">300 = 1 0010 1100   (0x12c)</span>
+        <span class="step comment">the exit code fits in one byte: the owner keeps the lower 8 bits</span>
+        <span class="step">0010 1100 = 0x2c = <span class="key">44</span></span>
+        <span class="step comment">the bit worth 256 does not fit: it is thrown away</span>
+      </div>
+      <p>In your language: the code lives in <span class="math">ℤ/256ℤ</span>, and <span class="math">300 mod 256 = 44</span>.</p>
+      <div class="respuesta"><span class="label">Your final answer (predicted and verified)</span><code>256 → 0</code> and <code>511 → 255</code>. Both correct.</div>
+    </details>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Exercise 2.2 · the label is a number</div>
+    <div class="ej-titulo">Which line does the finger never touch?</div>
+    <div class="ej-cuerpo">
+      <p>What is written, and what remains after nasm:</p>
+      <pre class="code">_start:
+    mov rdi, 1
+    jmp done
+    mov rdi, 2
+done:
+    mov rax, 60
+    syscall</pre>
+      <pre class="code">401000:  mov  edi, 1
+401005:  jmp  40100c        <span class="c">← «done» became 40100c</span>
+401007:  mov  edi, 2
+40100c:  mov  eax, 60       <span class="c">← the line called «done»</span>
+401011:  syscall</pre>
+    </div>
+    <details class="solucion"><summary>See answer</summary>
+      <div class="respuesta"><span class="label">Your answer</span><code>401007</code>. Correct: the program exits with code 1.</div>
+      <p>nasm sees <code>done:</code> in the margin, works out its shelf and replaces the word <code>done</code> with <code>40100c</code> everywhere. The CPU never sees the word: it reads «<code>jmp 40100c</code>» and does <code>rip ← 40100c</code>. It is an abbreviated definition: «let <em>done</em> := 40100c».</p>
+    </details>
+  </div>
+
+  <div class="correccion">
+    <span class="label">Correction: when je jumps</span>
+    You said «if it was zero, it moves on to the next line». It is the other way round: <code>cmp a, b</code> subtracts <span class="math">a − b</span>; if it was zero, <strong>ZF = 1</strong> and <code>je</code> <em>jumps</em>. If ZF = 0, the finger moves down to the next line.
+  </div>
+</section>
+
+<!-- ===== III. RAMAS ===== -->
+<section class="panel" id="t3" role="tabpanel">
+  <span class="estado ok">Done · 2026-11-22</span>
+
+  <h2><span class="marker">§ 3.1</span>Each path ends on its own</h2>
+  <p>On paper, the sheet ended after <code>je</code>. On the machine, <strong>every path must end by knocking on the owner's door</strong>; otherwise, the finger drops into whatever follows. The exit code is the <em>witness</em> of which path the CPU took, with no debugger: jumps → 1, does not jump → 0.</p>
+
+  <h2><span class="marker">§ 3.2</span>Worked example: A.1 in real code</h2>
+  <pre class="code"><span class="k">global</span> _start
+<span class="k">section</span> .text
+_start:
+    mov  rax, 10
+    mov  rbx, 3
+    sub  rax, rbx       <span class="c">; rax = 7</span>
+    cmp  rax, 7         <span class="c">; 7 − 7 = 0 → ZF = 1</span>
+    je   equal          <span class="c">; jumps</span>
+
+    mov  rax, 60        <span class="c">; «did not jump» path</span>
+    mov  rdi, 0
+    syscall
+
+equal:                  <span class="c">; «jumped» path</span>
+    mov  rax, 60
+    mov  rdi, 1
+    syscall</pre>
+  <div class="aside">
+    <span class="label">The trap</span>
+    If the «did not jump» path were missing its <code>syscall</code>, the finger would fall into <code>equal:</code> and it would exit with 1 in both cases: the witness would no longer tell them apart. A block with no jump and no <code>syscall</code> <em>spills over</em> into the next one.
+  </div>
+
+  <h2><span class="marker">§ 3.3</span>Exercises</h2>
+  <div class="ejercicio">
+    <div class="ej-cabeza">Exercise 3.1 · equivalent, without help</div>
+    <div class="ej-titulo">Write the program with the same two endings</div>
+    <div class="ej-cuerpo">
+      <pre class="code">mov  rax, 20
+mov  rbx, 6
+sub  rax, rbx
+cmp  rax, 15
+je   equal</pre>
+      <p>Before running: the value of <code>rax</code> after <code>sub</code>, the value of ZF and the exit code.</p>
+    </div>
+    <details class="solucion"><summary>See your answer</summary>
+      <div class="respuesta"><span class="label">Your prediction (correct)</span>«rax = 14; are 15 and rax equal? No. Ergo, ZF = 0, ergo, there is no jump to <code>equal</code>; the program ends with code 0». Verified: <code>0</code>.</div>
+      <pre class="code"><span class="k">global</span> _start
+<span class="k">section</span> .text
+_start:
+    mov  rax, 20
+    mov  rbx, 6
+    sub  rax, rbx
+    cmp  rax, 14        <span class="c">; final version (with 15 it exited 0)</span>
+    je   equal
+
+    mov rax, 60
+    mov rdi, 0
+    syscall
+
+equal:
+    mov rax, 60
+    mov rdi, 1
+    syscall</pre>
+      <p>With <code>cmp rax, 14</code> it came out <code>1</code>. That time you ran it before writing the prediction: <em>predict first</em>.</p>
+    </details>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Exercise 3.2 · more marks</div>
+    <div class="ej-titulo">Which other marks does 14 − 15 = −1 turn on?</div>
+    <details class="solucion"><summary>See answer</summary>
+      <p>You did not know it in the session. <strong>SF = 1</strong> turns on (the result is negative) and so does <strong>CF = 1</strong> (unsigned, 14 − 15 does not fit and the subtraction borrows; it is the same finiteness as <span class="math">ℤ/256ℤ</span>). An exercise of your own with SF and CF is still pending.</p>
+    </details>
+  </div>
+</section>
+
+<!-- ===== IV. GDB ===== -->
+<section class="panel" id="t4" role="tabpanel">
+  <span class="estado ok">Done · 2026-11-22</span>
+
+  <h2><span class="marker">§ 4.1</span>Stopping the Carpenter</h2>
+  <p><code>trazar.sh</code> runs on its own and summarizes. In <code>gdb</code> you stop the Carpenter between one line and the next and look at the bench (registers), the finger (<code>rip</code>) and the notebook (<code>eflags</code>). <code>si</code> executes exactly one line.</p>
+  <pre class="code">gdb -q retos/fase-1/build/mt3
+set disassembly-flavor intel
+starti
+display/i $rip
+display $rax
+display $rbx
+display $eflags
+si              <span class="c"># and Enter to repeat</span></pre>
+
+  <h2><span class="marker">§ 4.2</span>Your trace against gdb</h2>
+  <div class="ejercicio">
+    <div class="ej-cabeza">Exercise 4.1 · on mt3 with cmp rax, 14</div>
+    <div class="ej-titulo">Predict rax, rbx, ZF and the next line after each step</div>
+    <details class="solucion"><summary>See your answer and what gdb showed</summary>
+      <div class="respuesta"><span class="label">Your trace, already corrected</span>You had the values, ZF after <code>cmp</code> and the jump right from the start.</div>
+      <div class="tabla"><table class="datos">
+        <tr><th>After</th><th>rip → next</th><th>rax</th><th>rbx</th><th>eflags</th></tr>
+        <tr><td>starti</td><td><code>0x401000</code> mov eax,0x14</td><td>0</td><td>0</td><td><code>[ IF ]</code></td></tr>
+        <tr><td>mov rax, 20</td><td><code>0x401005</code></td><td>20</td><td>0</td><td><code>[ IF ]</code></td></tr>
+        <tr><td>mov rbx, 6</td><td><code>0x40100a</code></td><td>20</td><td>6</td><td><code>[ IF ]</code></td></tr>
+        <tr><td>sub rax, rbx</td><td><code>0x40100d</code></td><td>14</td><td>6</td><td><code>[ AF IF ]</code></td></tr>
+        <tr><td>cmp rax, 14</td><td><code>0x401011</code> je</td><td>14</td><td>6</td><td><code>[ PF ZF IF ]</code></td></tr>
+        <tr><td>je equal</td><td><code>0x40101f</code> &lt;equal&gt;</td><td>14</td><td>6</td><td><code>[ PF ZF IF ]</code></td></tr>
+      </table></div>
+      <div class="correccion"><span class="label">Corrections</span>
+        <p>1. <strong><code>sub</code> also writes in the notebook</strong>: 20 − 6 = 14 ≠ 0, so ZF = 0 (you put «?»).</p>
+        <p>2. <strong>There is no «?» in the machine</strong>: every bit has a value; at startup, Linux leaves the registers at 0. «I don't know» ≠ «it is zero».</p>
+        <p>3. There are two <code>mov rax, 60</code>: the finger goes to the one under <code>equal:</code>.</p>
+      </div>
+    </details>
+  </div>
+
+  <h2><span class="marker">§ 4.3</span>What gdb confirmed</h2>
+  <ul class="props">
+    <li><strong>mov</strong> does not write in the notebook: <code>eflags</code> does not change in steps 1 and 2.</li>
+    <li><strong>je</strong> only reads: after the jump, <code>rax</code> and <code>eflags</code> stay the same.</li>
+    <li><strong>a label</strong> is a number: gdb shows <code>je 0x40101f &lt;equal&gt;</code>; the name is a courtesy.</li>
+  </ul>
+
+  <div class="theorem">
+    <div class="th-label">The brackets in $eflags</div>
+    <div class="th-title">The notebook as a function</div>
+    <p>The notebook is <span class="math">f : {marks} → {0,1}</span>, and gdb shows its support <span class="math">f⁻¹(1)</span>: in <code>[ PF ZF IF ]</code> are the marks that are 1; the ones that do not appear are 0.</p>
+  </div>
+  <dl class="qa">
+    <dt>IF</dt><dd>The <em>owner's mark</em>: no calculation sets it, the OS does («the workshop accepts interrupts»). Always on.</dd>
+    <dt>AF after sub</dt><dd>There was a borrow in the lower 4 bits: 20 = 0001 0100, 6 = 0000 0110; 4 − 6 does not reach.</dd>
+    <dt>PF after cmp</dt><dd>The low byte of the result (0) has an even number of ones. AF and PF are old marks, hardly used.</dd>
+  </dl>
+</section>
+
+<!-- ===== V. BUCLE CON INDIRECCIÓN ===== -->
+<section class="panel" id="t5" role="tabpanel">
+  <span class="estado ok">Done · 2026-11-23</span>
+
+  <h2><span class="marker">§ 5.1</span>Pieces with their own address</h2>
+  <pre class="code"><span class="k">section</span> .data
+pieces: db 5, 3, 8, 2     <span class="c">; 4 consecutive bytes</span></pre>
+  <ul class="props">
+    <li><strong>pieces:</strong> a note in the margin; nasm replaces it with the number of the first shelf.</li>
+    <li><strong>mov rsi, pieces</strong> puts <em>the shelf number</em> on the bench, not the piece.</li>
+    <li><strong>mov al, [rsi]</strong> goes to the shelf and brings the piece to <code>al</code> (the low byte of <code>rax</code>).</li>
+    <li><strong>inc rsi</strong> moves forward one shelf. It touches no piece.</li>
+  </ul>
+  <div class="aside">
+    <span class="label">In your language</span>
+    It is the sequence <span class="math">a : {0,1,2,3} → bytes</span>: <code>rsi</code> runs through the domain and <code>[rsi]</code> evaluates the function. Your <span class="math">F(F(x))</span> from A.2, with a finger that moves.
+  </div>
+  <div class="tabla"><table class="datos">
+    <tr><th>Shelf</th><th>Real address</th><th>Piece</th></tr>
+    <tr><td><code>pieces + 0</code></td><td><code>0x402000</code></td><td>5</td></tr>
+    <tr><td><code>pieces + 1</code></td><td><code>0x402001</code></td><td>3</td></tr>
+    <tr><td><code>pieces + 2</code></td><td><code>0x402002</code></td><td>8</td></tr>
+    <tr><td><code>pieces + 3</code></td><td><code>0x402003</code></td><td>2</td></tr>
+  </table></div>
+
+  <h2><span class="marker">§ 5.2</span>Reading exercises</h2>
+  <div class="ejercicio">
+    <div class="ej-cabeza">Exercise 5.1</div>
+    <div class="ej-titulo">What is in rsi and in al?</div>
+    <div class="ej-cuerpo"><pre class="code">mov rsi, pieces
+inc rsi
+inc rsi
+mov al, [rsi]</pre></div>
+    <details class="solucion"><summary>See answer</summary>
+      <div class="correccion"><span class="label">Along the way</span>First you ignored the <code>inc</code>s (<code>al = 5</code>). Then you stayed one shelf behind: you wrote <code>pieces + 0</code> twice and <code>al = 3</code>.</div>
+      <pre class="code">mov rsi, pieces  <span class="c">→ rsi = pieces + 0</span>
+inc rsi          <span class="c">→ rsi = pieces + 1</span>
+inc rsi          <span class="c">→ rsi = pieces + 2</span>
+mov al, [rsi]    <span class="c">→ al = 8</span></pre>
+    </details>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Exercise 5.2</div>
+    <div class="ej-titulo">Shelf versus piece</div>
+    <div class="ej-cuerpo"><pre class="code">mov rsi, pieces
+add rsi, 3
+mov al, [rsi]
+dec rsi
+mov al, [rsi]</pre></div>
+    <details class="solucion"><summary>See answer</summary>
+      <div class="correccion"><span class="label">Along the way</span>You added 3 to the <em>piece</em> (5 + 3 = 8) instead of to the <em>shelf</em>. Calculations on <code>rsi</code> move the shelf number; only <code>[rsi]</code> crosses over to the piece.</div>
+      <div class="respuesta"><span class="label">Your final answer (with the table of real addresses)</span><code>rsi = pieces + 3</code>, <code>al = 2</code>, <code>rsi = pieces + 2</code>, <code>al = 8</code>.</div>
+    </details>
+  </div>
+
+  <h2><span class="marker">§ 5.3</span>The earlier example: a loop without indirection</h2>
+  <pre class="code"><span class="k">global</span> _start
+<span class="k">section</span> .text
+_start:
+    mov  rcx, 3       <span class="c">; counter</span>
+    mov  rdi, 0       <span class="c">; accumulator</span>
+top:
+    add  dil, cl      <span class="c">; cl = low byte of rcx</span>
+    dec  rcx
+    cmp  rcx, 0
+    je   done
+    jmp  top          <span class="c">; the finger goes back up</span>
+done:
+    mov  rax, 60
+    syscall           <span class="c">; exit code = rdi → 6</span></pre>
+  <div class="tabla"><table class="datos">
+    <tr><th>Pass</th><th>add → dil</th><th>dec → rcx</th><th>je</th></tr>
+    <tr><td>1</td><td>3</td><td>2</td><td>no jump</td></tr>
+    <tr><td>2</td><td>5</td><td>1</td><td>no jump</td></tr>
+    <tr><td>3</td><td>6</td><td>0</td><td><strong>jumps</strong> → done</td></tr>
+  </table></div>
+  <p><code>top:</code> is just a note in the margin. The loop exists because <code>jmp</code> sends the finger back to that shelf.</p>
+
+  <h2><span class="marker">§ 5.4</span>The mini-task</h2>
+  <div class="ejercicio">
+    <div class="ej-cabeza">Exercise 5.3 · no model</div>
+    <div class="ej-titulo">Add the 4 pieces and return the sum as the exit code</div>
+    <div class="ej-cuerpo"><p>With <code>rsi</code> as the finger, <code>rcx = 4</code> as the counter, <code>rdi</code> as the accumulator and <code>add dil, [rsi]</code>. Why <code>dil</code> and not <code>rdi</code>? Because <code>add rdi, [rsi]</code> would bring <em>8 shelves at once</em>: the size of the slot decides how much is read.</p></div>
+    <details class="solucion"><summary>See your answer</summary>
+      <div class="respuesta"><span class="label">Your prediction (written before running)</span>4 passes: 5, 3, 8, 2. On exit, <code>rcx = 0</code> and <code>rsi = pieces + 4</code>. Code: 5 + 3 + 8 + 2 = <strong>18</strong>.</div>
+      <pre class="code"><span class="k">global</span> _start
+<span class="k">section</span> .data
+    pieces: db 5, 3, 8, 2
+
+<span class="k">section</span> .text
+_start:
+    mov rcx, 4          <span class="c">; counter: 4 pieces</span>
+    mov rdi, 0          <span class="c">; accumulator</span>
+    mov rsi, pieces     <span class="c">; rsi points to the first shelf</span>
+
+top:
+    add dil, [rsi]      <span class="c">; add the current piece</span>
+    inc rsi             <span class="c">; the finger moves to the next shelf</span>
+    dec rcx
+    cmp rcx, 0
+    je done
+    jmp top
+
+done:
+    mov rax, 60
+    syscall             <span class="c">; exit code = rdi (18)</span></pre>
+      <p>Verified with <code>trazar.sh --mem pieces</code>: <code>rdi</code> = 5 → 8 → 16 → 18, <code>rsi</code> from <code>0x402000</code> to <code>0x402004</code>, <code>je</code> jumps on the 4th pass, <code>codigo: 18</code>. Everything matches.</p>
+    </details>
+  </div>
+
+  <div class="ejercicio">
+    <div class="ej-cabeza">Exercise 5.4 · the notebook</div>
+    <div class="ej-titulo">What is ZF right after dec rcx on the 4th pass?</div>
+    <details class="solucion"><summary>See answer</summary>
+      <div class="respuesta"><span class="label">Your answer</span><strong>ZF = 1</strong>. The trace marks it <code>1*</code> at step 24, before <code>cmp</code>.</div>
+      <div class="correccion"><span class="label">The nuance</span>You said «yes, they are equal», but <code>dec</code> does not compare anything. ZF = 1 means <strong>«the last calculation gave 0»</strong>. That is why <code>cmp rcx, 0</code> is unnecessary: <code>dec</code> already left the mark.</div>
+    </details>
+  </div>
+
+  <h2><span class="marker">§ 5.5</span>What the output revealed</h2>
+  <ul class="props">
+    <li><strong>4202497</strong> is <code>0x402001</code> in decimal: the same shelf, in another base.</li>
+    <li><strong>[pieces]</strong> was shown as <code>0x2c02080305</code>; it is read from right to left: <code>05 03 08 02</code>. The <code>2c</code> is the neighbouring shelf, which is not yours.</li>
+  </ul>
+  <div class="theorem">
+    <div class="th-label">Seed of Phase 2</div>
+    <div class="th-title">The neighbouring shelf is not yours</div>
+    <p>The machine does not know where an array ends. Reading or writing one shelf too many gives no error: that is the door to <strong>buffer overflows</strong>.</p>
+  </div>
+</section>
+
+<div class="footnote">The theory for the phase is in the «Lessons» tab. Source: Phase 1 closing report (Appendix B) and the logs of the sessions of 2026-11-20, 2026-11-22 and 2026-11-23.</div>
+
+</div>
+
+<script>
+  // Pestañas, y aviso al sitio de qué parte se está viendo (contrato postMessage, spec 03 §3).
+  const buttons = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.panel');
+  function avisar(btn) {
+    if (window.parent === window) return;
+    parent.postMessage({ tipo: 'elemento', seccion: btn.dataset.seccion, titulo: btn.dataset.titulo,
+                         clase: 'lectura' }, location.origin);
+  }
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+      panels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      document.getElementById(btn.dataset.target).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      avisar(btn);
+    });
+  });
+  const inicial = document.querySelector('.tab-btn.active');
+  if (inicial) { inicial.setAttribute('aria-selected', 'true'); avisar(inicial); }
+</script>
+
+</body>
+</html>

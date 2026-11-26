@@ -1,11 +1,71 @@
 // Lo que comparten «Elige un tema» y la página de tema: sesión, salir y cambiar contraseña.
 // Todo texto que viene del servidor se pone con textContent.
-// Museo (P-34): bajo /m/<clave>/ es la versión de solo lectura, sin cuenta ni anotaciones.
+// Museo (P-34): bajo /m/<clave>/ es la versión de solo lectura, sin cuenta ni anotaciones;
+// bajo /m/<clave>/en/ la misma en inglés (P-35). El sitio con login sigue solo en español.
 
-const enMuseo = location.pathname.match(/^\/m\/([^/]+)/);
+const enMuseo = location.pathname.match(/^\/m\/([^/]+)(\/en)?(?=\/|$)/);
 export const MUSEO = Boolean(enMuseo);
-export const BASE = enMuseo ? `/m/${enMuseo[1]}` : '';
+export const IDIOMA = enMuseo && enMuseo[2] ? 'en' : 'es';
+export const BASE = enMuseo ? enMuseo[0] : '';
 export const INICIO = MUSEO ? `${BASE}/temas` : '/';
+
+// Textos fijos del sitio en inglés, por su texto en español.
+const EN = {
+  'Elige un tema': 'Choose a topic',
+  'Lecciones de Claude': 'Lessons by Claude',
+  '‹ Temas': '‹ Topics',
+  Temas: 'Topics',
+  'Contenido del tema': 'Topic content',
+  'Este tema todavía no tiene contenido.': 'This topic has no content yet.',
+  'Sin contenido aún': 'No content yet',
+  'Solo en español': 'Spanish only',
+  'CLIC EN LA ESFERA PARA ENTRAR': 'CLICK THE SPHERE TO ENTER',
+  'ARRASTRAR: MIRAR · SCROLL: AVANZAR': 'DRAG: LOOK · SCROLL: MOVE',
+  'ARRASTRAR: MIRAR · FLECHAS: MOVER': 'DRAG: LOOK · ARROWS: MOVE',
+  'Volver al centro': 'Back to center',
+  Entrar: 'Enter',
+};
+
+export const t = (texto) => (IDIOMA === 'en' && EN[texto]) || texto;
+
+/** Traduce los elementos marcados con data-i18n (y su title) y pone el lang de la página. */
+export function traducirPagina() {
+  if (IDIOMA !== 'en') return;
+  document.documentElement.lang = 'en';
+  for (const nodo of document.querySelectorAll('[data-i18n]')) {
+    nodo.textContent = t(nodo.textContent.trim());
+    if (nodo.title) nodo.title = t(nodo.title);
+  }
+  for (const nodo of document.querySelectorAll('[aria-label]')) nodo.setAttribute('aria-label', t(nodo.getAttribute('aria-label')));
+}
+
+const CLAVE_IDIOMA = 'museo-idioma';
+
+/** Enlace al mismo lugar en el otro idioma; recuerda la elección en este navegador. */
+export function enlaceIdioma(clase = 'boton boton-texto idioma') {
+  const otro = IDIOMA === 'en' ? 'es' : 'en';
+  const raiz = BASE.replace(/\/en$/, '');
+  const resto = location.pathname.slice(BASE.length);
+  const a = el('a', {
+    clase, id: 'idioma', lang: otro, hreflang: otro,
+    href: `${raiz}${otro === 'en' ? '/en' : ''}${resto}${location.hash}`,
+    texto: otro === 'en' ? 'English' : 'Español',
+  });
+  a.addEventListener('click', () => {
+    try { localStorage.setItem(CLAVE_IDIOMA, otro); } catch { /* sin almacenamiento: no pasa nada */ }
+  });
+  return a;
+}
+
+/** En la entrada del museo en español, lleva al inglés si este navegador lo eligió antes. */
+export function idiomaRecordado() {
+  if (!MUSEO || IDIOMA === 'en' || location.pathname !== BASE) return false;
+  let pedido = null;
+  try { pedido = localStorage.getItem(CLAVE_IDIOMA); } catch { /* nada */ }
+  if (pedido !== 'en') return false;
+  location.replace(`${BASE}/en`);
+  return true;
+}
 
 export async function api(ruta, opciones = {}) {
   const r = await fetch(ruta, {
@@ -106,7 +166,11 @@ function dialogoContrasena() {
 
 export function iniciarCuenta() {
   document.querySelectorAll('a.marca, a.volver').forEach((a) => { a.href = INICIO; });
-  if (MUSEO) { document.querySelector('.cuenta')?.remove(); return; }
+  if (MUSEO) {
+    traducirPagina();
+    document.querySelector('.cuenta')?.replaceChildren(enlaceIdioma());
+    return;
+  }
   const abrir = dialogoContrasena();
   document.getElementById('cuenta-contrasena').addEventListener('click', abrir);
   document.getElementById('cuenta-salir').addEventListener('click', salir);

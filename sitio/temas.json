@@ -5,6 +5,7 @@
       "id": "logica-booleana",
       "corto": "Lógica booleana",
       "nombre": "Lógica booleana y circuitos lógicos",
+      "en": {"corto": "Boolean logic", "nombre": "Boolean logic and logic circuits"},
       "secciones": [
         {"id": "s1", "nombre": "Álgebra de Boole"},
         {"id": "s2", "nombre": "Completitud funcional: Post y NAND"},
@@ -14,15 +15,18 @@
       ],
       "pestanas": [
         {"id": "practica", "etiqueta": "Práctica", "anotable": true,
-         "archivo": "temas/logica-booleana/practica.html", "version": "v0.1"},
+         "archivo": "temas/logica-booleana/practica.html", "version": "v0.1",
+         "en": {"etiqueta": "Practice", "archivo": "temas/logica-booleana/practica.en.html"}},
         {"id": "mapa", "etiqueta": "Mapa", "anotable": false,
-         "archivo": "temas/logica-booleana/mapa.html", "version": "v0.2"}
+         "archivo": "temas/logica-booleana/mapa.html", "version": "v0.2",
+         "en": {"etiqueta": "Map", "archivo": "temas/logica-booleana/mapa.en.html"}}
       ]
     },
     {
       "id": "alu",
       "corto": "ALU",
       "nombre": "Unidad aritmético-lógica",
+      "en": {"corto": "ALU", "nombre": "Arithmetic logic unit"},
       "secciones": [
         {"id": "s1", "nombre": "Representación posicional: binario y hexadecimal"},
         {"id": "s2", "nombre": "Suma binaria: half adder y full adder"},
@@ -32,15 +36,18 @@
       ],
       "pestanas": [
         {"id": "practica", "etiqueta": "Práctica", "anotable": true,
-         "archivo": "temas/alu/practica.html", "version": "v0.2"},
+         "archivo": "temas/alu/practica.html", "version": "v0.2",
+         "en": {"etiqueta": "Practice", "archivo": "temas/alu/practica.en.html"}},
         {"id": "mapa", "etiqueta": "Mapa", "anotable": false,
-         "archivo": "temas/alu/mapa.html", "version": "v0.2"}
+         "archivo": "temas/alu/mapa.html", "version": "v0.2",
+         "en": {"etiqueta": "Map", "archivo": "temas/alu/mapa.en.html"}}
       ]
     },
     {
       "id": "cpu",
       "corto": "CPU",
       "nombre": "La CPU a alto nivel",
+      "en": {"corto": "CPU", "nombre": "The CPU at a high level"},
       "secciones": [
         {"id": "s1", "nombre": "Anatomía: Unidad de Control, ALU y registros"},
         {"id": "s2", "nombre": "Jerarquía de memoria y caché"},
@@ -51,15 +58,18 @@
       ],
       "pestanas": [
         {"id": "practica", "etiqueta": "Práctica", "anotable": true,
-         "archivo": "temas/cpu/practica.html", "version": "v0.2"},
+         "archivo": "temas/cpu/practica.html", "version": "v0.2",
+         "en": {"etiqueta": "Practice", "archivo": "temas/cpu/practica.en.html"}},
         {"id": "mapa", "etiqueta": "Mapa", "anotable": false,
-         "archivo": "temas/cpu/mapa.html", "version": "v0.2"}
+         "archivo": "temas/cpu/mapa.html", "version": "v0.2",
+         "en": {"etiqueta": "Map", "archivo": "temas/cpu/mapa.en.html"}}
       ]
     },
     {
       "id": "fase-0",
       "corto": "Fase 0",
       "nombre": "El puente: de la matemática a la lógica de la máquina",
+      "en": {"corto": "Phase 0", "nombre": "The bridge: from mathematics to machine logic"},
       "grupo": "claude",
       "secciones": [
         {"id": "l1", "nombre": "Lección I · Álgebra de Boole"},
@@ -77,15 +87,18 @@
       ],
       "pestanas": [
         {"id": "lecciones", "etiqueta": "Lecciones", "anotable": true,
-         "archivo": "temas/fase-0/lecciones.html", "version": "v0.1"},
+         "archivo": "temas/fase-0/lecciones.html", "version": "v0.1",
+         "en": {"etiqueta": "Lessons", "archivo": "temas/fase-0/lecciones.en.html"}},
         {"id": "ejercicios", "etiqueta": "Ejercicios", "anotable": true,
-         "archivo": "temas/fase-0/ejercicios.html", "version": "v0.1"}
+         "archivo": "temas/fase-0/ejercicios.html", "version": "v0.1",
+         "en": {"etiqueta": "Exercises", "archivo": "temas/fase-0/ejercicios.en.html"}}
       ]
     },
     {
       "id": "fase-1",
       "corto": "Fase 1",
       "nombre": "La máquina desnuda: arquitectura y Assembly x86",
+      "en": {"corto": "Phase 1", "nombre": "The bare machine: architecture and x86 Assembly"},
       "grupo": "claude",
       "secciones": [
         {"id": "l1", "nombre": "Lección I · La CPU"},
@@ -103,15 +116,18 @@
       ],
       "pestanas": [
         {"id": "lecciones", "etiqueta": "Lecciones", "anotable": true,
-         "archivo": "temas/fase-1/lecciones.html", "version": "v0.1"},
+         "archivo": "temas/fase-1/lecciones.html", "version": "v0.1",
+         "en": {"etiqueta": "Lessons", "archivo": "temas/fase-1/lecciones.en.html"}},
         {"id": "reto", "etiqueta": "Reto de cierre", "anotable": true,
-         "archivo": "temas/fase-1/reto.html", "version": "v0.1"}
+         "archivo": "temas/fase-1/reto.html", "version": "v0.1",
+         "en": {"etiqueta": "Final challenge", "archivo": "temas/fase-1/reto.en.html"}}
       ]
     },
     {
       "id": "fase-2",
       "corto": "Fase 2",
       "nombre": "El lenguaje del sistema: C",
+      "en": {"corto": "Phase 2", "nombre": "The systems language: C"},
       "grupo": "claude",
       "secciones": [
         {"id": "s1", "nombre": "El plan"},
@@ -120,7 +136,8 @@
       ],
       "pestanas": [
         {"id": "leccion", "etiqueta": "Lección", "anotable": true,
-         "archivo": "temas/fase-2/leccion.html", "version": "v0.1"}
+         "archivo": "temas/fase-2/leccion.html", "version": "v0.1",
+         "en": {"etiqueta": "Lesson", "archivo": "temas/fase-2/leccion.en.html"}}
       ]
     }
   ]

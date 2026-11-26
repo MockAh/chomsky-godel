@@ -2,7 +2,7 @@
 // Los iframes se quedan montados al cambiar de pestaña para no perder el avance;
 // las que no son la inicial se cargan la primera vez que se abren.
 // En el museo (P-34) no se cargan las anotaciones.
-import { cargarSesion, iniciarCuenta, el, BASE, INICIO, MUSEO } from '/estaticos/comun.js';
+import { cargarSesion, iniciarCuenta, el, t, BASE, INICIO, MUSEO } from '/estaticos/comun.js';
 
 iniciarCuenta();
 const sesion = await cargarSesion();
@@ -34,7 +34,7 @@ function ponerAviso(iframe, aviso) {
 
 async function montar(tema) {
   if (!tema.pestanas.length) {
-    paneles.append(el('p', { clase: 'vacio', texto: 'Este tema todavía no tiene contenido.' }));
+    paneles.append(el('p', { clase: 'vacio', texto: t('Este tema todavía no tiene contenido.') }));
     return;
   }
   const botones = [];
@@ -73,7 +73,8 @@ async function montar(tema) {
           src: `${BASE}/contenido/${encodeURIComponent(tema.id)}/${encodeURIComponent(pid)}`,
           title: `${tema.corto} · ${info.pestana.etiqueta}`,
         });
-        if (info.pestana.aviso) iframe.addEventListener('load', () => ponerAviso(iframe, info.pestana.aviso));
+        const aviso = [info.pestana.aviso, info.pestana.solo_es && t('Solo en español')].filter(Boolean).join(' · ');
+        if (aviso) iframe.addEventListener('load', () => ponerAviso(iframe, aviso));
         info.panel.append(iframe);
         info.iframe = iframe;
       }

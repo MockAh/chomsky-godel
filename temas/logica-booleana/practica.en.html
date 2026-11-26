@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Circuit for (A ∧ ¬B) ∨ (C ∧ D)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,300;0,400;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bench:#0a0e14; --panel:#111823; --hair:rgba(190,205,225,.13);
+  --copper:#e08a4a; --dead:#394454; --lamp:#ffd166; --hi:#6fe3a8; --lo:#78859a;
+  --txt:#dbe3ee; --mute:#8b98ad;
+  --sans:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  --serif:"IBM Plex Serif",Georgia,serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bench);color:var(--txt);font-family:var(--serif);font-weight:300;
+  font-size:17.5px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1100px;margin:0 auto;padding:0 24px}
+h1,h2,h3,.sans{font-family:var(--sans)}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);margin:0 0 24px}
+header{padding:56px 0 32px}
+h1{font-size:clamp(22px,4.4vw,40px);font-weight:700;letter-spacing:-.02em;margin:0 0 18px;color:#fff;font-family:var(--mono)}
+h1 .op{color:var(--copper)}
+.lede{max-width:68ch;color:#b6c1d1;margin:0}
+.lede strong{color:#fff;font-weight:500}
+
+/* consola */
+.console{position:sticky;top:0;z-index:30;background:rgba(10,14,20,.94);backdrop-filter:blur(10px);
+  border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);margin-top:32px}
+.console-in{max-width:1100px;margin:0 auto;padding:13px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.console .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute)}
+.sw{display:flex;align-items:center;gap:9px;background:transparent;border:0;cursor:pointer;padding:5px 3px}
+.sw:focus-visible{outline:2px solid var(--copper);outline-offset:3px}
+.sw .name{font-family:var(--mono);font-size:18px;color:var(--txt)}
+.rocker{width:46px;height:24px;border:1px solid var(--hair);background:#0d131c;position:relative;border-radius:2px}
+.rocker i{position:absolute;top:2px;left:2px;width:19px;height:18px;background:var(--dead);
+  transition:left .16s ease,background .16s ease;display:block}
+.sw[aria-pressed="true"] .rocker i{left:23px;background:var(--hi)}
+.sw .state{font-family:var(--mono);font-size:14px;color:var(--lo);width:12px}
+.sw[aria-pressed="true"] .state{color:var(--hi)}
+.outbox{margin-left:auto;font-family:var(--mono);font-size:14px;border:1px solid var(--hair);
+  padding:8px 16px;color:var(--lo);white-space:nowrap}
+.outbox.on{color:var(--hi);border-color:rgba(111,227,168,.45);background:rgba(111,227,168,.07)}
+
+section{padding:48px 0;border-top:1px solid var(--hair)}
+section:first-of-type{border-top:0}
+.eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);margin:0 0 12px}
+h2{font-size:clamp(21px,3.2vw,30px);font-weight:600;margin:0 0 12px;color:#fff;letter-spacing:-.01em}
+.sub{color:#a9b4c5;max-width:70ch;margin:0 0 26px}
+.m{font-family:var(--mono);font-size:.88em;color:#eaeef5}
+
+.board{border:1px solid var(--hair);background:var(--panel);padding:22px 20px}
+.board svg{width:100%;height:auto;display:block}
+
+/* svg */
+.wire{stroke:var(--dead);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none;transition:stroke .18s}
+.wire.hot{stroke:var(--copper)}
+.wire.flow{stroke-dasharray:8 8;animation:flow .75s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-16}}
+.gate{fill:#0e1622;stroke:#4a5769;stroke-width:2;transition:stroke .18s,fill .18s}
+.gate.on{stroke:var(--copper);fill:rgba(224,138,74,.13)}
+.node{fill:var(--dead);transition:fill .18s}
+.node.hot{fill:var(--copper)}
+.bulb{fill:#0d131c;stroke:var(--dead);stroke-width:2.4;transition:fill .2s,stroke .2s}
+.bulb.on{fill:var(--lamp);stroke:var(--lamp)}
+.halo{fill:var(--lamp);opacity:0;transition:opacity .2s}
+.halo.on{opacity:.15}
+.gl{font-family:"IBM Plex Mono",monospace;font-size:13px;fill:var(--mute)}
+.gl.big{font-size:17px;fill:var(--txt)}
+.gt{font-family:"IBM Plex Mono",monospace;font-size:11px;fill:#6e7d92;letter-spacing:.08em}
+.val{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;fill:var(--lo);transition:fill .18s}
+.val.one{fill:var(--hi)}
+.tapline{stroke:#2b3444;stroke-width:1;stroke-dasharray:3 4}
+
+/* términos */
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;background:var(--hair);border:1px solid var(--hair);margin-top:26px}
+.terms div{background:var(--panel);padding:18px 20px}
+.terms .t{font-family:var(--mono);font-size:16px;margin:0 0 8px;color:var(--copper)}
+.terms .st{font-family:var(--mono);font-size:12px;color:var(--lo);margin:0 0 10px}
+.terms .st.on{color:var(--hi)}
+.terms p{margin:0;font-size:14.5px;color:#a3aebe}
+
+/* tabla */
+.tablewrap{border:1px solid var(--hair);background:var(--panel);padding:18px 20px;overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:13px;min-width:520px}
+th{font-weight:400;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--mute);
+  padding:0 4px 9px;border-bottom:1px solid var(--hair);text-align:center}
+th.sep,td.sep{border-left:1px solid var(--hair)}
+td{padding:0;border-bottom:1px solid rgba(190,205,225,.06)}
+tr.rowbtn{cursor:pointer}
+tr.rowbtn:hover td{background:rgba(224,138,74,.08)}
+tr.rowbtn td{padding:8px 4px;text-align:center;color:var(--lo)}
+tr.live td{background:rgba(224,138,74,.15);color:#f6e6d6}
+td.out{font-weight:600}
+tr.one td.out{color:var(--hi)}
+.tnote{font-size:14px;color:var(--mute);margin:14px 0 0;font-style:italic}
+
+/* comparación */
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1px;background:var(--hair);border:1px solid var(--hair)}
+.cmp div{background:var(--panel);padding:20px}
+.cmp .tag{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--copper);display:block;margin-bottom:10px}
+.cmp h3{font-size:15.5px;font-weight:600;margin:0 0 8px;color:#fff;font-family:var(--sans)}
+.cmp p{margin:0;font-size:14.5px;color:#a3aebe}
+.cmp .big{font-family:var(--mono);font-size:28px;color:#fff;margin:0 0 6px}
+footer{border-top:1px solid var(--hair);padding:30px 0 70px;color:var(--mute);font-size:15px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <p class="kicker">Sum of products · 4 inputs · 4 gates</p>
+  <h1>Output = (A <span class="op">∧</span> ¬B) <span class="op">∨</span> (C <span class="op">∧</span> D)</h1>
+  <p class="lede">The formula already carries its circuit inside: it is a <strong>sum of products</strong>, and that form reads directly as wiring. Two terms, each one an AND gate; the ∨ joining them is an OR; the only negation is an inverter hanging off B. Nothing else to translate.</p>
+</header>
+</div>
+
+<div class="console">
+  <div class="console-in">
+    <span class="lbl">Inputs</span>
+    <button class="sw" data-in="A" type="button" aria-pressed="false"><span class="name">A</span><span class="rocker"><i></i></span><span class="state">0</span></button>
+    <button class="sw" data-in="B" type="button" aria-pressed="false"><span class="name">B</span><span class="rocker"><i></i></span><span class="state">0</span></button>
+    <button class="sw" data-in="C" type="button" aria-pressed="false"><span class="name">C</span><span class="rocker"><i></i></span><span class="state">0</span></button>
+    <button class="sw" data-in="D" type="button" aria-pressed="false"><span class="name">D</span><span class="rocker"><i></i></span><span class="state">0</span></button>
+    <span class="outbox" id="outbox">Output <b>0</b></span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ESQUEMA -->
+<section>
+  <p class="eyebrow">Direct implementation · AND–OR–NOT</p>
+  <h2>The circuit, powered on</h2>
+  <p class="sub">Flip the switches above. The copper shows where there is a 1; the gates light up when their output is 1. Look at the inverter: B at 0 is what <em>enables</em> the upper branch.</p>
+
+  <div class="board">
+    <svg viewBox="0 0 900 400" role="img" aria-label="Gate diagram for (A and not B) or (C and D)">
+      <!-- etiquetas de entrada -->
+      <text class="gl big" x="20" y="66">A</text>
+      <text class="gl big" x="20" y="146">B</text>
+      <text class="gl big" x="20" y="276">C</text>
+      <text class="gl big" x="20" y="336">D</text>
+      <text class="val" id="vA" x="44" y="66">0</text>
+      <text class="val" id="vB" x="44" y="146">0</text>
+      <text class="val" id="vC" x="44" y="276">0</text>
+      <text class="val" id="vD" x="44" y="336">0</text>
+
+      <!-- A -->
+      <path class="wire" id="wA" d="M62 60 L300 60"/>
+      <!-- B al inversor -->
+      <path class="wire" id="wB" d="M62 140 L170 140"/>
+      <polygon class="gate" id="gNOT" points="170,116 170,164 212,140"/>
+      <circle class="gate" id="gNOTb" cx="218" cy="140" r="6"/>
+      <text class="gt" x="168" y="182">NOT</text>
+      <!-- salida del inversor hacia AND1 -->
+      <path class="wire" id="wNB" d="M224 140 L262 140 L262 120 L300 120"/>
+      <text class="gl" id="lblNB" x="238" y="112">¬B</text>
+
+      <!-- AND1 -->
+      <path class="gate" id="gAND1" d="M300 50 L335 50 A40 40 0 0 1 335 130 L300 130 Z"/>
+      <text class="gt" x="303" y="96">AND</text>
+      <path class="wire" id="wT1" d="M375 90 L470 90 L470 165 L516 165"/>
+      <text class="gl" x="392" y="80">A ∧ ¬B</text>
+      <text class="val" id="vT1" x="452" y="80">0</text>
+      <circle class="node" id="nT1" cx="375" cy="90" r="4"/>
+
+      <!-- C y D -->
+      <path class="wire" id="wC" d="M62 270 L300 270"/>
+      <path class="wire" id="wD" d="M62 330 L300 330"/>
+      <!-- AND2 -->
+      <path class="gate" id="gAND2" d="M300 260 L335 260 A40 40 0 0 1 335 340 L300 340 Z"/>
+      <text class="gt" x="303" y="306">AND</text>
+      <path class="wire" id="wT2" d="M375 300 L470 300 L470 225 L516 225"/>
+      <text class="gl" x="392" y="290">C ∧ D</text>
+      <text class="val" id="vT2" x="448" y="290">0</text>
+      <circle class="node" id="nT2" cx="375" cy="300" r="4"/>
+
+      <!-- OR -->
+      <path class="gate" id="gOR" d="M512 155 Q542 195 512 235 Q580 235 606 195 Q580 155 512 155 Z"/>
+      <text class="gt" x="536" y="200">OR</text>
+      <path class="wire" id="wOUT" d="M606 195 L742 195"/>
+      <text class="gl" x="628" y="184">Output</text>
+      <text class="val" id="vOUT" x="716" y="184">0</text>
+
+      <!-- lámpara -->
+      <circle class="halo" id="halo" cx="774" cy="195" r="40"/>
+      <circle class="bulb" id="bulb" cx="774" cy="195" r="22"/>
+      <path class="wire" d="M774 217 L774 372 L34 372 L34 348" stroke="#2b3444" stroke-width="1.6"/>
+      <text class="gt" x="700" y="252">common return</text>
+
+      <!-- separadores -->
+      <line class="tapline" x1="290" y1="20" x2="290" y2="380"/>
+      <line class="tapline" x1="500" y1="20" x2="500" y2="380"/>
+      <text class="gt" x="96" y="30">level 1 · negation</text>
+      <text class="gt" x="330" y="30">level 2 · products</text>
+      <text class="gt" x="540" y="30">level 3 · sum</text>
+    </svg>
+  </div>
+
+  <div class="terms">
+    <div>
+      <p class="t">A ∧ ¬B</p>
+      <p class="st" id="stT1">term 1 · inactive</p>
+      <p>It fires only when A is on <em>and</em> B is off. This is the branch that requires an absence.</p>
+    </div>
+    <div>
+      <p class="t">C ∧ D</p>
+      <p class="st" id="stT2">term 2 · inactive</p>
+      <p>It fires when C and D are both on. No negation, no negative condition.</p>
+    </div>
+    <div>
+      <p class="t">∨</p>
+      <p class="st" id="stOR">output · 0</p>
+      <p>One active term is enough. Both being active changes nothing: the OR was already at 1.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TABLA -->
+<section>
+  <p class="eyebrow">The 16 valuations</p>
+  <h2>The full table</h2>
+  <p class="sub">With four inputs there are 2⁴ = 16 rows. Tap any of them to put the circuit in that state. The output is 1 in seven of them — that set of seven rows <em>is</em> the element of the algebra this circuit realizes.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>A</th><th>B</th><th>C</th><th>D</th>
+          <th class="sep">¬B</th><th>A∧¬B</th><th>C∧D</th>
+          <th class="sep">Output</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <p class="tnote">Seven rows lit out of sixteen. The four from term 2 and the four from term 1 overlap in just one — row 11, where both are 1 at the same time.</p>
+  </div>
+</section>
+
+<!-- OPTIMIZACIÓN -->
+<section>
+  <p class="eyebrow">The version that gets manufactured</p>
+  <h2>The same circuit with six fewer transistors</h2>
+  <p class="sub">In CMOS the cheap gates are the inverted ones. Applying De Morgan to the whole diagram, <span class="m">(A∧¬B) ∨ (C∧D) = ¬( ¬(A∧¬B) ∧ ¬(C∧D) )</span>, and that expression is <strong>three chained NANDs</strong>. The AND–OR structure becomes NAND–NAND without touching the truth table.</p>
+
+  <div class="board">
+    <svg viewBox="0 0 820 340" role="img" aria-label="Equivalent version with three NAND gates">
+      <text class="gl big" x="16" y="62">A</text>
+      <text class="gl big" x="16" y="132">B</text>
+      <text class="gl big" x="16" y="232">C</text>
+      <text class="gl big" x="16" y="292">D</text>
+
+      <path class="wire" id="mA" d="M52 56 L270 56"/>
+      <path class="wire" id="mB" d="M52 126 L150 126"/>
+      <polygon class="gate" id="mNOT" points="150,104 150,148 190,126"/>
+      <circle class="gate" id="mNOTb" cx="196" cy="126" r="5.5"/>
+      <path class="wire" id="mNB" d="M202 126 L236 126 L236 110 L270 110"/>
+      <text class="gt" x="212" y="102">¬B</text>
+
+      <path class="gate" id="mN1" d="M270 46 L300 46 A37 37 0 0 1 300 120 L270 120 Z"/>
+      <circle class="gate" id="mN1b" cx="343" cy="83" r="6"/>
+      <text class="gt" x="273" y="88">NAND</text>
+      <path class="wire" id="mW1" d="M349 83 L430 83 L430 140 L470 140"/>
+      <text class="val" id="mV1" x="392" y="74">1</text>
+
+      <path class="wire" id="mC" d="M52 226 L270 226"/>
+      <path class="wire" id="mD" d="M52 286 L270 286"/>
+      <path class="gate" id="mN2" d="M270 219 L300 219 A37 37 0 0 1 300 293 L270 293 Z"/>
+      <circle class="gate" id="mN2b" cx="343" cy="256" r="6"/>
+      <text class="gt" x="273" y="261">NAND</text>
+      <path class="wire" id="mW2" d="M349 256 L430 256 L430 196 L470 196"/>
+      <text class="val" id="mV2" x="392" y="247">1</text>
+
+      <path class="gate" id="mN3" d="M470 131 L500 131 A37 37 0 0 1 500 205 L470 205 Z"/>
+      <circle class="gate" id="mN3b" cx="543" cy="168" r="6"/>
+      <text class="gt" x="473" y="173">NAND</text>
+      <path class="wire" id="mOUT" d="M549 168 L664 168"/>
+      <text class="val" id="mVO" x="620" y="158">0</text>
+
+      <circle class="halo" id="mHalo" cx="696" cy="168" r="36"/>
+      <circle class="bulb" id="mBulb" cx="696" cy="168" r="20"/>
+      <text class="gt" x="596" y="222">identical to the output above, always</text>
+    </svg>
+  </div>
+
+  <div class="cmp" style="margin-top:26px">
+    <div>
+      <span class="tag">Direct version</span>
+      <p class="big">20</p>
+      <h3>transistors</h3>
+      <p>NOT 2 · AND 6 · AND 6 · OR 6. Every AND and every OR pays for an extra inverter, because CMOS does not produce them naturally.</p>
+    </div>
+    <div>
+      <span class="tag">NAND version</span>
+      <p class="big">14</p>
+      <h3>transistors</h3>
+      <p>NOT 2 · NAND 4 · NAND 4 · NAND 4. 30 % less silicon to compute exactly the same thing.</p>
+    </div>
+    <div>
+      <span class="tag">Delay</span>
+      <p class="big">3</p>
+      <h3>gate levels</h3>
+      <p>The critical path starts at B: inverter, then the first layer, then the last. Both versions have the same depth, so the saving is free.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ÁLGEBRA -->
+<section>
+  <p class="eyebrow">Back to the algebra</p>
+  <h2>Two circuits, a single class</h2>
+  <p class="sub">The two diagrams on this page have different wiring, different transistor counts and a different look — and yet they light the lamp in the same seven rows. In the Lindenbaum–Tarski algebra that means <strong>they are the same element</strong>: they belong to the class <span class="m">[(A ∧ ¬B) ∨ (C ∧ D)]</span>, and the equivalence between them is provable, <span class="m">⊢ α ↔ β</span>.</p>
+  <div class="cmp">
+    <div>
+      <span class="tag">What the engineer chooses</span>
+      <h3>The representative, not the class</h3>
+      <p>Optimizing a circuit means looking for the cheapest representative within a fixed equivalence class. The class is not touched: what changes is the formula used to name it.</p>
+    </div>
+    <div>
+      <span class="tag">How many classes there are</span>
+      <h3>65 536 with four inputs</h3>
+      <p><span class="m">2^(2⁴)</span>. This circuit is one of them. Any other four-input combinational circuit you build will necessarily be one of the 65 536 — there is no 65 537th.</p>
+    </div>
+    <div>
+      <span class="tag">The canonical form</span>
+      <h3>Seven minterms</h3>
+      <p>The full DNF of this function would have seven terms of four literals each. The original expression does the same with two terms: it is the same class, written much more briefly.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Everything on this page is combinational: the lamp depends only on where the four switches are now, never on where they were before.</p>
+</footer>
+</div>
+
+<script>
+(function(){
+  var S = {A:false, B:false, C:false, D:false};
+  var $ = function(id){ return document.getElementById(id); };
+  function cls(id, on, name){ var e = $(id); if(e) e.classList.toggle(name || 'hot', !!on); }
+  function flow(id, on){ var e = $(id); if(!e) return; e.classList.toggle('hot', !!on); e.classList.toggle('flow', !!on); }
+  function num(id, v){ var e = $(id); if(!e) return; e.textContent = v ? '1' : '0'; e.classList.toggle('one', !!v); }
+
+  // ---- tabla ----
+  var tb = $('tbody');
+  for (var i = 0; i < 16; i++){
+    (function(i){
+      var A = (i >> 3) & 1, B = (i >> 2) & 1, C = (i >> 1) & 1, D = i & 1;
+      var t1 = A && !B ? 1 : 0, t2 = (C && D) ? 1 : 0, out = (t1 || t2) ? 1 : 0;
+      var tr = document.createElement('tr');
+      tr.className = 'rowbtn' + (out ? ' one' : '');
+      tr.dataset.i = i;
+      tr.innerHTML =
+        '<td style="color:#5c6878">'+i+'</td>'+
+        '<td>'+A+'</td><td>'+B+'</td><td>'+C+'</td><td>'+D+'</td>'+
+        '<td class="sep">'+(B?0:1)+'</td><td>'+t1+'</td><td>'+t2+'</td>'+
+        '<td class="sep out">'+out+'</td>';
+      tr.addEventListener('click', function(){
+        S.A = !!A; S.B = !!B; S.C = !!C; S.D = !!D; update();
+      });
+      tb.appendChild(tr);
+    })(i);
+  }
+
+  function update(){
+    var A = S.A, B = S.B, C = S.C, D = S.D;
+    var nB = !B, T1 = A && nB, T2 = C && D, OUT = T1 || T2;
+
+    // consola
+    document.querySelectorAll('.sw').forEach(function(b){
+      var k = b.dataset.in;
+      b.setAttribute('aria-pressed', String(S[k]));
+      b.querySelector('.state').textContent = S[k] ? '1' : '0';
+    });
+    var ob = $('outbox');
+    ob.innerHTML = 'Output <b>' + (OUT ? 1 : 0) + '</b>';
+    ob.classList.toggle('on', OUT);
+
+    // esquema 1
+    num('vA', A); num('vB', B); num('vC', C); num('vD', D);
+    flow('wA', A); flow('wB', B); flow('wNB', nB);
+    cls('gNOT', nB, 'on'); cls('gNOTb', nB, 'on');
+    $('lblNB').setAttribute('fill', nB ? '#e08a4a' : '#8b98ad');
+    flow('wC', C); flow('wD', D);
+    cls('gAND1', T1, 'on'); cls('gAND2', T2, 'on'); cls('gOR', OUT, 'on');
+    flow('wT1', T1); flow('wT2', T2); flow('wOUT', OUT);
+    cls('nT1', T1); cls('nT2', T2);
+    num('vT1', T1); num('vT2', T2); num('vOUT', OUT);
+    $('bulb').classList.toggle('on', OUT);
+    $('halo').classList.toggle('on', OUT);
+
+    // términos
+    $('stT1').textContent = 'term 1 · ' + (T1 ? 'active' : 'inactive');
+    $('stT1').classList.toggle('on', T1);
+    $('stT2').textContent = 'term 2 · ' + (T2 ? 'active' : 'inactive');
+    $('stT2').classList.toggle('on', T2);
+    $('stOR').textContent = 'output · ' + (OUT ? 1 : 0);
+    $('stOR').classList.toggle('on', OUT);
+
+    // esquema 2 (NAND)
+    var n1 = !T1, n2 = !T2;
+    flow('mA', A); flow('mB', B); flow('mNB', nB);
+    cls('mNOT', nB, 'on'); cls('mNOTb', nB, 'on');
+    flow('mC', C); flow('mD', D);
+    cls('mN1', n1, 'on'); cls('mN1b', n1, 'on');
+    cls('mN2', n2, 'on'); cls('mN2b', n2, 'on');
+    cls('mN3', OUT, 'on'); cls('mN3b', OUT, 'on');
+    flow('mW1', n1); flow('mW2', n2); flow('mOUT', OUT);
+    num('mV1', n1); num('mV2', n2); num('mVO', OUT);
+    $('mBulb').classList.toggle('on', OUT);
+    $('mHalo').classList.toggle('on', OUT);
+
+    // fila viva
+    var idx = (A?8:0) + (B?4:0) + (C?2:0) + (D?1:0);
+    tb.querySelectorAll('tr').forEach(function(tr){
+      tr.classList.toggle('live', +tr.dataset.i === idx);
+    });
+  }
+
+  document.querySelectorAll('.sw').forEach(function(b){
+    b.addEventListener('click', function(){ S[b.dataset.in] = !S[b.dataset.in]; update(); });
+  });
+  update();
+})();
+</script>
+</body>
+</html>

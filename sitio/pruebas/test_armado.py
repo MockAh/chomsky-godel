@@ -131,3 +131,40 @@ def test_imagen_no_borra_salidas_peligrosas(repo_sitio):
         with pytest.raises(ErrorArmado):
             armar_imagen(repo_sitio, peligrosa)
     assert (repo_sitio / "sitio" / "servidor" / "app.py").exists()
+
+
+def _con_ingles(repo, archivo_en="temas/a/p.en.html"):
+    datos = json.loads((repo / "sitio" / "temas.json").read_text("utf-8"))
+    datos["temas"][0]["en"] = {"corto": "A", "nombre": "Topic A"}
+    datos["temas"][0]["pestanas"][0]["en"] = {"etiqueta": "Practice", "archivo": archivo_en}
+    (repo / "sitio" / "temas.json").write_text(json.dumps(datos), "utf-8")
+
+
+def test_arma_la_version_en_ingles(repo):
+    (repo / "temas" / "a" / "p.en.html").write_text("<p>hello</p>", "utf-8")
+    _con_ingles(repo)
+    git(repo, "add", "-A")
+    git(repo, "commit", "-q", "-m", "en")
+    m = armar(repo, repo / "salida")
+    t = m["temas"][0]
+    assert t["en"] == {"corto": "A", "nombre": "Topic A"}
+    pen = t["pestanas"][0]["en"]
+    assert pen["etiqueta"] == "Practice" and len(pen["sha256"]) == 64 and "archivo" not in pen
+    assert (repo / "salida" / "a-p.en.html").read_text("utf-8") == "<p>hello</p>"
+
+
+def test_ingles_sin_commit_o_inexistente(repo):
+    _con_ingles(repo)
+    with pytest.raises(ErrorArmado, match="no existe"):
+        armar(repo, repo / "salida", permitir_sucio=True)
+    (repo / "temas" / "a" / "p.en.html").write_text("<p>hello</p>", "utf-8")
+    with pytest.raises(ErrorArmado, match="sin commit"):
+        armar(repo, repo / "salida")
+
+
+def test_ingles_tambien_se_revisa(repo):
+    (repo / "temas" / "a" / "p.en.html").write_text(
+        '<script src="https://cdn.jsdelivr.net/x.js"></script>', "utf-8")
+    _con_ingles(repo)
+    with pytest.raises(ErrorArmado, match="no cumplen"):
+        armar(repo, repo / "salida", permitir_sucio=True)
